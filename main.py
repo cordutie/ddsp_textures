@@ -51,7 +51,7 @@ checkpoint_path = 'local_checkpoint.pth'
 best_loss = float('inf')  # Initialize best_loss to a high value
 
 # Training loop
-num_epochs = 3  # Define the number of epochs
+num_epochs = 100  # Define the number of epochs
 
 print("Training starting!")
 
