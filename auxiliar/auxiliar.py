@@ -1,7 +1,5 @@
 import torch
 import torchaudio
-import IPython.display as ipd
-import matplotlib.pyplot as plt
 import numpy as np
 import auxiliar.filterbanks as fb
 
@@ -85,13 +83,13 @@ def seed_maker(size, fs, N_filter_bank):
     
     return erb_subbands_noise
 
-def plotter(y, fs):
-    # Detach the tensor from the computation graph and convert to NumPy array
-    y_np = y.detach().cpu().numpy()
-    
-    # Plot the waveform
-    plt.plot(y_np)
-    plt.show()
-    
-    # Display the audio
-    ipd.display(ipd.Audio(data=y_np, rate=fs))
+#def plotter(y, fs):
+    ## Detach the tensor from the computation graph and convert to NumPy array
+    #y_np = y.detach().cpu().numpy()
+    #
+    ## Plot the waveform
+    #plt.plot(y_np)
+    #plt.show()
+    #
+    ## Display the audio
+    #ipd.display(ipd.Audio(data=y_np, rate=fs))
