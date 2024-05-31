@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -J ddsp_textures_training
-#SBATCH -p high
+#SBATCH -p short
 #SBATCH -N 1
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=2
