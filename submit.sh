@@ -17,9 +17,9 @@ echo "### ...done."
 echo "### Installing modules..."
 python3 -m pip cache list
 python3 -m pip install --upgrade pip
-python3 -m pip install pickle
 python3 -m pip install librosa
 python3 -m pip install numpy
+python3 -m pip install --upgrade numpy
 python3 -m pip install torch
 python3 -m pip install torchinfo
 python3 -m pip install torchaudio
