@@ -14,6 +14,9 @@ module --ignore-cache load CUDA
 module load Python tqdm matplotlib
 echo "### ...done."
 
+echo "### Uninstalling conflicting packages..."
+python3 -m pip uninstall -y numpy numba
+
 echo "### Installing modules..."
 python3 -m pip cache purge
 python3 -m pip install --upgrade pip
@@ -27,6 +30,9 @@ python3 -m pip install \
     torch \
     torchinfo \
     torchaudio
+
+echo "### Verifying installed packages..."
+python3 -m pip list
 
 echo "### HPC Job properties:"
 echo "Number of Nodes Allocated     : $SLURM_JOB_NUM_NODES"
