@@ -58,16 +58,12 @@ class DDSP_textenv(nn.Module):
         imag_param = a * torch.sin(p)
         return real_param, imag_param
 
-    def forward(self, spectral_centroid, loudness):
-        # print("sp.centroid shape: ",spectral_centroid.shape)
-        # print("loudness.shape:    ",loudness.shape)
-        #encoder
+def forward(self, spectral_centroid, loudness):
         latent_vector = self.encoder(spectral_centroid, loudness)
-        # print("latent_vector.shape: ",latent_vector.shape)
-        #decoder
         real_param, imag_param = self.decoder(latent_vector)
-        # print("real_param.shape: ",real_param.shape)
-        # print("imag_param.shape: ",imag_param.shape)
+
+        # Move latent vectors to the same device as real_param and imag_param
+        latent_vector = latent_vector.to(real_param.device)
 
         signal = textsynth_env_batches(real_param, imag_param, self.seed, self.N_filter_bank, self.frame_size)
         return signal, self.seed
