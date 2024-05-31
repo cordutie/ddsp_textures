@@ -14,9 +14,6 @@ module --ignore-cache load CUDA
 module load Python tqdm matplotlib
 echo "### ...done."
 
-echo "### Uninstalling conflicting packages..."
-python3 -m pip uninstall -y numpy numba
-
 echo "### Installing modules..."
 python3 -m pip cache purge
 python3 -m pip install --upgrade pip
