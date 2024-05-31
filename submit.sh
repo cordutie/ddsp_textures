@@ -15,7 +15,7 @@ module load Python tqdm matplotlib
 echo "### ...done."
 
 echo "### Installing modules..."
-python3 -m pip cache list
+python3 -m pip cache purge
 python3 -m pip install --upgrade pip
 
 # Install all packages with specific versions to resolve dependency conflicts
@@ -23,6 +23,7 @@ python3 -m pip install \
     numpy==1.22.4 \
     scipy==1.7.3 \
     librosa \
+    numba \
     torch \
     torchinfo \
     torchaudio
