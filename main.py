@@ -36,6 +36,8 @@ with open("dataset.pkl", 'wb') as file:
 
 dataloader = DataLoader(actual_dataset, batch_size=32, shuffle=True)
 
+seed = seed.to(device)
+
 # Model initialization
 model = DDSP_textenv(hidden_size=hidden_size, N_filter_bank=N_filter_bank, deepness=2, compression=compression, frame_size=frame_size, sampling_rate=sampling_rate, seed=seed).to(device)
 
