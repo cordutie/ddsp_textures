@@ -61,7 +61,7 @@ else:
     start_epoch = 0
     best_loss = float('inf')
 
-num_epochs = 1000  # Total number of epochs to train
+num_epochs = 200000  # Total number of epochs to train
 
 for epoch in range(start_epoch, start_epoch + num_epochs):
     model.train()
