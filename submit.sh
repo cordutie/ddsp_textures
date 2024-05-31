@@ -17,13 +17,15 @@ echo "### ...done."
 echo "### Installing modules..."
 python3 -m pip cache list
 python3 -m pip install --upgrade pip
-python3 -m pip install librosa
-python3 -m pip install numpy
-python3 -m pip install --upgrade numpy
-python3 -m pip install torch
-python3 -m pip install torchinfo
-python3 -m pip install torchaudio
-echo "### ...done."
+
+# Install all packages with specific versions to resolve dependency conflicts
+python3 -m pip install \
+    numpy==1.22.4 \
+    scipy==1.7.3 \
+    librosa \
+    torch \
+    torchinfo \
+    torchaudio
 
 echo "### HPC Job properties:"
 echo "Number of Nodes Allocated     : $SLURM_JOB_NUM_NODES"
