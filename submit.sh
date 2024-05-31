@@ -1,41 +1,29 @@
 #!/bin/bash
-#SBATCH -J training_test_1
+#SBATCH -J create_env_ddsp_textures
 #SBATCH -p short
 #SBATCH -N 1
-#SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=2
-#SBATCH --mem=20g
-#SBATCH --time=2:00:00
+#SBATCH --mem=8g
+#SBATCH --time=1:00:00
 #SBATCH -o %N.job%J.log_output.txt
 #SBATCH -e %N.job%J.log_errors.txt
 
-echo "### Loading modules..."
-module --ignore-cache load CUDA
-module load Python tqdm matplotlib
-echo "### ...done."
+echo "### Creating conda environment 'ddsp_textures'..."
+conda create -y -n ddsp_textures python=3.8
 
-echo "### Installing modules..."
-python3 -m pip cache purge
-python3 -m pip install --upgrade pip
+echo "### Activating conda environment 'ddsp_textures'..."
+source activate ddsp_textures
 
-# Install all packages with specific versions to resolve dependency conflicts
-python3 -m pip install \
-    numpy==1.22.4 \
-    scipy==1.7.3 \
-    librosa \
-    numba \
-    torch \
-    torchinfo \
-    torchaudio
+echo "### Installing packages..."
+conda install -y -c pytorch torch torchaudio librosa numpy scipy
+pip install tqdm matplotlib
 
 echo "### Verifying installed packages..."
-python3 -m pip list
+conda list
 
 echo "### HPC Job properties:"
 echo "Number of Nodes Allocated     : $SLURM_JOB_NUM_NODES"
 echo "Number of Tasks Allocated     : $SLURM_NTASKS"
 echo "Number of Cores/Task Allocated: $SLURM_CPUS_PER_TASK"
 
-echo "### Starting script 'main.py' ... $(date)"
-python3 main.py
-echo "###### Finished ###### $(date)"
+echo "###### Environment 'ddsp_textures' creation finished ######"
