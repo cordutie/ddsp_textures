@@ -4,7 +4,7 @@
 #SBATCH -N 1
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=2
-#SBATCH --mem=96g
+#SBATCH --mem=20g
 #SBATCH --time=2:00:00
 #SBATCH -o %N.job%J.log_output.txt
 #SBATCH -e %N.job%J.log_errors.txt
