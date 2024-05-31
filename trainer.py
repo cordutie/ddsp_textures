@@ -25,6 +25,8 @@ if os.path.exists(seed_path):
 else:
     raise FileNotFoundError(f"{seed_path} not found. Please ensure the dataset is created and saved correctly.")
 
+seed = seed.to(device)
+
 # Model initialization
 model = DDSP_textenv(hidden_size=hidden_size, N_filter_bank=N_filter_bank, deepness=2, compression=compression, frame_size=frame_size, sampling_rate=sampling_rate, seed=seed).to(device)
 
