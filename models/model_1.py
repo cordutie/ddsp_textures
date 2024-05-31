@@ -58,7 +58,7 @@ class DDSP_textenv(nn.Module):
         imag_param = a * torch.sin(p)
         return real_param, imag_param
 
-def forward(self, spectral_centroid, loudness):
+    def forward(self, spectral_centroid, loudness):
         latent_vector = self.encoder(spectral_centroid, loudness)
         real_param, imag_param = self.decoder(latent_vector)
 
