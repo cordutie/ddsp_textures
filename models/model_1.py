@@ -63,7 +63,12 @@ class DDSP_textenv(nn.Module):
         real_param, imag_param = self.decoder(latent_vector)
 
         # Move latent vectors to the same device as real_param and imag_param
-        latent_vector = latent_vector.to(real_param.device)
+        device = real_param.device
+        latent_vector = latent_vector.to(device)
+
+        # Ensure all tensors are on the same device
+        spectral_centroid = spectral_centroid.to(device)
+        loudness = loudness.to(device)
 
         signal = textsynth_env_batches(real_param, imag_param, self.seed, self.N_filter_bank, self.frame_size)
         return signal, self.seed
