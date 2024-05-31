@@ -62,30 +62,33 @@ def textsynth_env(parameters_real, parameters_imag, seed, N_filter_bank, size):
 
 
 def textsynth_env_batches(parameters_real, parameters_imag, seed, N_filter_bank, size):
+    # Get the device of the parameters_real tensor
+    device = parameters_real.device
+
     # Get the batch size
     batch_size = parameters_real.size(0)
     parameters_size = parameters_real.size(1) // N_filter_bank
 
-    # Initialize the final signal tensor for the entire batch
-    signal_final = torch.zeros((batch_size, size), dtype=torch.float32, device=parameters_real.device)
+    # Initialize the final signal tensor for the entire batch on the same device
+    signal_final = torch.zeros((batch_size, size), dtype=torch.float32, device=device)
     
+    # Move seed to the same device as parameters_real
+    seed = seed.to(device)
+
     for i in range(N_filter_bank):
         # Construct the local parameters as a complex array for each filter in the batch
         parameters_local = (parameters_real[:, i * parameters_size : (i + 1) * parameters_size] 
                             + 1j * parameters_imag[:, i * parameters_size : (i + 1) * parameters_size])
         
         # Initialize FFT coefficients array for the entire batch
-        fftcoeff_local = torch.zeros((batch_size, int(size / 2) + 1), dtype=torch.complex64, device=parameters_real.device)
+        fftcoeff_local = torch.zeros((batch_size, int(size / 2) + 1), dtype=torch.complex64, device=device)
         fftcoeff_local[:, :parameters_size] = parameters_local
 
         # Compute the inverse FFT to get the local envelope for each batch item
         env_local = torch.fft.irfft(fftcoeff_local).real
 
-        # Extract the local noise for each batch item
-        noise_local = seed[:, i]
-
         # Generate the texture sound by multiplying the envelope and noise for each batch item
-        texture_sound_local = env_local * noise_local
+        texture_sound_local = env_local * seed[:, i].unsqueeze(1)
 
         # Accumulate the result for each batch item
         signal_final += texture_sound_local
