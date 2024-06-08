@@ -1,1 +1,0 @@
-Epoch 101/100100:   0%|          | 0/14 [00:00<?, ?it/s]slurmstepd: error: *** JOB 730150 ON node020 CANCELLED AT 2024-05-31T22:59:38 ***
