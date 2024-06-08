@@ -25,8 +25,10 @@ if os.path.exists(seed_path):
 else:
     raise FileNotFoundError(f"{seed_path} not found. Please ensure the dataset is created and saved correctly.")
 
+seed = seed.to(device)
+
 # Model initialization
-model = DDSP_textenv(hidden_size=hidden_size, N_filter_bank=N_filter_bank, deepness=2, compression=compression, frame_size=frame_size, sampling_rate=sampling_rate, seed=seed).to(device)
+model = DDSP_textenv(hidden_size=hidden_size, N_filter_bank=N_filter_bank, deepness=3, compression=compression, frame_size=frame_size, sampling_rate=sampling_rate, seed=seed).to(device)
 
 # Load the dataset
 dataset_path = 'dataset.pkl'
@@ -59,7 +61,7 @@ else:
     start_epoch = 0
     best_loss = float('inf')
 
-num_epochs = 1000  # Total number of epochs to train
+num_epochs = 100000  # Total number of epochs to train
 
 for epoch in range(start_epoch, start_epoch + num_epochs):
     model.train()
