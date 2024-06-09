@@ -29,7 +29,8 @@ def feature_extractor(signal, sample_rate, N_filter_bank, target_sampling_rate=1
     return [sp_centroid[0], loudness, downsample_signal]
 
 class SoundDataset(Dataset):
-    def __init__(self, audio_path, frame_size, hop_size, sampling_rate, N_filter_bank):
+    def __init__(self, audio_path, frame_size, hop_size, sampling_rate, N_filter_bank, normalize):
+        self.normalization = normalize
         self.audio_path = audio_path
         self.frame_size = frame_size
         self.hop_size   = hop_size
@@ -44,6 +45,8 @@ class SoundDataset(Dataset):
         dataset_size = (size - self.frame_size) // self.hop_size
         for i in range(dataset_size):
             segment = audio_tensor[i * self.hop_size: i * self.hop_size + self.frame_size]
+            if self.normalization == True:
+                segment = (segment - torch.mean(segment)) / torch.std(segment)
             features = feature_extractor(segment, self.sampling_rate, self.N_filter_bank)
             self.content.append([features, segment])
-
+        return self.content

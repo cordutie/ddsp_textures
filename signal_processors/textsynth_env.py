@@ -33,7 +33,7 @@ def textsynth_env_param_extractor(signal, fs, N_filter_bank, percentage_use):
     
     return real_param, imag_param
 
-def textsynth_env(parameters_real, parameters_imag, seed, N_filter_bank, size):
+def textsynth_env(parameters_real, parameters_imag, seed, N_filter_bank, size, target_loudness=1):
     N = parameters_real.size(0)
     parameters_size = N // N_filter_bank
     signal_final = torch.zeros(size, dtype=torch.float32)
@@ -58,6 +58,11 @@ def textsynth_env(parameters_real, parameters_imag, seed, N_filter_bank, size):
         # Accumulate the result
         signal_final += texture_sound_local
     
+    loudness = torch.sqrt(torch.mean(signal_final ** 2))
+    signal_final = signal_final / loudness
+
+    signal_final = target_loudness * signal_final
+
     return signal_final
 
 

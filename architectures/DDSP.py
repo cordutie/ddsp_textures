@@ -71,7 +71,7 @@ class DDSP_textenv_gru(nn.Module):
         loudness = loudness.to(device)
 
         signal = textsynth_env_batches(real_param, imag_param, self.seed, self.N_filter_bank, self.frame_size)
-        return signal, self.seed
+        return signal
     
     
 class DDSP_textenv_mlp(nn.Module):
@@ -92,7 +92,7 @@ class DDSP_textenv_mlp(nn.Module):
         self.p_decoder_1 = mlp(3 * hidden_size, hidden_size, deepness)
         self.p_decoder_2 = nn.Linear(hidden_size, N_filter_bank * self.param_per_env)
 
-    def encoder(self, input_ds, spectral_centroid, loudness):
+    def encoder(self, spectral_centroid, loudness, input_ds):
         f = self.f_encoder(spectral_centroid)
         # print("f shape: ",f.shape)
         l = self.l_encoder(loudness)
@@ -125,4 +125,4 @@ class DDSP_textenv_mlp(nn.Module):
         loudness = loudness.to(device)
 
         signal = textsynth_env_batches(real_param, imag_param, self.seed, self.N_filter_bank, self.frame_size)
-        return signal, self.seedd
+        return signal
