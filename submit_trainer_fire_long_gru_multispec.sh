@@ -28,6 +28,7 @@ echo "Number of Nodes Allocated     : $SLURM_JOB_NUM_NODES"
 echo "Number of Tasks Allocated     : $SLURM_NTASKS"
 echo "Number of Cores/Task Allocated: $SLURM_CPUS_PER_TASK"
 
-echo "### Starting script 'trainer.py' ... $(date)"
-python3 trainer.py
+echo "### Starting trainer for water_long_gru_multispec' ... $(date)"
+python3 water_long_gru_multispec_init.py
+python3 water_long_gru_multispec_train.py
 echo "###### Finished ###### $(date)"
