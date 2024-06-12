@@ -1,13 +1,0 @@
-Epoch 1/5:   0%|          | 0/7 [00:00<?, ?it/s]Epoch 1/5:  14%|█▍        | 1/7 [00:05<00:33,  5.51s/it]Epoch 1/5:  57%|█████▋    | 4/7 [00:05<00:03,  1.07s/it]Epoch 1/5: 100%|██████████| 7/7 [00:05<00:00,  1.94it/s]Epoch 1/5: 100%|██████████| 7/7 [00:05<00:00,  1.22it/s]
-Epoch 2/5:   0%|          | 0/7 [00:00<?, ?it/s]Epoch 2/5:  57%|█████▋    | 4/7 [00:00<00:00, 32.58it/s]Epoch 2/5: 100%|██████████| 7/7 [00:00<00:00, 33.98it/s]
-Epoch 3/5:   0%|          | 0/7 [00:00<?, ?it/s]Epoch 3/5:  57%|█████▋    | 4/7 [00:00<00:00, 35.19it/s]Epoch 3/5: 100%|██████████| 7/7 [00:00<00:00, 36.18it/s]
-Epoch 4/5:   0%|          | 0/7 [00:00<?, ?it/s]Epoch 4/5:  57%|█████▋    | 4/7 [00:00<00:00, 34.62it/s]Epoch 4/5: 100%|██████████| 7/7 [00:00<00:00, 34.58it/s]
-Epoch 5/5:   0%|          | 0/7 [00:00<?, ?it/s]Epoch 5/5:  43%|████▎     | 3/7 [00:00<00:00, 28.55it/s]Epoch 5/5: 100%|██████████| 7/7 [00:00<00:00, 29.57it/s]Epoch 5/5: 100%|██████████| 7/7 [00:00<00:00, 29.38it/s]
-Traceback (most recent call last):
-  File "fire_long_gru_multispec_train.py", line 86, in <module>
-    checkpoint = torch.load(checkpoint_path)
-  File "/home/egutierrez/.local/lib/python3.8/site-packages/torch/serialization.py", line 1004, in load
-    with _open_zipfile_reader(opened_file) as opened_zipfile:
-  File "/home/egutierrez/.local/lib/python3.8/site-packages/torch/serialization.py", line 456, in __init__
-    super().__init__(torch._C.PyTorchFileReader(name_or_buffer))
-RuntimeError: PytorchStreamReader failed reading zip archive: failed finding central directory

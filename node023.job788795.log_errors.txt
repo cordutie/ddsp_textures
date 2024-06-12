@@ -1,9 +1,0 @@
-Epoch 1/5:   0%|          | 0/10 [00:00<?, ?it/s]Epoch 1/5:   0%|          | 0/10 [00:00<?, ?it/s]
-Traceback (most recent call last):
-  File "rain_short_gru_stat_init.py", line 114, in <module>
-    loss = loss_function(segments, reconstructed_signal)
-TypeError: batch_statistics_loss() missing 1 required positional argument: 'extra_loss'
-Traceback (most recent call last):
-  File "rain_short_gru_stat_train.py", line 98, in <module>
-    for epoch in range(start_epoch, start_epoch + num_epochs):
-NameError: name 'start_epoch' is not defined

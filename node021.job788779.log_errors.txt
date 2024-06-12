@@ -1,3 +1,0 @@
-/var/spool/slurmd/job788779/slurm_script: line 32: 4075846 Killed                  python3 water_short_gru_stat_init.py
-/var/spool/slurmd/job788779/slurm_script: line 33: 4076023 Killed                  python3 water_short_gru_stat_train.py
-slurmstepd: error: Detected 2 oom-kill event(s) in StepId=788779.batch cgroup. Some of your processes may have been killed by the cgroup out-of-memory handler.
