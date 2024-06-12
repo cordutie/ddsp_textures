@@ -1,0 +1,9 @@
+Epoch 1/5:   0%|          | 0/9 [00:00<?, ?it/s]Epoch 1/5:   0%|          | 0/9 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "ocean_long_mlp_stat_init.py", line 114, in <module>
+    loss = loss_function(segments, reconstructed_signal)
+TypeError: batch_statistics_loss() missing 1 required positional argument: 'extra_loss'
+Traceback (most recent call last):
+  File "ocean_long_mlp_stat_train.py", line 52, in <module>
+    raise FileNotFoundError(f"{seed_path} not found. Please ensure the dataset is created and saved correctly.")
+FileNotFoundError: trained_models/ocean_long_mlp_stat/seed.pkl not found. Please ensure the dataset is created and saved correctly.

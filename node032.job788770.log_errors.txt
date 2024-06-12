@@ -1,0 +1,3 @@
+/var/spool/slurmd/job788770/slurm_script: line 32: 585802 Killed                  python3 fire_short_gru_multispec_init.py
+/var/spool/slurmd/job788770/slurm_script: line 33: 585841 Killed                  python3 fire_short_gru_multispec_train.py
+slurmstepd: error: Detected 2 oom-kill event(s) in StepId=788770.batch cgroup. Some of your processes may have been killed by the cgroup out-of-memory handler.
