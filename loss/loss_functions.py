@@ -202,14 +202,14 @@ def statistics_loss(original_signal, reconstructed_signal):
 
     return final_loss
 
-def batch_statistics_loss(original_signals, reconstructed_signals, extra_loss):
+def batch_statistics_loss(original_signals, reconstructed_signals):
     batch_size = original_signals.size(0)
     total_loss = 0.0
 
     for i in range(batch_size):
         original_signal = original_signals[i]
         reconstructed_signal = reconstructed_signals[i]
-        loss = statistics_loss(original_signal, reconstructed_signal, extra_loss)
+        loss = statistics_loss(original_signal, reconstructed_signal)
         total_loss += loss
 
     average_loss = total_loss / batch_size

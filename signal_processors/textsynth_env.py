@@ -47,7 +47,7 @@ def textsynth_env(parameters_real, parameters_imag, seed, N_filter_bank, size, t
         fftcoeff_local[:parameters_size] = parameters_local ###########################################3
         
         # Compute the inverse FFT to get the local envelope
-        env_local = torch.fft.irfft(fftcoeff_local).real
+        env_local = torch.fft.irfft(fftcoeff_local)
         
         # Extract the local noise
         noise_local = seed[:, i]

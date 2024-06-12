@@ -1,1 +1,5 @@
+# Ignore datasets (they are too heavy!)
 dataset.pkl
+
+# Ignore unnecesary cache
+**/__pycache__/
