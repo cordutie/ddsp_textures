@@ -58,7 +58,7 @@ class DDSP_textenv_gru(nn.Module):
         imag_param = a * torch.sin(p)
         return real_param, imag_param
 
-    def forward(self, spectral_centroid, loudness, _):
+    def forward(self, spectral_centroid, loudness):
         latent_vector = self.encoder(spectral_centroid, loudness)
         real_param, imag_param = self.decoder(latent_vector)
 
@@ -73,6 +73,20 @@ class DDSP_textenv_gru(nn.Module):
         signal = textsynth_env_batches(real_param, imag_param, self.seed, self.N_filter_bank, self.frame_size)
         return signal
     
+    def synthesizer(self, input_ds, spectral_centroid, loudness, target_loudness):
+        latent_vector = self.encoder(input_ds, spectral_centroid, loudness)
+        real_param, imag_param = self.decoder(latent_vector)
+
+        # Move latent vectors to the same device as real_param and imag_param
+        device = real_param.device
+        latent_vector = latent_vector.to(device)
+
+        # Ensure all tensors are on the same device
+        spectral_centroid = spectral_centroid.to(device)
+        loudness = loudness.to(device)
+
+        signal = textsynth_env(real_param, imag_param, self.seed, self.N_filter_bank, self.frame_size, target_loudness)
+        return signal    
     
 class DDSP_textenv_mlp(nn.Module):
     def __init__(self, input_size, hidden_size, N_filter_bank, deepness, compression, frame_size, sampling_rate, seed):
@@ -125,4 +139,19 @@ class DDSP_textenv_mlp(nn.Module):
         loudness = loudness.to(device)
 
         signal = textsynth_env_batches(real_param, imag_param, self.seed, self.N_filter_bank, self.frame_size)
+        return signal
+    
+    def synthesizer(self, input_ds, spectral_centroid, loudness, target_loudness):
+        latent_vector = self.encoder(input_ds, spectral_centroid, loudness)
+        real_param, imag_param = self.decoder(latent_vector)
+
+        # Move latent vectors to the same device as real_param and imag_param
+        device = real_param.device
+        latent_vector = latent_vector.to(device)
+
+        # Ensure all tensors are on the same device
+        spectral_centroid = spectral_centroid.to(device)
+        loudness = loudness.to(device)
+
+        signal = textsynth_env(real_param, imag_param, self.seed, self.N_filter_bank, self.frame_size, target_loudness)
         return signal
