@@ -35,6 +35,8 @@ def multispectrogram_loss(original_signal, reconstructed_signal, scales=[2048, 1
 
     return loss
 
+######## statistics loss ########
+
 def correlation_coefficient(tensor1, tensor2):
     tensor1_mean = torch.mean(tensor1)
     tensor2_mean = torch.mean(tensor2)
@@ -47,8 +49,6 @@ def correlation_coefficient(tensor1, tensor2):
     correlation = torch.mean(standardized_tensor1 * standardized_tensor2)
     
     return correlation
-
-######## statistics loss ########
 
 def statistics(signal, N_filter_bank, sample_rate):
     size = signal.shape[0]
@@ -214,3 +214,11 @@ def batch_statistics_loss(original_signals, reconstructed_signals):
 
     average_loss = total_loss / batch_size
     return average_loss
+
+######## stems loss ########
+
+def stems_loss(original_stems, reconstructed_stems, N_filter_bank):
+    loss = 0
+    for i in range(N_filter_bank):
+        loss += torch.nn.MSELoss(original_stems[i], reconstructed_stems[i])
+    return loss
