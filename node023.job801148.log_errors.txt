@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "water_short_mlp_stat_init.py", line 8, in <module>
+    from training.trainer import *
+  File "/gpfs/home/egutierrez/ddsp_textures/training/trainer.py", line 15, in <module>
+    import matplotlib.pyplot as plt
+ModuleNotFoundError: No module named 'matplotlib'
+Traceback (most recent call last):
+  File "water_short_mlp_stat_train.py", line 8, in <module>
+    from training.trainer import *
+  File "/gpfs/home/egutierrez/ddsp_textures/training/trainer.py", line 15, in <module>
+    import matplotlib.pyplot as plt
+ModuleNotFoundError: No module named 'matplotlib'
