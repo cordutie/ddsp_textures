@@ -21,25 +21,29 @@ class FilterBank:
         return high_lim, freqs, nfreqs
 
     def generate_subbands(self, signal):
-        device = signal.device  # Get the device of the input signal tensor        self.filters = self.filters.to(device)
+        device = signal.device  # Get the device of the input signal tensor
+        self.filters = self.filters.to(device)  # Move filters to the same device
         
         if signal.shape[0] == 1:  # turn into column vector
-            signal = signal.T
+            signal = signal.T.to(device)
+        else:
+            signal = signal.to(device)
         
         N = self.filters.shape[1] - 2
         signal_length = signal.shape[0]
         filt_length = self.filters.shape[0]
         
-        fft_sample = torch.fft.fft(signal, dim=0)
+        fft_sample = torch.fft.fft(signal, dim=0).to(device)
         
         if signal_length % 2 == 0:
-            fft_filts = torch.cat([self.filters, torch.flipud(self.filters[1:filt_length - 1, :])])
+            fft_filts = torch.cat([self.filters, torch.flipud(self.filters[1:filt_length - 1, :])]).to(device)
         else:
-            fft_filts = torch.cat([self.filters, torch.flipud(self.filters[1:filt_length, :])])
+            fft_filts = torch.cat([self.filters, torch.flipud(self.filters[1:filt_length, :])]).to(device)
         
         tile = fft_sample.unsqueeze(1) * torch.ones(1, N + 2, device=device)
         fft_subbands = fft_filts * tile
-        self.subbands = torch.fft.ifft(fft_subbands, dim=0).real
+        self.subbands = torch.fft.ifft(fft_subbands, dim=0).real.to(device)
+
 
 class EqualRectangularBandwidth(FilterBank):
     def __init__(self, leny, fs, N, low_lim, high_lim):
