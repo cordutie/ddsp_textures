@@ -20,9 +20,8 @@ class FilterBank:
             high_lim = max_freq
         return high_lim, freqs, nfreqs
 
-    def generate_subbands(self, signal, device):
-        signal = signal.to(device)
-        self.filters = self.filters.to(device)
+    def generate_subbands(self, signal):
+        device = signal.device  # Get the device of the input signal tensor        self.filters = self.filters.to(device)
         
         if signal.shape[0] == 1:  # turn into column vector
             signal = signal.T
