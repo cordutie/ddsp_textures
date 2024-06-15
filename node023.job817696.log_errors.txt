@@ -1,0 +1,40 @@
+/gpfs/home/egutierrez/ddsp_textures/dataset/dataset_maker.py:39: UserWarning: PySoundFile failed. Trying audioread instead.
+  self.audio, _ = librosa.load(audio_path, sr=sampling_rate)
+/home/egutierrez/.local/lib/python3.8/site-packages/librosa/core/audio.py:184: FutureWarning: librosa.core.audio.__audioread_load
+	Deprecated as of librosa version 0.10.0.
+	It will be removed in librosa version 1.0.
+  y, sr_native = __audioread_load(path, offset, duration, dtype)
+Traceback (most recent call last):
+  File "/home/egutierrez/.local/lib/python3.8/site-packages/librosa/core/audio.py", line 176, in load
+    y, sr_native = __soundfile_load(path, offset, duration, dtype)
+  File "/home/egutierrez/.local/lib/python3.8/site-packages/librosa/core/audio.py", line 209, in __soundfile_load
+    context = sf.SoundFile(path)
+  File "/home/egutierrez/.local/lib/python3.8/site-packages/soundfile.py", line 658, in __init__
+    self._file = self._open(file, mode_int, closefd)
+  File "/home/egutierrez/.local/lib/python3.8/site-packages/soundfile.py", line 1216, in _open
+    raise LibsndfileError(err, prefix="Error opening {0!r}: ".format(self.name))
+soundfile.LibsndfileError: Error opening 'sounds/{element}.wav': System error.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "main.py", line 43, in <module>
+    wrapper(parameters)
+  File "main.py", line 24, in wrapper
+    initializer(frame_type, model_type, loss_type, audio_path, model_name)
+  File "/gpfs/home/egutierrez/ddsp_textures/training/initializer.py", line 63, in initializer
+    dataset = SoundDataset(audio_path=audio_path, frame_size=frame_size, hop_size=hop_size, sampling_rate=sampling_rate, N_filter_bank=N_filter_bank, normalize=False)
+  File "/gpfs/home/egutierrez/ddsp_textures/dataset/dataset_maker.py", line 39, in __init__
+    self.audio, _ = librosa.load(audio_path, sr=sampling_rate)
+  File "/home/egutierrez/.local/lib/python3.8/site-packages/librosa/core/audio.py", line 184, in load
+    y, sr_native = __audioread_load(path, offset, duration, dtype)
+  File "<decorator-gen-2>", line 2, in __audioread_load
+  File "/home/egutierrez/.local/lib/python3.8/site-packages/librosa/util/decorators.py", line 59, in __wrapper
+    return func(*args, **kwargs)
+  File "/home/egutierrez/.local/lib/python3.8/site-packages/librosa/core/audio.py", line 240, in __audioread_load
+    reader = audioread.audio_open(path)
+  File "/home/egutierrez/.local/lib/python3.8/site-packages/audioread/__init__.py", line 127, in audio_open
+    return BackendClass(path)
+  File "/home/egutierrez/.local/lib/python3.8/site-packages/audioread/rawread.py", line 59, in __init__
+    self._fh = open(filename, 'rb')
+FileNotFoundError: [Errno 2] No such file or directory: 'sounds/{element}.wav'
