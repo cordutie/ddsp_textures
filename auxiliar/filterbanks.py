@@ -20,18 +20,25 @@ class FilterBank:
             high_lim = max_freq
         return high_lim, freqs, nfreqs
 
-    def generate_subbands(self, signal):
+    def generate_subbands(self, signal, device):
+        signal = signal.to(device)
+        self.filters = self.filters.to(device)
+        
         if signal.shape[0] == 1:  # turn into column vector
             signal = signal.T
+        
         N = self.filters.shape[1] - 2
         signal_length = signal.shape[0]
         filt_length = self.filters.shape[0]
+        
         fft_sample = torch.fft.fft(signal, dim=0)
+        
         if signal_length % 2 == 0:
             fft_filts = torch.cat([self.filters, torch.flipud(self.filters[1:filt_length - 1, :])])
         else:
             fft_filts = torch.cat([self.filters, torch.flipud(self.filters[1:filt_length, :])])
-        tile = fft_sample.unsqueeze(1) * torch.ones(1, N + 2)
+        
+        tile = fft_sample.unsqueeze(1) * torch.ones(1, N + 2, device=device)
         fft_subbands = fft_filts * tile
         self.subbands = torch.fft.ifft(fft_subbands, dim=0).real
 
