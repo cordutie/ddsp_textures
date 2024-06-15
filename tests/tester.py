@@ -38,7 +38,7 @@ def short_long_decoder(name):
         batch_size = 32
         
     else:
-        raise FileNotFoundError(f"{name} is not a valid frame type")
+        raise NameError(f"{name} is not a valid frame type")
     
     return input_size, hidden_size, N_filter_bank, frame_size, hop_size, sampling_rate, compression, batch_size
 
@@ -57,7 +57,7 @@ def model_loader(frame_type, model_type, loss_type, audio_path, model_name, best
         with open(seed_path, 'rb') as file:
             seed = pickle.load(file)
     else:
-        raise FileNotFoundError(f"{seed_path} not found. Please ensure the dataset is created and saved correctly.")
+        raise NameError(f"{seed_path} not found. Please ensure the dataset is created and saved correctly.")
     seed = seed.to(device)
 
     # Model initialization

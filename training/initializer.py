@@ -35,7 +35,7 @@ def short_long_decoder(name):
         batch_size = 32
         
     else:
-        raise FileNotFoundError(f"{name} is not a valid frame type")
+        raise NameError(f"{name} is not a valid frame type")
     
     return input_size, hidden_size, N_filter_bank, frame_size, hop_size, sampling_rate, compression, batch_size
 
@@ -73,11 +73,17 @@ def initializer(frame_type, model_type, loss_type, audio_path, model_name):
     dataloader = DataLoader(actual_dataset, batch_size=batch_size, shuffle=True)
 
     # Model initialization
-    if model_type == 'DDSP_textenv_gru':
+    if model_type   == 'DDSP_textenv_gru':
         model = DDSP_textenv_gru(                       hidden_size=hidden_size, N_filter_bank=N_filter_bank, deepness=3, compression=compression, frame_size=frame_size, sampling_rate=sampling_rate, seed=seed).to(device)
     elif model_type == 'DDSP_textenv_mlp':
         model = DDSP_textenv_mlp(input_size=input_size, hidden_size=hidden_size, N_filter_bank=N_filter_bank, deepness=3, compression=compression, frame_size=frame_size, sampling_rate=sampling_rate, seed=seed).to(device)
-
+    elif model_type == 'DDSP_textenv_stems_gru':
+        model = DDSP_textenv_stems_gru(                  hidden_size=hidden_size, N_filter_bank=N_filter_bank, deepness=3, compression=compression, frame_size=frame_size, sampling_rate=sampling_rate, seed=seed).to(device)
+    elif model_type == 'DDSP_textenv_stems_mlp':
+        model = DDSP_textenv_stems_mlp(input_size=input_size, hidden_size=hidden_size, N_filter_bank=N_filter_bank, deepness=3, compression=compression, frame_size=frame_size, sampling_rate=sampling_rate, seed=seed).to(device)
+    else:
+        raise NameError("Invalid model type")
+    
     # Initialize the optimizer
     optimizer = optim.Adam(model.parameters(), lr=1e-2)
 
@@ -86,6 +92,10 @@ def initializer(frame_type, model_type, loss_type, audio_path, model_name):
         loss_function = multispectrogram_loss
     elif loss_type == 'statistics_loss':
         loss_function = batch_statistics_loss
+    elif loss_type == 'stems_loss':
+        loss_function = stems_loss
+    else:
+        raise NameError("Invalid loss type")
 
     # Checkpoint path
     checkpoint_path = os.path.join(directory, "checkpoint.pkl")
@@ -109,11 +119,16 @@ def initializer(frame_type, model_type, loss_type, audio_path, model_name):
             ds_signal         = features[2].to(device)
             segments          = segments.to(device)
 
+
             # Zero the parameter gradients
             optimizer.zero_grad()
 
             # Forward pass
             reconstructed_signal = model(spectral_centroid, loudness, ds_signal)
+
+            # print(segments.shape)
+            # print(len(reconstructed_signal))
+            # print(reconstructed_signal[0].shape)
 
             # Compute loss
             loss = loss_function(segments, reconstructed_signal)

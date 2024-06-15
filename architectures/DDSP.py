@@ -227,7 +227,7 @@ class DDSP_textenv_stems_gru(nn.Module):
         stems = textsynth_env(real_param, imag_param, self.seed, self.N_filter_bank, self.frame_size, target_loudness)
         return stems    
     
-class DDSP_textenv_mlp(nn.Module):
+class DDSP_textenv_stems_mlp(nn.Module):
     def __init__(self, input_size, hidden_size, N_filter_bank, deepness, compression, frame_size, sampling_rate, seed):
         super().__init__()
 

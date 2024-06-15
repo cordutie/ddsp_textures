@@ -142,7 +142,7 @@ def statistics(signal, N_filter_bank, sample_rate):
         statistics_1[i,2] = (torch.mean((env_subbands[:,i]-mu)**3) / sigma**3) / 100
         statistics_1[i,3] = (torch.mean((env_subbands[:,i]-mu)**4) / sigma**4) / 1000
 
-    print("Statistics 1: ", statistics_1)
+    # print("Statistics 1: ", statistics_1)
 
     # Extract correlations
     statistics_2 = torch.zeros(N_filter_bank*(N_filter_bank-1) // 2)
@@ -152,7 +152,7 @@ def statistics(signal, N_filter_bank, sample_rate):
             statistics_2[index] = correlation_coefficient(env_subbands[:,i], env_subbands[:,j])
             index += 1
 
-    print("Statistics 2: ", statistics_2)
+    # print("Statistics 2: ", statistics_2)
 
     # Extract modulation powers
     statistics_3 = torch.zeros(N_filter_bank*6)
@@ -162,7 +162,7 @@ def statistics(signal, N_filter_bank, sample_rate):
         for j in range(6):
             statistics_3[6*i + j] = torch.std(subenvelopes[i][j]) / sigma_i
     
-    print("Statistics 3: ", statistics_3)
+    # print("Statistics 3: ", statistics_3)
 
     statistics_4 = torch.zeros(15, N_filter_bank)
 
@@ -173,7 +173,7 @@ def statistics(signal, N_filter_bank, sample_rate):
                 statistics_4[counter,i] = correlation_coefficient(subenvelopes[i][:,j], subenvelopes[i][:,k])
                 counter +=1
     
-    print("Statistics 4: ", statistics_4)
+    # print("Statistics 4: ", statistics_4)
 
     statistics_5 = torch.zeros(6, N_filter_bank*(N_filter_bank-1) // 2)
 
@@ -184,7 +184,7 @@ def statistics(signal, N_filter_bank, sample_rate):
                 statistics_5[i,counter] = correlation_coefficient(subenvelopes[j][:,i], subenvelopes[k][:,i])
                 counter += 1
 
-    print("Statistics 5: ", statistics_5)
+    # print("Statistics 5: ", statistics_5)
 
     return [statistics_1, statistics_2, statistics_3, statistics_4, statistics_5] 
 
@@ -195,7 +195,7 @@ def statistics_loss(original_signal, reconstructed_signal):
     loss = []
     for i in range(5):
         loss_i = torch.sqrt(torch.mean((original_statistics[i] - reconstructed_statistics[i])**2))
-        print("Loss ", i, ": ", loss_i)
+        # print("Loss ", i, ": ", loss_i)
         loss.append(loss_i)
 
     final_loss = loss[0] + 20 * loss[1] + 20 * loss[2] + 20 * loss[3] + 20 * loss[4]
@@ -217,8 +217,43 @@ def batch_statistics_loss(original_signals, reconstructed_signals):
 
 ######## stems loss ########
 
-def stems_loss(original_stems, reconstructed_stems, N_filter_bank):
-    loss = 0
+def stems_loss(original_signals, reconstructed_stems, N_filter_bank=16, sample_rate=44100):
+    low_lim = 20  # Low limit of filter
+    high_lim = sample_rate / 2  # Centre freq. of highest filter
+
+    # print("shape segments: ",original_signals.shape)
+
+    size = original_signals.shape[1]
+    n_batch = original_signals.shape[0]
+
+    original_stems = []
     for i in range(N_filter_bank):
-        loss += torch.nn.MSELoss(original_stems[i], reconstructed_stems[i])
+        original_stems.append(torch.zeros(0, size))
+
+    for i in range(n_batch):
+        signal = original_signals[i,:]
+
+        # Initialize filter bank
+        erb_bank = fb.EqualRectangularBandwidth(size, sample_rate, N_filter_bank, low_lim, high_lim)
+        
+        # Generate subbands for noise
+        erb_bank.generate_subbands(signal)
+        
+        # Extract subbands
+        erb_subbands_signal = erb_bank.subbands[:, 1: -1]
+        
+        for j in range(N_filter_bank):
+            original_stems[j] = torch.cat((original_stems[j], erb_subbands_signal[:, j].unsqueeze(0)))
+    
+    loss = 0
+
+    # print("len og stems: ", len(original_stems))
+    # print("len rec stems: ", len(reconstructed_stems))
+
+    # print("shape og stems: ", original_stems[0].shape)
+    # print("shape rec stems: ", reconstructed_stems[0].shape)
+
+    for i in range(N_filter_bank):
+        loss += torch.mean((original_stems[i]-reconstructed_stems[i])**2)
+        
     return loss
