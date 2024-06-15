@@ -51,6 +51,7 @@ def correlation_coefficient(tensor1, tensor2):
     return correlation
 
 def statistics(signal, N_filter_bank, sample_rate):
+    device = signal.device  # Get the device of the input signal tensor
     size = signal.shape[0]
 
     low_lim = 20  # Low limit of filter
@@ -58,6 +59,10 @@ def statistics(signal, N_filter_bank, sample_rate):
 
     # Initialize filter bank
     erb_bank = fb.EqualRectangularBandwidth(size, sample_rate, N_filter_bank, low_lim, high_lim)
+    
+    # Ensure that tensors are on the same device
+    erb_bank = erb_bank.to(device)
+    signal = signal.to(device)
     
     # Generate subbands for noise
     erb_bank.generate_subbands(signal)
