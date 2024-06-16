@@ -44,7 +44,7 @@ def short_long_decoder(name):
 
 def model_loader(frame_type, model_type, loss_type, audio_path, model_name, best):    
     input_size, hidden_size, N_filter_bank, frame_size, hop_size, sampling_rate, compression, batch_size = short_long_decoder(frame_type)
-  
+
     # Construct the directory and file path
     directory = os.path.join("trained_models", model_name)
 
@@ -80,10 +80,10 @@ def model_loader(frame_type, model_type, loss_type, audio_path, model_name, best
     checkpoint_best_path = os.path.join(directory, "checkpoint_best_local.pkl")
 
     if best==True:
-        checkpoint = torch.load(checkpoint_best_path)
+        checkpoint = torch.load(checkpoint_best_path, map_location=device)
         model.load_state_dict(checkpoint['model_state_dict'])
     else:
-        checkpoint = torch.load(checkpoint_path)
+        checkpoint = torch.load(checkpoint_path, map_location=device)
         model.load_state_dict(checkpoint['model_state_dict'])
     
     return model
@@ -92,4 +92,32 @@ def model_tester(frame_type, model_type, loss_type, audio_path, model_name, best
     model = model_loader(frame_type, model_type, loss_type, audio_path, model_name, best)
     input_size, hidden_size, N_filter_bank, frame_size, hop_size, sampling_rate, compression, batch_size = short_long_decoder(frame_type)
     
+    audio_og, _ = librosa.load(audio_path, sr=sampling_rate)
     
+    audio_tensor = torch.tensor(audio_og)
+    size = audio_tensor.shape[0]
+    N_segments = (size - frame_size) // hop_size
+    
+    content = []
+    for i in range(N_segments):
+        segment = audio_tensor[i * hop_size: i * hop_size + frame_size]
+        target_loudness = torch.std(segment)
+        segment = (segment - torch.mean(segment)) / torch.std(segment)
+        features = feature_extractor(segment, sampling_rate, N_filter_bank)
+        content.append([features, segment, target_loudness])
+    
+    audio_final = torch.zeros(frame_size + (N_segments-1)*hop_size)
+    window = torch.hann_window(frame_size)
+    window = torch.ones(frame_size)
+    
+    for i in range(N_segments):
+        [features, segment, target_loudness] = content[i]
+        [sp_centroid, loudness, downsample_signal] = features
+        sp_centroid = sp_centroid.unsqueeze(0)
+        synthesized_segment = model.synthesizer(downsample_signal, sp_centroid, loudness, target_loudness)
+        synthesized_segment = synthesized_segment * window
+        audio_final[i * hop_size: i * hop_size + frame_size] = synthesized_segment
+    
+    audio_final = audio_final.detach().cpu().numpy()
+
+    return audio_og, audio_final

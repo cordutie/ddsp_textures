@@ -74,7 +74,7 @@ class DDSP_textenv_gru(nn.Module):
         return signal
     
     def synthesizer(self, input_ds, spectral_centroid, loudness, target_loudness):
-        latent_vector = self.encoder(input_ds, spectral_centroid, loudness)
+        latent_vector = self.encoder(spectral_centroid, loudness)
         real_param, imag_param = self.decoder(latent_vector)
 
         # Move latent vectors to the same device as real_param and imag_param
@@ -127,7 +127,7 @@ class DDSP_textenv_mlp(nn.Module):
         return real_param, imag_param
 
     def forward(self, input_ds, spectral_centroid, loudness):
-        latent_vector = self.encoder(input_ds, spectral_centroid, loudness)
+        latent_vector = self.encoder(spectral_centroid, loudness, input_ds)
         real_param, imag_param = self.decoder(latent_vector)
 
         # Move latent vectors to the same device as real_param and imag_param
@@ -142,7 +142,7 @@ class DDSP_textenv_mlp(nn.Module):
         return signal
     
     def synthesizer(self, input_ds, spectral_centroid, loudness, target_loudness):
-        latent_vector = self.encoder(input_ds, spectral_centroid, loudness)
+        latent_vector = self.encoder(spectral_centroid, loudness, input_ds)
         real_param, imag_param = self.decoder(latent_vector)
 
         # Move latent vectors to the same device as real_param and imag_param
@@ -213,7 +213,7 @@ class DDSP_textenv_stems_gru(nn.Module):
         return stems
     
     def synthesizer(self, input_ds, spectral_centroid, loudness, target_loudness):
-        latent_vector = self.encoder(input_ds, spectral_centroid, loudness)
+        latent_vector = self.encoder(spectral_centroid, loudness)
         real_param, imag_param = self.decoder(latent_vector)
 
         # Move latent vectors to the same device as real_param and imag_param
@@ -266,7 +266,7 @@ class DDSP_textenv_stems_mlp(nn.Module):
         return real_param, imag_param
 
     def forward(self, input_ds, spectral_centroid, loudness):
-        latent_vector = self.encoder(input_ds, spectral_centroid, loudness)
+        latent_vector = self.encoder(spectral_centroid, loudness, input_ds)
         real_param, imag_param = self.decoder(latent_vector)
 
         # Move latent vectors to the same device as real_param and imag_param
@@ -281,7 +281,7 @@ class DDSP_textenv_stems_mlp(nn.Module):
         return stems
     
     def synthesizer(self, input_ds, spectral_centroid, loudness, target_loudness):
-        latent_vector = self.encoder(input_ds, spectral_centroid, loudness)
+        latent_vector = self.encoder(spectral_centroid, loudness, input_ds)
         real_param, imag_param = self.decoder(latent_vector)
 
         # Move latent vectors to the same device as real_param and imag_param
