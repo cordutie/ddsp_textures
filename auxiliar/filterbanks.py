@@ -102,31 +102,6 @@ class Linear(FilterBank):
         filters[l_ind:nfreqs + 1, N + 1] = torch.sqrt(1 - filters[l_ind:nfreqs + 1, N] ** 2)
         return filters
 
-# class Logarithmic(FilterBank):
-#     def __init__(self, leny, fs, N, low_lim, high_lim):
-#         super(Logarithmic, self).__init__(leny, fs, N, low_lim, high_lim)
-#         self.cutoffs = torch.logspace(torch.log10(torch.tensor(self.low_lim, dtype=torch.float32)), torch.log10(torch.tensor(self.high_lim, dtype=torch.float32)), self.N + 2)
-#         self.filters = self.make_filters(self.N, self.nfreqs, self.freqs, self.cutoffs)
-
-#     def make_filters(self, N, nfreqs, freqs, cutoffs):
-#         cos_filts = torch.zeros(nfreqs + 1, N)
-#         for k in range(N):
-#             l_k = cutoffs[k]
-#             h_k = cutoffs[k + 2]
-#             l_ind = torch.min(torch.where(freqs > l_k)[0])
-#             h_ind = torch.max(torch.where(freqs < h_k)[0])
-#             avg = (torch.log10(l_k) + torch.log10(h_k)) / 2
-#             rnge = torch.log10(h_k) - torch.log10(l_k)
-#             cos_filts[l_ind:h_ind + 1, k] = torch.cos((torch.log10(freqs[l_ind:h_ind + 1]) - avg) / rnge * torch.pi)
-#         filters = torch.zeros(nfreqs + 1, N + 2)
-#         filters[:, 1:N + 1] = cos_filts
-#         h_ind = torch.max(torch.where(freqs < cutoffs[1])[0])
-#         filters[:h_ind + 1, 0] = torch.sqrt(1 - filters[:h_ind + 1, 1] ** 2)
-#         l_ind = torch.min(torch.where(freqs > cutoffs[N])[0])
-#         filters[l_ind:nfreqs + 1, N + 1] = torch.sqrt(1 - filters[l_ind:nfreqs + 1, N] ** 2)
-#         return filters
-    
-
 class Logarithmic(FilterBank):
     def __init__(self, leny, fs, N, low_lim, high_lim):
         super(Logarithmic, self).__init__(leny, fs, N, low_lim, high_lim)
