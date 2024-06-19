@@ -1,0 +1,29 @@
+Epoch 1/1:   0%|          | 0/9 [00:00<?, ?it/s]Epoch 1/1:   0%|          | 0/9 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "main.py", line 43, in <module>
+    wrapper(parameters)
+  File "main.py", line 24, in wrapper
+    initializer(frame_type, model_type, loss_type, audio_path, model_name)
+  File "/gpfs/home/egutierrez/ddsp_textures/training/initializer.py", line 127, in initializer
+    reconstructed_signal = model(spectral_centroid, loudness, ds_signal)
+  File "/home/egutierrez/.local/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/egutierrez/.local/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/gpfs/home/egutierrez/ddsp_textures/architectures/DDSP.py", line 130, in forward
+    latent_vector = self.encoder(spectral_centroid, loudness, input_ds)
+  File "/gpfs/home/egutierrez/ddsp_textures/architectures/DDSP.py", line 110, in encoder
+    f = self.f_encoder(spectral_centroid)
+  File "/home/egutierrez/.local/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/egutierrez/.local/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/egutierrez/.local/lib/python3.8/site-packages/torch/nn/modules/container.py", line 217, in forward
+    input = module(input)
+  File "/home/egutierrez/.local/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/egutierrez/.local/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/egutierrez/.local/lib/python3.8/site-packages/torch/nn/modules/linear.py", line 116, in forward
+    return F.linear(input, self.weight, self.bias)
+RuntimeError: mat1 and mat2 shapes cannot be multiplied (32x16 and 1x256)

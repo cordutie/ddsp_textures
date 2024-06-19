@@ -1,0 +1,1443 @@
+### Loading modules...
+### ...done.
+### Installing modules...
+No locally built wheels cached.
+Defaulting to user installation because normal site-packages is not writeable
+Requirement already satisfied: pip in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (24.0)
+Defaulting to user installation because normal site-packages is not writeable
+Requirement already satisfied: numpy in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (1.22.4)
+Defaulting to user installation because normal site-packages is not writeable
+Requirement already satisfied: librosa in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (0.10.2.post1)
+Requirement already satisfied: audioread>=2.1.9 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from librosa) (3.0.1)
+Requirement already satisfied: numpy!=1.22.0,!=1.22.1,!=1.22.2,>=1.20.3 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from librosa) (1.22.4)
+Requirement already satisfied: scipy>=1.2.0 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from librosa) (1.7.3)
+Requirement already satisfied: scikit-learn>=0.20.0 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from librosa) (1.3.2)
+Requirement already satisfied: joblib>=0.14 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from librosa) (1.4.2)
+Requirement already satisfied: decorator>=4.3.0 in /gpfs/projects/soft/easybuild/x86_64/software/Python/3.8.6-GCCcore-10.2.0/lib/python3.8/site-packages (from librosa) (4.4.2)
+Requirement already satisfied: numba>=0.51.0 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from librosa) (0.58.1)
+Requirement already satisfied: soundfile>=0.12.1 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from librosa) (0.12.1)
+Requirement already satisfied: pooch>=1.1 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from librosa) (1.8.1)
+Requirement already satisfied: soxr>=0.3.2 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from librosa) (0.3.7)
+Requirement already satisfied: typing-extensions>=4.1.1 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from librosa) (4.12.0)
+Requirement already satisfied: lazy-loader>=0.1 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from librosa) (0.4)
+Requirement already satisfied: msgpack>=1.0 in /gpfs/projects/soft/easybuild/x86_64/software/Python/3.8.6-GCCcore-10.2.0/lib/python3.8/site-packages (from librosa) (1.0.0)
+Requirement already satisfied: packaging in /gpfs/projects/soft/easybuild/x86_64/software/Python/3.8.6-GCCcore-10.2.0/lib/python3.8/site-packages (from lazy-loader>=0.1->librosa) (20.4)
+Requirement already satisfied: llvmlite<0.42,>=0.41.0dev0 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from numba>=0.51.0->librosa) (0.41.1)
+Requirement already satisfied: importlib-metadata in /gpfs/projects/soft/easybuild/x86_64/software/Python/3.8.6-GCCcore-10.2.0/lib/python3.8/site-packages (from numba>=0.51.0->librosa) (2.0.0)
+Requirement already satisfied: platformdirs>=2.5.0 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from pooch>=1.1->librosa) (4.2.2)
+Requirement already satisfied: requests>=2.19.0 in /gpfs/projects/soft/easybuild/x86_64/software/Python/3.8.6-GCCcore-10.2.0/lib/python3.8/site-packages (from pooch>=1.1->librosa) (2.24.0)
+Requirement already satisfied: threadpoolctl>=2.0.0 in /gpfs/projects/soft/easybuild/x86_64/software/Python/3.8.6-GCCcore-10.2.0/lib/python3.8/site-packages (from scikit-learn>=0.20.0->librosa) (2.1.0)
+Requirement already satisfied: cffi>=1.0 in /gpfs/projects/soft/easybuild/x86_64/software/Python/3.8.6-GCCcore-10.2.0/lib/python3.8/site-packages (from soundfile>=0.12.1->librosa) (1.14.3)
+Requirement already satisfied: pycparser in /gpfs/projects/soft/easybuild/x86_64/software/Python/3.8.6-GCCcore-10.2.0/lib/python3.8/site-packages (from cffi>=1.0->soundfile>=0.12.1->librosa) (2.20)
+Requirement already satisfied: pyparsing>=2.0.2 in /gpfs/projects/soft/easybuild/x86_64/software/Python/3.8.6-GCCcore-10.2.0/lib/python3.8/site-packages (from packaging->lazy-loader>=0.1->librosa) (2.4.7)
+Requirement already satisfied: six in /gpfs/projects/soft/easybuild/x86_64/software/Python/3.8.6-GCCcore-10.2.0/lib/python3.8/site-packages (from packaging->lazy-loader>=0.1->librosa) (1.15.0)
+Requirement already satisfied: chardet<4,>=3.0.2 in /gpfs/projects/soft/easybuild/x86_64/software/Python/3.8.6-GCCcore-10.2.0/lib/python3.8/site-packages (from requests>=2.19.0->pooch>=1.1->librosa) (3.0.4)
+Requirement already satisfied: idna<3,>=2.5 in /gpfs/projects/soft/easybuild/x86_64/software/Python/3.8.6-GCCcore-10.2.0/lib/python3.8/site-packages (from requests>=2.19.0->pooch>=1.1->librosa) (2.10)
+Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /gpfs/projects/soft/easybuild/x86_64/software/Python/3.8.6-GCCcore-10.2.0/lib/python3.8/site-packages (from requests>=2.19.0->pooch>=1.1->librosa) (1.25.10)
+Requirement already satisfied: certifi>=2017.4.17 in /gpfs/projects/soft/easybuild/x86_64/software/Python/3.8.6-GCCcore-10.2.0/lib/python3.8/site-packages (from requests>=2.19.0->pooch>=1.1->librosa) (2020.6.20)
+Requirement already satisfied: zipp>=0.5 in /gpfs/projects/soft/easybuild/x86_64/software/Python/3.8.6-GCCcore-10.2.0/lib/python3.8/site-packages (from importlib-metadata->numba>=0.51.0->librosa) (3.3.0)
+Defaulting to user installation because normal site-packages is not writeable
+Requirement already satisfied: torch in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (2.3.0)
+Requirement already satisfied: filelock in /gpfs/projects/soft/easybuild/x86_64/software/Python/3.8.6-GCCcore-10.2.0/lib/python3.8/site-packages (from torch) (3.0.12)
+Requirement already satisfied: typing-extensions>=4.8.0 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from torch) (4.12.0)
+Requirement already satisfied: sympy in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from torch) (1.12.1)
+Requirement already satisfied: networkx in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from torch) (3.1)
+Requirement already satisfied: jinja2 in /gpfs/projects/soft/easybuild/x86_64/software/Python/3.8.6-GCCcore-10.2.0/lib/python3.8/site-packages (from torch) (2.11.2)
+Requirement already satisfied: fsspec in /gpfs/projects/soft/easybuild/x86_64/software/Python/3.8.6-GCCcore-10.2.0/lib/python3.8/site-packages (from torch) (0.8.4)
+Requirement already satisfied: nvidia-cuda-nvrtc-cu12==12.1.105 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from torch) (12.1.105)
+Requirement already satisfied: nvidia-cuda-runtime-cu12==12.1.105 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from torch) (12.1.105)
+Requirement already satisfied: nvidia-cuda-cupti-cu12==12.1.105 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from torch) (12.1.105)
+Requirement already satisfied: nvidia-cudnn-cu12==8.9.2.26 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from torch) (8.9.2.26)
+Requirement already satisfied: nvidia-cublas-cu12==12.1.3.1 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from torch) (12.1.3.1)
+Requirement already satisfied: nvidia-cufft-cu12==11.0.2.54 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from torch) (11.0.2.54)
+Requirement already satisfied: nvidia-curand-cu12==10.3.2.106 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from torch) (10.3.2.106)
+Requirement already satisfied: nvidia-cusolver-cu12==11.4.5.107 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from torch) (11.4.5.107)
+Requirement already satisfied: nvidia-cusparse-cu12==12.1.0.106 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from torch) (12.1.0.106)
+Requirement already satisfied: nvidia-nccl-cu12==2.20.5 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from torch) (2.20.5)
+Requirement already satisfied: nvidia-nvtx-cu12==12.1.105 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from torch) (12.1.105)
+Requirement already satisfied: triton==2.3.0 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from torch) (2.3.0)
+Requirement already satisfied: nvidia-nvjitlink-cu12 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from nvidia-cusolver-cu12==11.4.5.107->torch) (12.5.40)
+Requirement already satisfied: MarkupSafe>=0.23 in /gpfs/projects/soft/easybuild/x86_64/software/Python/3.8.6-GCCcore-10.2.0/lib/python3.8/site-packages (from jinja2->torch) (1.1.1)
+Requirement already satisfied: mpmath<1.4.0,>=1.1.0 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from sympy->torch) (1.3.0)
+Defaulting to user installation because normal site-packages is not writeable
+Requirement already satisfied: torchinfo in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (1.8.0)
+Defaulting to user installation because normal site-packages is not writeable
+Requirement already satisfied: matplotlib in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (3.7.5)
+Requirement already satisfied: contourpy>=1.0.1 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from matplotlib) (1.1.1)
+Requirement already satisfied: cycler>=0.10 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from matplotlib) (0.12.1)
+Requirement already satisfied: fonttools>=4.22.0 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from matplotlib) (4.53.0)
+Requirement already satisfied: kiwisolver>=1.0.1 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from matplotlib) (1.4.5)
+Requirement already satisfied: numpy<2,>=1.20 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from matplotlib) (1.22.4)
+Requirement already satisfied: packaging>=20.0 in /gpfs/projects/soft/easybuild/x86_64/software/Python/3.8.6-GCCcore-10.2.0/lib/python3.8/site-packages (from matplotlib) (20.4)
+Requirement already satisfied: pillow>=6.2.0 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from matplotlib) (10.3.0)
+Requirement already satisfied: pyparsing>=2.3.1 in /gpfs/projects/soft/easybuild/x86_64/software/Python/3.8.6-GCCcore-10.2.0/lib/python3.8/site-packages (from matplotlib) (2.4.7)
+Requirement already satisfied: python-dateutil>=2.7 in /gpfs/projects/soft/easybuild/x86_64/software/Python/3.8.6-GCCcore-10.2.0/lib/python3.8/site-packages (from matplotlib) (2.8.1)
+Requirement already satisfied: importlib-resources>=3.2.0 in /gpfs/home/egutierrez/.local/lib/python3.8/site-packages (from matplotlib) (6.4.0)
+Requirement already satisfied: zipp>=3.1.0 in /gpfs/projects/soft/easybuild/x86_64/software/Python/3.8.6-GCCcore-10.2.0/lib/python3.8/site-packages (from importlib-resources>=3.2.0->matplotlib) (3.3.0)
+Requirement already satisfied: six in /gpfs/projects/soft/easybuild/x86_64/software/Python/3.8.6-GCCcore-10.2.0/lib/python3.8/site-packages (from packaging>=20.0->matplotlib) (1.15.0)
+### ...done.
+### HPC Job properties:
+Number of Nodes Allocated     : 1
+Number of Tasks Allocated     : 
+Number of Cores/Task Allocated: 2
+### Starting trainer for fire_long_gru_stats ... Sun Jun 16 23:28:37 CEST 2024
+Parameters:
+audio_path: sounds/fire.wav 
+ frame_type: long 
+ model_type: DDSP_textenv_gru 
+ loss_type: statistics_loss 
+ model_name: fire_long_gru_stats
+Generating dataset from  sounds/fire.wav
+Training starting!
+Epoch [1/1], Loss: 24.2075
+Checkpoint saved at epoch 1
+Best model saved with loss 24.2075
+Training complete.
+Loaded checkpoint from epoch 1 with best loss inf
+Epoch [2/10000], Loss: 20.9175
+Checkpoint saved at epoch 2
+Best model saved with loss 20.9175
+Epoch [3/10000], Loss: 19.7018
+Checkpoint saved at epoch 3
+Best model saved with loss 19.7018
+Epoch [4/10000], Loss: 19.3474
+Checkpoint saved at epoch 4
+Best model saved with loss 19.3474
+Epoch [5/10000], Loss: 19.1108
+Checkpoint saved at epoch 5
+Best model saved with loss 19.1108
+Epoch [6/10000], Loss: 18.9954
+Checkpoint saved at epoch 6
+Best model saved with loss 18.9954
+Epoch [7/10000], Loss: 18.7844
+Checkpoint saved at epoch 7
+Best model saved with loss 18.7844
+Epoch [8/10000], Loss: 18.6073
+Checkpoint saved at epoch 8
+Best model saved with loss 18.6073
+Epoch [9/10000], Loss: 18.2441
+Checkpoint saved at epoch 9
+Best model saved with loss 18.2441
+Epoch [10/10000], Loss: 18.0270
+Checkpoint saved at epoch 10
+Best model saved with loss 18.0270
+Epoch [11/10000], Loss: 17.7123
+Checkpoint saved at epoch 11
+Best model saved with loss 17.7123
+Epoch [12/10000], Loss: 17.3627
+Checkpoint saved at epoch 12
+Best model saved with loss 17.3627
+Epoch [13/10000], Loss: 17.2438
+Checkpoint saved at epoch 13
+Best model saved with loss 17.2438
+Epoch [14/10000], Loss: 17.1272
+Checkpoint saved at epoch 14
+Best model saved with loss 17.1272
+Epoch [15/10000], Loss: 17.0572
+Checkpoint saved at epoch 15
+Best model saved with loss 17.0572
+Epoch [16/10000], Loss: 16.8569
+Checkpoint saved at epoch 16
+Best model saved with loss 16.8569
+Epoch [17/10000], Loss: 16.7057
+Checkpoint saved at epoch 17
+Best model saved with loss 16.7057
+Epoch [18/10000], Loss: 16.7472
+Checkpoint saved at epoch 18
+Epoch [19/10000], Loss: 16.6000
+Checkpoint saved at epoch 19
+Best model saved with loss 16.6000
+Epoch [20/10000], Loss: 16.5455
+Checkpoint saved at epoch 20
+Best model saved with loss 16.5455
+Epoch [21/10000], Loss: 16.3922
+Checkpoint saved at epoch 21
+Best model saved with loss 16.3922
+Epoch [22/10000], Loss: 16.3019
+Checkpoint saved at epoch 22
+Best model saved with loss 16.3019
+Epoch [23/10000], Loss: 16.2834
+Checkpoint saved at epoch 23
+Best model saved with loss 16.2834
+Epoch [24/10000], Loss: 16.1611
+Checkpoint saved at epoch 24
+Best model saved with loss 16.1611
+Epoch [25/10000], Loss: 16.0591
+Checkpoint saved at epoch 25
+Best model saved with loss 16.0591
+Epoch [26/10000], Loss: 16.0093
+Checkpoint saved at epoch 26
+Best model saved with loss 16.0093
+Epoch [27/10000], Loss: 15.9079
+Checkpoint saved at epoch 27
+Best model saved with loss 15.9079
+Epoch [28/10000], Loss: 15.8618
+Checkpoint saved at epoch 28
+Best model saved with loss 15.8618
+Epoch [29/10000], Loss: 15.8507
+Checkpoint saved at epoch 29
+Best model saved with loss 15.8507
+Epoch [30/10000], Loss: 15.8092
+Checkpoint saved at epoch 30
+Best model saved with loss 15.8092
+Epoch [31/10000], Loss: 15.8194
+Checkpoint saved at epoch 31
+Epoch [32/10000], Loss: 15.5833
+Checkpoint saved at epoch 32
+Best model saved with loss 15.5833
+Epoch [33/10000], Loss: 15.5685
+Checkpoint saved at epoch 33
+Best model saved with loss 15.5685
+Epoch [34/10000], Loss: 15.6075
+Checkpoint saved at epoch 34
+Epoch [35/10000], Loss: 15.5672
+Checkpoint saved at epoch 35
+Best model saved with loss 15.5672
+Epoch [36/10000], Loss: 15.5927
+Checkpoint saved at epoch 36
+Epoch [37/10000], Loss: 15.4815
+Checkpoint saved at epoch 37
+Best model saved with loss 15.4815
+Epoch [38/10000], Loss: 15.3421
+Checkpoint saved at epoch 38
+Best model saved with loss 15.3421
+Epoch [39/10000], Loss: 15.4542
+Checkpoint saved at epoch 39
+Epoch [40/10000], Loss: 15.6819
+Checkpoint saved at epoch 40
+Epoch [41/10000], Loss: 15.5002
+Checkpoint saved at epoch 41
+Epoch [42/10000], Loss: 15.3145
+Checkpoint saved at epoch 42
+Best model saved with loss 15.3145
+Epoch [43/10000], Loss: 15.1335
+Checkpoint saved at epoch 43
+Best model saved with loss 15.1335
+Epoch [44/10000], Loss: 15.0815
+Checkpoint saved at epoch 44
+Best model saved with loss 15.0815
+Epoch [45/10000], Loss: 15.2135
+Checkpoint saved at epoch 45
+Epoch [46/10000], Loss: 15.0370
+Checkpoint saved at epoch 46
+Best model saved with loss 15.0370
+Epoch [47/10000], Loss: 14.9484
+Checkpoint saved at epoch 47
+Best model saved with loss 14.9484
+Epoch [48/10000], Loss: 14.9287
+Checkpoint saved at epoch 48
+Best model saved with loss 14.9287
+Epoch [49/10000], Loss: 14.9961
+Checkpoint saved at epoch 49
+Epoch [50/10000], Loss: 14.9041
+Checkpoint saved at epoch 50
+Best model saved with loss 14.9041
+Epoch [51/10000], Loss: 14.9493
+Checkpoint saved at epoch 51
+Epoch [52/10000], Loss: 14.9661
+Checkpoint saved at epoch 52
+Epoch [53/10000], Loss: 14.9179
+Checkpoint saved at epoch 53
+Epoch [54/10000], Loss: 15.1021
+Checkpoint saved at epoch 54
+Epoch [55/10000], Loss: 15.0214
+Checkpoint saved at epoch 55
+Epoch [56/10000], Loss: 15.1309
+Checkpoint saved at epoch 56
+Epoch [57/10000], Loss: 15.0415
+Checkpoint saved at epoch 57
+Epoch [58/10000], Loss: 15.0427
+Checkpoint saved at epoch 58
+Epoch [59/10000], Loss: 14.9373
+Checkpoint saved at epoch 59
+Epoch [60/10000], Loss: 14.9105
+Checkpoint saved at epoch 60
+Epoch [61/10000], Loss: 14.8957
+Checkpoint saved at epoch 61
+Best model saved with loss 14.8957
+Epoch [62/10000], Loss: 14.9282
+Checkpoint saved at epoch 62
+Epoch [63/10000], Loss: 14.9915
+Checkpoint saved at epoch 63
+Epoch [64/10000], Loss: 14.8574
+Checkpoint saved at epoch 64
+Best model saved with loss 14.8574
+Epoch [65/10000], Loss: 14.8225
+Checkpoint saved at epoch 65
+Best model saved with loss 14.8225
+Epoch [66/10000], Loss: 14.8310
+Checkpoint saved at epoch 66
+Epoch [67/10000], Loss: 14.8273
+Checkpoint saved at epoch 67
+Epoch [68/10000], Loss: 14.9651
+Checkpoint saved at epoch 68
+Epoch [69/10000], Loss: 14.9191
+Checkpoint saved at epoch 69
+Epoch [70/10000], Loss: 14.8446
+Checkpoint saved at epoch 70
+Epoch [71/10000], Loss: 14.8982
+Checkpoint saved at epoch 71
+Epoch [72/10000], Loss: 15.0176
+Checkpoint saved at epoch 72
+Epoch [73/10000], Loss: 14.8178
+Checkpoint saved at epoch 73
+Best model saved with loss 14.8178
+Epoch [74/10000], Loss: 14.8366
+Checkpoint saved at epoch 74
+Epoch [75/10000], Loss: 14.8936
+Checkpoint saved at epoch 75
+Epoch [76/10000], Loss: 15.1320
+Checkpoint saved at epoch 76
+Epoch [77/10000], Loss: 15.0754
+Checkpoint saved at epoch 77
+Epoch [78/10000], Loss: 14.9489
+Checkpoint saved at epoch 78
+Epoch [79/10000], Loss: 14.8918
+Checkpoint saved at epoch 79
+Epoch [80/10000], Loss: 15.2559
+Checkpoint saved at epoch 80
+Epoch [81/10000], Loss: 15.0306
+Checkpoint saved at epoch 81
+Epoch [82/10000], Loss: 14.8583
+Checkpoint saved at epoch 82
+Epoch [83/10000], Loss: 14.8375
+Checkpoint saved at epoch 83
+Epoch [84/10000], Loss: 14.8532
+Checkpoint saved at epoch 84
+Epoch [85/10000], Loss: 14.9947
+Checkpoint saved at epoch 85
+Epoch [86/10000], Loss: 14.9809
+Checkpoint saved at epoch 86
+Epoch [87/10000], Loss: 14.9292
+Checkpoint saved at epoch 87
+Epoch [88/10000], Loss: 14.8771
+Checkpoint saved at epoch 88
+Epoch [89/10000], Loss: 15.0249
+Checkpoint saved at epoch 89
+Epoch [90/10000], Loss: 15.0451
+Checkpoint saved at epoch 90
+Epoch [91/10000], Loss: 15.0358
+Checkpoint saved at epoch 91
+Epoch [92/10000], Loss: 14.9528
+Checkpoint saved at epoch 92
+Epoch [93/10000], Loss: 14.8834
+Checkpoint saved at epoch 93
+Epoch [94/10000], Loss: 14.8207
+Checkpoint saved at epoch 94
+Epoch [95/10000], Loss: 14.8025
+Checkpoint saved at epoch 95
+Best model saved with loss 14.8025
+Epoch [96/10000], Loss: 14.8774
+Checkpoint saved at epoch 96
+Epoch [97/10000], Loss: 14.8343
+Checkpoint saved at epoch 97
+Epoch [98/10000], Loss: 14.8414
+Checkpoint saved at epoch 98
+Epoch [99/10000], Loss: 14.7651
+Checkpoint saved at epoch 99
+Best model saved with loss 14.7651
+Epoch [100/10000], Loss: 14.7781
+Checkpoint saved at epoch 100
+Epoch [101/10000], Loss: 14.8548
+Checkpoint saved at epoch 101
+Epoch [102/10000], Loss: 14.7363
+Checkpoint saved at epoch 102
+Best model saved with loss 14.7363
+Epoch [103/10000], Loss: 14.8133
+Checkpoint saved at epoch 103
+Epoch [104/10000], Loss: 14.8513
+Checkpoint saved at epoch 104
+Epoch [105/10000], Loss: 14.9374
+Checkpoint saved at epoch 105
+Epoch [106/10000], Loss: 14.8669
+Checkpoint saved at epoch 106
+Epoch [107/10000], Loss: 14.7926
+Checkpoint saved at epoch 107
+Epoch [108/10000], Loss: 14.8022
+Checkpoint saved at epoch 108
+Epoch [109/10000], Loss: 14.8911
+Checkpoint saved at epoch 109
+Epoch [110/10000], Loss: 14.8491
+Checkpoint saved at epoch 110
+Epoch [111/10000], Loss: 14.8128
+Checkpoint saved at epoch 111
+Epoch [112/10000], Loss: 14.7647
+Checkpoint saved at epoch 112
+Epoch [113/10000], Loss: 14.8389
+Checkpoint saved at epoch 113
+Epoch [114/10000], Loss: 14.9589
+Checkpoint saved at epoch 114
+Epoch [115/10000], Loss: 14.9092
+Checkpoint saved at epoch 115
+Epoch [116/10000], Loss: 14.7749
+Checkpoint saved at epoch 116
+Epoch [117/10000], Loss: 14.7750
+Checkpoint saved at epoch 117
+Epoch [118/10000], Loss: 14.7769
+Checkpoint saved at epoch 118
+Epoch [119/10000], Loss: 14.7980
+Checkpoint saved at epoch 119
+Epoch [120/10000], Loss: 14.7904
+Checkpoint saved at epoch 120
+Epoch [121/10000], Loss: 14.7647
+Checkpoint saved at epoch 121
+Epoch [122/10000], Loss: 14.7922
+Checkpoint saved at epoch 122
+Epoch [123/10000], Loss: 14.7929
+Checkpoint saved at epoch 123
+Epoch [124/10000], Loss: 14.7739
+Checkpoint saved at epoch 124
+Epoch [125/10000], Loss: 14.7442
+Checkpoint saved at epoch 125
+Epoch [126/10000], Loss: 14.7825
+Checkpoint saved at epoch 126
+Epoch [127/10000], Loss: 14.7502
+Checkpoint saved at epoch 127
+Epoch [128/10000], Loss: 14.7207
+Checkpoint saved at epoch 128
+Best model saved with loss 14.7207
+Epoch [129/10000], Loss: 14.7210
+Checkpoint saved at epoch 129
+Epoch [130/10000], Loss: 14.7050
+Checkpoint saved at epoch 130
+Best model saved with loss 14.7050
+Epoch [131/10000], Loss: 14.7837
+Checkpoint saved at epoch 131
+Epoch [132/10000], Loss: 14.7718
+Checkpoint saved at epoch 132
+Epoch [133/10000], Loss: 14.7242
+Checkpoint saved at epoch 133
+Epoch [134/10000], Loss: 14.7331
+Checkpoint saved at epoch 134
+Epoch [135/10000], Loss: 14.7303
+Checkpoint saved at epoch 135
+Epoch [136/10000], Loss: 14.7988
+Checkpoint saved at epoch 136
+Epoch [137/10000], Loss: 14.7525
+Checkpoint saved at epoch 137
+Epoch [138/10000], Loss: 14.8508
+Checkpoint saved at epoch 138
+Epoch [139/10000], Loss: 14.8469
+Checkpoint saved at epoch 139
+Epoch [140/10000], Loss: 14.8172
+Checkpoint saved at epoch 140
+Epoch [141/10000], Loss: 14.8311
+Checkpoint saved at epoch 141
+Epoch [142/10000], Loss: 14.7629
+Checkpoint saved at epoch 142
+Epoch [143/10000], Loss: 14.8066
+Checkpoint saved at epoch 143
+Epoch [144/10000], Loss: 14.7358
+Checkpoint saved at epoch 144
+Epoch [145/10000], Loss: 14.7622
+Checkpoint saved at epoch 145
+Epoch [146/10000], Loss: 14.7996
+Checkpoint saved at epoch 146
+Epoch [147/10000], Loss: 14.7585
+Checkpoint saved at epoch 147
+Epoch [148/10000], Loss: 14.7695
+Checkpoint saved at epoch 148
+Epoch [149/10000], Loss: 14.8687
+Checkpoint saved at epoch 149
+Epoch [150/10000], Loss: 14.8306
+Checkpoint saved at epoch 150
+Epoch [151/10000], Loss: 14.8629
+Checkpoint saved at epoch 151
+Epoch [152/10000], Loss: 14.8044
+Checkpoint saved at epoch 152
+Epoch [153/10000], Loss: 14.7970
+Checkpoint saved at epoch 153
+Epoch [154/10000], Loss: 14.7710
+Checkpoint saved at epoch 154
+Epoch [155/10000], Loss: 14.7168
+Checkpoint saved at epoch 155
+Epoch [156/10000], Loss: 14.7821
+Checkpoint saved at epoch 156
+Epoch [157/10000], Loss: 14.8120
+Checkpoint saved at epoch 157
+Epoch [158/10000], Loss: 14.8593
+Checkpoint saved at epoch 158
+Epoch [159/10000], Loss: 14.7840
+Checkpoint saved at epoch 159
+Epoch [160/10000], Loss: 14.8785
+Checkpoint saved at epoch 160
+Epoch [161/10000], Loss: 14.8901
+Checkpoint saved at epoch 161
+Epoch [162/10000], Loss: 15.0036
+Checkpoint saved at epoch 162
+Epoch [163/10000], Loss: 14.7686
+Checkpoint saved at epoch 163
+Epoch [164/10000], Loss: 14.7753
+Checkpoint saved at epoch 164
+Epoch [165/10000], Loss: 14.7238
+Checkpoint saved at epoch 165
+Epoch [166/10000], Loss: 14.7468
+Checkpoint saved at epoch 166
+Epoch [167/10000], Loss: 14.7305
+Checkpoint saved at epoch 167
+Epoch [168/10000], Loss: 14.6784
+Checkpoint saved at epoch 168
+Best model saved with loss 14.6784
+Epoch [169/10000], Loss: 14.7115
+Checkpoint saved at epoch 169
+Epoch [170/10000], Loss: 14.8164
+Checkpoint saved at epoch 170
+Epoch [171/10000], Loss: 14.7620
+Checkpoint saved at epoch 171
+Epoch [172/10000], Loss: 14.7668
+Checkpoint saved at epoch 172
+Epoch [173/10000], Loss: 14.7540
+Checkpoint saved at epoch 173
+Epoch [174/10000], Loss: 14.7210
+Checkpoint saved at epoch 174
+Epoch [175/10000], Loss: 14.7393
+Checkpoint saved at epoch 175
+Epoch [176/10000], Loss: 14.7190
+Checkpoint saved at epoch 176
+Epoch [177/10000], Loss: 14.7654
+Checkpoint saved at epoch 177
+Epoch [178/10000], Loss: 14.7297
+Checkpoint saved at epoch 178
+Epoch [179/10000], Loss: 14.7236
+Checkpoint saved at epoch 179
+Epoch [180/10000], Loss: 14.7452
+Checkpoint saved at epoch 180
+Epoch [181/10000], Loss: 14.6645
+Checkpoint saved at epoch 181
+Best model saved with loss 14.6645
+Epoch [182/10000], Loss: 14.7231
+Checkpoint saved at epoch 182
+Epoch [183/10000], Loss: 14.7521
+Checkpoint saved at epoch 183
+Epoch [184/10000], Loss: 14.7152
+Checkpoint saved at epoch 184
+Epoch [185/10000], Loss: 14.7043
+Checkpoint saved at epoch 185
+Epoch [186/10000], Loss: 14.7327
+Checkpoint saved at epoch 186
+Epoch [187/10000], Loss: 14.7577
+Checkpoint saved at epoch 187
+Epoch [188/10000], Loss: 14.7330
+Checkpoint saved at epoch 188
+Epoch [189/10000], Loss: 14.7053
+Checkpoint saved at epoch 189
+Epoch [190/10000], Loss: 14.6997
+Checkpoint saved at epoch 190
+Epoch [191/10000], Loss: 14.7298
+Checkpoint saved at epoch 191
+Epoch [192/10000], Loss: 14.7372
+Checkpoint saved at epoch 192
+Epoch [193/10000], Loss: 14.7442
+Checkpoint saved at epoch 193
+Epoch [194/10000], Loss: 14.7561
+Checkpoint saved at epoch 194
+Epoch [195/10000], Loss: 14.7769
+Checkpoint saved at epoch 195
+Epoch [196/10000], Loss: 14.7229
+Checkpoint saved at epoch 196
+Epoch [197/10000], Loss: 14.7750
+Checkpoint saved at epoch 197
+Epoch [198/10000], Loss: 14.6989
+Checkpoint saved at epoch 198
+Epoch [199/10000], Loss: 14.7330
+Checkpoint saved at epoch 199
+Epoch [200/10000], Loss: 14.6968
+Checkpoint saved at epoch 200
+Epoch [201/10000], Loss: 14.6866
+Checkpoint saved at epoch 201
+Epoch [202/10000], Loss: 14.6668
+Checkpoint saved at epoch 202
+Epoch [203/10000], Loss: 14.7693
+Checkpoint saved at epoch 203
+Epoch [204/10000], Loss: 14.8015
+Checkpoint saved at epoch 204
+Epoch [205/10000], Loss: 14.7969
+Checkpoint saved at epoch 205
+Epoch [206/10000], Loss: 14.7407
+Checkpoint saved at epoch 206
+Epoch [207/10000], Loss: 14.8628
+Checkpoint saved at epoch 207
+Epoch [208/10000], Loss: 14.7449
+Checkpoint saved at epoch 208
+Epoch [209/10000], Loss: 14.7433
+Checkpoint saved at epoch 209
+Epoch [210/10000], Loss: 14.7412
+Checkpoint saved at epoch 210
+Epoch [211/10000], Loss: 14.7106
+Checkpoint saved at epoch 211
+Epoch [212/10000], Loss: 14.7151
+Checkpoint saved at epoch 212
+Epoch [213/10000], Loss: 14.7548
+Checkpoint saved at epoch 213
+Epoch [214/10000], Loss: 14.7281
+Checkpoint saved at epoch 214
+Epoch [215/10000], Loss: 14.7164
+Checkpoint saved at epoch 215
+Epoch [216/10000], Loss: 14.7767
+Checkpoint saved at epoch 216
+Epoch [217/10000], Loss: 14.7827
+Checkpoint saved at epoch 217
+Epoch [218/10000], Loss: 14.7474
+Checkpoint saved at epoch 218
+Epoch [219/10000], Loss: 14.6981
+Checkpoint saved at epoch 219
+Epoch [220/10000], Loss: 14.7197
+Checkpoint saved at epoch 220
+Epoch [221/10000], Loss: 14.7115
+Checkpoint saved at epoch 221
+Epoch [222/10000], Loss: 14.7252
+Checkpoint saved at epoch 222
+Epoch [223/10000], Loss: 14.7145
+Checkpoint saved at epoch 223
+Epoch [224/10000], Loss: 14.6854
+Checkpoint saved at epoch 224
+Epoch [225/10000], Loss: 14.7817
+Checkpoint saved at epoch 225
+Epoch [226/10000], Loss: 14.7655
+Checkpoint saved at epoch 226
+Epoch [227/10000], Loss: 14.7173
+Checkpoint saved at epoch 227
+Epoch [228/10000], Loss: 14.7497
+Checkpoint saved at epoch 228
+Epoch [229/10000], Loss: 14.7467
+Checkpoint saved at epoch 229
+Epoch [230/10000], Loss: 14.7412
+Checkpoint saved at epoch 230
+Epoch [231/10000], Loss: 14.7390
+Checkpoint saved at epoch 231
+Epoch [232/10000], Loss: 14.7077
+Checkpoint saved at epoch 232
+Epoch [233/10000], Loss: 14.7285
+Checkpoint saved at epoch 233
+Epoch [234/10000], Loss: 14.7590
+Checkpoint saved at epoch 234
+Epoch [235/10000], Loss: 14.7465
+Checkpoint saved at epoch 235
+Epoch [236/10000], Loss: 14.7026
+Checkpoint saved at epoch 236
+Epoch [237/10000], Loss: 14.7014
+Checkpoint saved at epoch 237
+Epoch [238/10000], Loss: 14.7313
+Checkpoint saved at epoch 238
+Epoch [239/10000], Loss: 14.8015
+Checkpoint saved at epoch 239
+Epoch [240/10000], Loss: 14.7028
+Checkpoint saved at epoch 240
+Epoch [241/10000], Loss: 14.7744
+Checkpoint saved at epoch 241
+Epoch [242/10000], Loss: 14.7040
+Checkpoint saved at epoch 242
+Epoch [243/10000], Loss: 14.7261
+Checkpoint saved at epoch 243
+Epoch [244/10000], Loss: 14.7061
+Checkpoint saved at epoch 244
+Epoch [245/10000], Loss: 14.7243
+Checkpoint saved at epoch 245
+Epoch [246/10000], Loss: 14.7956
+Checkpoint saved at epoch 246
+Epoch [247/10000], Loss: 14.7370
+Checkpoint saved at epoch 247
+Epoch [248/10000], Loss: 14.7006
+Checkpoint saved at epoch 248
+Epoch [249/10000], Loss: 14.7583
+Checkpoint saved at epoch 249
+Epoch [250/10000], Loss: 14.6929
+Checkpoint saved at epoch 250
+Epoch [251/10000], Loss: 14.7350
+Checkpoint saved at epoch 251
+Epoch [252/10000], Loss: 14.6932
+Checkpoint saved at epoch 252
+Epoch [253/10000], Loss: 14.7455
+Checkpoint saved at epoch 253
+Epoch [254/10000], Loss: 14.7224
+Checkpoint saved at epoch 254
+Epoch [255/10000], Loss: 14.7605
+Checkpoint saved at epoch 255
+Epoch [256/10000], Loss: 14.7014
+Checkpoint saved at epoch 256
+Epoch [257/10000], Loss: 14.7205
+Checkpoint saved at epoch 257
+Epoch [258/10000], Loss: 14.7282
+Checkpoint saved at epoch 258
+Epoch [259/10000], Loss: 14.6817
+Checkpoint saved at epoch 259
+Epoch [260/10000], Loss: 14.6978
+Checkpoint saved at epoch 260
+Epoch [261/10000], Loss: 14.7019
+Checkpoint saved at epoch 261
+Epoch [262/10000], Loss: 14.6951
+Checkpoint saved at epoch 262
+Epoch [263/10000], Loss: 14.6867
+Checkpoint saved at epoch 263
+Epoch [264/10000], Loss: 14.7178
+Checkpoint saved at epoch 264
+Epoch [265/10000], Loss: 14.6510
+Checkpoint saved at epoch 265
+Best model saved with loss 14.6510
+Epoch [266/10000], Loss: 14.7036
+Checkpoint saved at epoch 266
+Epoch [267/10000], Loss: 14.7537
+Checkpoint saved at epoch 267
+Epoch [268/10000], Loss: 14.7896
+Checkpoint saved at epoch 268
+Epoch [269/10000], Loss: 14.8496
+Checkpoint saved at epoch 269
+Epoch [270/10000], Loss: 14.7767
+Checkpoint saved at epoch 270
+Epoch [271/10000], Loss: 14.7925
+Checkpoint saved at epoch 271
+Epoch [272/10000], Loss: 14.7313
+Checkpoint saved at epoch 272
+Epoch [273/10000], Loss: 14.7065
+Checkpoint saved at epoch 273
+Epoch [274/10000], Loss: 14.7035
+Checkpoint saved at epoch 274
+Epoch [275/10000], Loss: 14.7113
+Checkpoint saved at epoch 275
+Epoch [276/10000], Loss: 14.7451
+Checkpoint saved at epoch 276
+Epoch [277/10000], Loss: 14.6836
+Checkpoint saved at epoch 277
+Epoch [278/10000], Loss: 14.6825
+Checkpoint saved at epoch 278
+Epoch [279/10000], Loss: 14.7282
+Checkpoint saved at epoch 279
+Epoch [280/10000], Loss: 14.7325
+Checkpoint saved at epoch 280
+Epoch [281/10000], Loss: 14.7261
+Checkpoint saved at epoch 281
+Epoch [282/10000], Loss: 14.6850
+Checkpoint saved at epoch 282
+Epoch [283/10000], Loss: 14.7590
+Checkpoint saved at epoch 283
+Epoch [284/10000], Loss: 14.7460
+Checkpoint saved at epoch 284
+Epoch [285/10000], Loss: 14.7264
+Checkpoint saved at epoch 285
+Epoch [286/10000], Loss: 14.7178
+Checkpoint saved at epoch 286
+Epoch [287/10000], Loss: 14.6686
+Checkpoint saved at epoch 287
+Epoch [288/10000], Loss: 14.6615
+Checkpoint saved at epoch 288
+Epoch [289/10000], Loss: 14.7345
+Checkpoint saved at epoch 289
+Epoch [290/10000], Loss: 14.7644
+Checkpoint saved at epoch 290
+Epoch [291/10000], Loss: 14.7327
+Checkpoint saved at epoch 291
+Epoch [292/10000], Loss: 14.6918
+Checkpoint saved at epoch 292
+Epoch [293/10000], Loss: 14.6782
+Checkpoint saved at epoch 293
+Epoch [294/10000], Loss: 14.8206
+Checkpoint saved at epoch 294
+Epoch [295/10000], Loss: 14.7904
+Checkpoint saved at epoch 295
+Epoch [296/10000], Loss: 14.7824
+Checkpoint saved at epoch 296
+Epoch [297/10000], Loss: 14.7345
+Checkpoint saved at epoch 297
+Epoch [298/10000], Loss: 14.6867
+Checkpoint saved at epoch 298
+Epoch [299/10000], Loss: 14.8187
+Checkpoint saved at epoch 299
+Epoch [300/10000], Loss: 14.7760
+Checkpoint saved at epoch 300
+Epoch [301/10000], Loss: 14.7359
+Checkpoint saved at epoch 301
+Epoch [302/10000], Loss: 14.7043
+Checkpoint saved at epoch 302
+Epoch [303/10000], Loss: 14.7688
+Checkpoint saved at epoch 303
+Epoch [304/10000], Loss: 14.7554
+Checkpoint saved at epoch 304
+Epoch [305/10000], Loss: 14.6904
+Checkpoint saved at epoch 305
+Epoch [306/10000], Loss: 14.7199
+Checkpoint saved at epoch 306
+Epoch [307/10000], Loss: 14.6959
+Checkpoint saved at epoch 307
+Epoch [308/10000], Loss: 14.7415
+Checkpoint saved at epoch 308
+Epoch [309/10000], Loss: 14.7507
+Checkpoint saved at epoch 309
+Epoch [310/10000], Loss: 14.8493
+Checkpoint saved at epoch 310
+Epoch [311/10000], Loss: 14.7145
+Checkpoint saved at epoch 311
+Epoch [312/10000], Loss: 14.7043
+Checkpoint saved at epoch 312
+Epoch [313/10000], Loss: 14.7421
+Checkpoint saved at epoch 313
+Epoch [314/10000], Loss: 14.7415
+Checkpoint saved at epoch 314
+Epoch [315/10000], Loss: 14.7092
+Checkpoint saved at epoch 315
+Epoch [316/10000], Loss: 14.6913
+Checkpoint saved at epoch 316
+Epoch [317/10000], Loss: 14.7253
+Checkpoint saved at epoch 317
+Epoch [318/10000], Loss: 14.7413
+Checkpoint saved at epoch 318
+Epoch [319/10000], Loss: 14.7540
+Checkpoint saved at epoch 319
+Epoch [320/10000], Loss: 14.7761
+Checkpoint saved at epoch 320
+Epoch [321/10000], Loss: 14.7581
+Checkpoint saved at epoch 321
+Epoch [322/10000], Loss: 14.7086
+Checkpoint saved at epoch 322
+Epoch [323/10000], Loss: 14.7009
+Checkpoint saved at epoch 323
+Epoch [324/10000], Loss: 14.6771
+Checkpoint saved at epoch 324
+Epoch [325/10000], Loss: 14.7001
+Checkpoint saved at epoch 325
+Epoch [326/10000], Loss: 14.6667
+Checkpoint saved at epoch 326
+Epoch [327/10000], Loss: 14.7519
+Checkpoint saved at epoch 327
+Epoch [328/10000], Loss: 14.7204
+Checkpoint saved at epoch 328
+Epoch [329/10000], Loss: 14.6687
+Checkpoint saved at epoch 329
+Epoch [330/10000], Loss: 14.7035
+Checkpoint saved at epoch 330
+Epoch [331/10000], Loss: 14.6834
+Checkpoint saved at epoch 331
+Epoch [332/10000], Loss: 14.7263
+Checkpoint saved at epoch 332
+Epoch [333/10000], Loss: 14.7320
+Checkpoint saved at epoch 333
+Epoch [334/10000], Loss: 14.6809
+Checkpoint saved at epoch 334
+Epoch [335/10000], Loss: 14.7069
+Checkpoint saved at epoch 335
+Epoch [336/10000], Loss: 14.6849
+Checkpoint saved at epoch 336
+Epoch [337/10000], Loss: 14.6902
+Checkpoint saved at epoch 337
+Epoch [338/10000], Loss: 14.7590
+Checkpoint saved at epoch 338
+Epoch [339/10000], Loss: 14.7088
+Checkpoint saved at epoch 339
+Epoch [340/10000], Loss: 14.7114
+Checkpoint saved at epoch 340
+Epoch [341/10000], Loss: 14.6997
+Checkpoint saved at epoch 341
+Epoch [342/10000], Loss: 14.7282
+Checkpoint saved at epoch 342
+Epoch [343/10000], Loss: 14.7199
+Checkpoint saved at epoch 343
+Epoch [344/10000], Loss: 14.6749
+Checkpoint saved at epoch 344
+Epoch [345/10000], Loss: 14.6912
+Checkpoint saved at epoch 345
+Epoch [346/10000], Loss: 14.6804
+Checkpoint saved at epoch 346
+Epoch [347/10000], Loss: 14.6757
+Checkpoint saved at epoch 347
+Epoch [348/10000], Loss: 14.7223
+Checkpoint saved at epoch 348
+Epoch [349/10000], Loss: 14.6714
+Checkpoint saved at epoch 349
+Epoch [350/10000], Loss: 14.6805
+Checkpoint saved at epoch 350
+Epoch [351/10000], Loss: 14.6803
+Checkpoint saved at epoch 351
+Epoch [352/10000], Loss: 14.7515
+Checkpoint saved at epoch 352
+Epoch [353/10000], Loss: 14.6794
+Checkpoint saved at epoch 353
+Epoch [354/10000], Loss: 14.6683
+Checkpoint saved at epoch 354
+Epoch [355/10000], Loss: 14.6679
+Checkpoint saved at epoch 355
+Epoch [356/10000], Loss: 14.6894
+Checkpoint saved at epoch 356
+Epoch [357/10000], Loss: 14.6535
+Checkpoint saved at epoch 357
+Epoch [358/10000], Loss: 14.7059
+Checkpoint saved at epoch 358
+Epoch [359/10000], Loss: 14.6665
+Checkpoint saved at epoch 359
+Epoch [360/10000], Loss: 14.7113
+Checkpoint saved at epoch 360
+Epoch [361/10000], Loss: 14.7028
+Checkpoint saved at epoch 361
+Epoch [362/10000], Loss: 14.6873
+Checkpoint saved at epoch 362
+Epoch [363/10000], Loss: 14.7260
+Checkpoint saved at epoch 363
+Epoch [364/10000], Loss: 14.7248
+Checkpoint saved at epoch 364
+Epoch [365/10000], Loss: 14.6927
+Checkpoint saved at epoch 365
+Epoch [366/10000], Loss: 14.7317
+Checkpoint saved at epoch 366
+Epoch [367/10000], Loss: 14.7174
+Checkpoint saved at epoch 367
+Epoch [368/10000], Loss: 14.6821
+Checkpoint saved at epoch 368
+Epoch [369/10000], Loss: 14.6826
+Checkpoint saved at epoch 369
+Epoch [370/10000], Loss: 14.7148
+Checkpoint saved at epoch 370
+Epoch [371/10000], Loss: 14.7491
+Checkpoint saved at epoch 371
+Epoch [372/10000], Loss: 14.7219
+Checkpoint saved at epoch 372
+Epoch [373/10000], Loss: 14.7234
+Checkpoint saved at epoch 373
+Epoch [374/10000], Loss: 14.6911
+Checkpoint saved at epoch 374
+Epoch [375/10000], Loss: 14.6708
+Checkpoint saved at epoch 375
+Epoch [376/10000], Loss: 14.6881
+Checkpoint saved at epoch 376
+Epoch [377/10000], Loss: 14.6768
+Checkpoint saved at epoch 377
+Epoch [378/10000], Loss: 14.6682
+Checkpoint saved at epoch 378
+Epoch [379/10000], Loss: 14.6935
+Checkpoint saved at epoch 379
+Epoch [380/10000], Loss: 14.7250
+Checkpoint saved at epoch 380
+Epoch [381/10000], Loss: 14.7075
+Checkpoint saved at epoch 381
+Epoch [382/10000], Loss: 14.7206
+Checkpoint saved at epoch 382
+Epoch [383/10000], Loss: 14.6882
+Checkpoint saved at epoch 383
+Epoch [384/10000], Loss: 14.6928
+Checkpoint saved at epoch 384
+Epoch [385/10000], Loss: 14.6836
+Checkpoint saved at epoch 385
+Epoch [386/10000], Loss: 14.6875
+Checkpoint saved at epoch 386
+Epoch [387/10000], Loss: 14.7259
+Checkpoint saved at epoch 387
+Epoch [388/10000], Loss: 14.8066
+Checkpoint saved at epoch 388
+Epoch [389/10000], Loss: 14.7404
+Checkpoint saved at epoch 389
+Epoch [390/10000], Loss: 14.7555
+Checkpoint saved at epoch 390
+Epoch [391/10000], Loss: 14.7374
+Checkpoint saved at epoch 391
+Epoch [392/10000], Loss: 14.7112
+Checkpoint saved at epoch 392
+Epoch [393/10000], Loss: 14.7010
+Checkpoint saved at epoch 393
+Epoch [394/10000], Loss: 14.8128
+Checkpoint saved at epoch 394
+Epoch [395/10000], Loss: 14.7333
+Checkpoint saved at epoch 395
+Epoch [396/10000], Loss: 14.6916
+Checkpoint saved at epoch 396
+Epoch [397/10000], Loss: 14.7213
+Checkpoint saved at epoch 397
+Epoch [398/10000], Loss: 14.6737
+Checkpoint saved at epoch 398
+Epoch [399/10000], Loss: 14.6933
+Checkpoint saved at epoch 399
+Epoch [400/10000], Loss: 14.6872
+Checkpoint saved at epoch 400
+Epoch [401/10000], Loss: 14.6713
+Checkpoint saved at epoch 401
+Epoch [402/10000], Loss: 14.6880
+Checkpoint saved at epoch 402
+Epoch [403/10000], Loss: 14.7055
+Checkpoint saved at epoch 403
+Epoch [404/10000], Loss: 14.6538
+Checkpoint saved at epoch 404
+Epoch [405/10000], Loss: 14.6532
+Checkpoint saved at epoch 405
+Epoch [406/10000], Loss: 14.6456
+Checkpoint saved at epoch 406
+Best model saved with loss 14.6456
+Epoch [407/10000], Loss: 14.6542
+Checkpoint saved at epoch 407
+Epoch [408/10000], Loss: 14.7017
+Checkpoint saved at epoch 408
+Epoch [409/10000], Loss: 14.7093
+Checkpoint saved at epoch 409
+Epoch [410/10000], Loss: 14.7017
+Checkpoint saved at epoch 410
+Epoch [411/10000], Loss: 14.7176
+Checkpoint saved at epoch 411
+Epoch [412/10000], Loss: 14.6827
+Checkpoint saved at epoch 412
+Epoch [413/10000], Loss: 14.7351
+Checkpoint saved at epoch 413
+Epoch [414/10000], Loss: 14.6796
+Checkpoint saved at epoch 414
+Epoch [415/10000], Loss: 14.6729
+Checkpoint saved at epoch 415
+Epoch [416/10000], Loss: 14.7243
+Checkpoint saved at epoch 416
+Epoch [417/10000], Loss: 14.6884
+Checkpoint saved at epoch 417
+Epoch [418/10000], Loss: 14.7486
+Checkpoint saved at epoch 418
+Epoch [419/10000], Loss: 14.6730
+Checkpoint saved at epoch 419
+Epoch [420/10000], Loss: 14.6970
+Checkpoint saved at epoch 420
+Epoch [421/10000], Loss: 14.6841
+Checkpoint saved at epoch 421
+Epoch [422/10000], Loss: 14.6730
+Checkpoint saved at epoch 422
+Epoch [423/10000], Loss: 14.7062
+Checkpoint saved at epoch 423
+Epoch [424/10000], Loss: 14.6876
+Checkpoint saved at epoch 424
+Epoch [425/10000], Loss: 14.7260
+Checkpoint saved at epoch 425
+Epoch [426/10000], Loss: 14.6963
+Checkpoint saved at epoch 426
+Epoch [427/10000], Loss: 14.6597
+Checkpoint saved at epoch 427
+Epoch [428/10000], Loss: 14.7455
+Checkpoint saved at epoch 428
+Epoch [429/10000], Loss: 14.7073
+Checkpoint saved at epoch 429
+Epoch [430/10000], Loss: 14.7093
+Checkpoint saved at epoch 430
+Epoch [431/10000], Loss: 14.6449
+Checkpoint saved at epoch 431
+Best model saved with loss 14.6449
+Epoch [432/10000], Loss: 14.6826
+Checkpoint saved at epoch 432
+Epoch [433/10000], Loss: 14.6601
+Checkpoint saved at epoch 433
+Epoch [434/10000], Loss: 14.5278
+Checkpoint saved at epoch 434
+Best model saved with loss 14.5278
+Epoch [435/10000], Loss: 13.9763
+Checkpoint saved at epoch 435
+Best model saved with loss 13.9763
+Epoch [436/10000], Loss: 13.6802
+Checkpoint saved at epoch 436
+Best model saved with loss 13.6802
+Epoch [437/10000], Loss: 12.8180
+Checkpoint saved at epoch 437
+Best model saved with loss 12.8180
+Epoch [438/10000], Loss: 12.9636
+Checkpoint saved at epoch 438
+Epoch [439/10000], Loss: 12.6410
+Checkpoint saved at epoch 439
+Best model saved with loss 12.6410
+Epoch [440/10000], Loss: 12.4229
+Checkpoint saved at epoch 440
+Best model saved with loss 12.4229
+Epoch [441/10000], Loss: 12.2960
+Checkpoint saved at epoch 441
+Best model saved with loss 12.2960
+Epoch [442/10000], Loss: 12.4125
+Checkpoint saved at epoch 442
+Epoch [443/10000], Loss: 12.3515
+Checkpoint saved at epoch 443
+Epoch [444/10000], Loss: 12.3097
+Checkpoint saved at epoch 444
+Epoch [445/10000], Loss: 12.3677
+Checkpoint saved at epoch 445
+Epoch [446/10000], Loss: 12.2182
+Checkpoint saved at epoch 446
+Best model saved with loss 12.2182
+Epoch [447/10000], Loss: 12.2542
+Checkpoint saved at epoch 447
+Epoch [448/10000], Loss: 12.3221
+Checkpoint saved at epoch 448
+Epoch [449/10000], Loss: 12.2923
+Checkpoint saved at epoch 449
+Epoch [450/10000], Loss: 12.2407
+Checkpoint saved at epoch 450
+Epoch [451/10000], Loss: 12.1907
+Checkpoint saved at epoch 451
+Best model saved with loss 12.1907
+Epoch [452/10000], Loss: 12.1534
+Checkpoint saved at epoch 452
+Best model saved with loss 12.1534
+Epoch [453/10000], Loss: 12.1716
+Checkpoint saved at epoch 453
+Epoch [454/10000], Loss: 12.1264
+Checkpoint saved at epoch 454
+Best model saved with loss 12.1264
+Epoch [455/10000], Loss: 12.1222
+Checkpoint saved at epoch 455
+Best model saved with loss 12.1222
+Epoch [456/10000], Loss: 12.0839
+Checkpoint saved at epoch 456
+Best model saved with loss 12.0839
+Epoch [457/10000], Loss: 12.0788
+Checkpoint saved at epoch 457
+Best model saved with loss 12.0788
+Epoch [458/10000], Loss: 12.0831
+Checkpoint saved at epoch 458
+Epoch [459/10000], Loss: 12.1702
+Checkpoint saved at epoch 459
+Epoch [460/10000], Loss: 12.1005
+Checkpoint saved at epoch 460
+Epoch [461/10000], Loss: 12.1325
+Checkpoint saved at epoch 461
+Epoch [462/10000], Loss: 12.0532
+Checkpoint saved at epoch 462
+Best model saved with loss 12.0532
+Epoch [463/10000], Loss: 12.0452
+Checkpoint saved at epoch 463
+Best model saved with loss 12.0452
+Epoch [464/10000], Loss: 12.0062
+Checkpoint saved at epoch 464
+Best model saved with loss 12.0062
+Epoch [465/10000], Loss: 11.9961
+Checkpoint saved at epoch 465
+Best model saved with loss 11.9961
+Epoch [466/10000], Loss: 12.0281
+Checkpoint saved at epoch 466
+Epoch [467/10000], Loss: 12.1090
+Checkpoint saved at epoch 467
+Epoch [468/10000], Loss: 12.0348
+Checkpoint saved at epoch 468
+Epoch [469/10000], Loss: 12.0492
+Checkpoint saved at epoch 469
+Epoch [470/10000], Loss: 12.0921
+Checkpoint saved at epoch 470
+Epoch [471/10000], Loss: 12.0523
+Checkpoint saved at epoch 471
+Epoch [472/10000], Loss: 11.9937
+Checkpoint saved at epoch 472
+Best model saved with loss 11.9937
+Epoch [473/10000], Loss: 11.9416
+Checkpoint saved at epoch 473
+Best model saved with loss 11.9416
+Epoch [474/10000], Loss: 11.9612
+Checkpoint saved at epoch 474
+Epoch [475/10000], Loss: 11.9838
+Checkpoint saved at epoch 475
+Epoch [476/10000], Loss: 11.9976
+Checkpoint saved at epoch 476
+Epoch [477/10000], Loss: 11.9388
+Checkpoint saved at epoch 477
+Best model saved with loss 11.9388
+Epoch [478/10000], Loss: 11.9275
+Checkpoint saved at epoch 478
+Best model saved with loss 11.9275
+Epoch [479/10000], Loss: 11.9336
+Checkpoint saved at epoch 479
+Epoch [480/10000], Loss: 11.9140
+Checkpoint saved at epoch 480
+Best model saved with loss 11.9140
+Epoch [481/10000], Loss: 11.9581
+Checkpoint saved at epoch 481
+Epoch [482/10000], Loss: 11.9054
+Checkpoint saved at epoch 482
+Best model saved with loss 11.9054
+Epoch [483/10000], Loss: 11.9092
+Checkpoint saved at epoch 483
+Epoch [484/10000], Loss: 11.8905
+Checkpoint saved at epoch 484
+Best model saved with loss 11.8905
+Epoch [485/10000], Loss: 11.9192
+Checkpoint saved at epoch 485
+Epoch [486/10000], Loss: 11.9430
+Checkpoint saved at epoch 486
+Epoch [487/10000], Loss: 11.9417
+Checkpoint saved at epoch 487
+Epoch [488/10000], Loss: 11.8820
+Checkpoint saved at epoch 488
+Best model saved with loss 11.8820
+Epoch [489/10000], Loss: 11.8761
+Checkpoint saved at epoch 489
+Best model saved with loss 11.8761
+Epoch [490/10000], Loss: 11.9071
+Checkpoint saved at epoch 490
+Epoch [491/10000], Loss: 11.8442
+Checkpoint saved at epoch 491
+Best model saved with loss 11.8442
+Epoch [492/10000], Loss: 11.8662
+Checkpoint saved at epoch 492
+Epoch [493/10000], Loss: 11.8685
+Checkpoint saved at epoch 493
+Epoch [494/10000], Loss: 11.9380
+Checkpoint saved at epoch 494
+Epoch [495/10000], Loss: 11.8741
+Checkpoint saved at epoch 495
+Epoch [496/10000], Loss: 11.8794
+Checkpoint saved at epoch 496
+Epoch [497/10000], Loss: 11.8792
+Checkpoint saved at epoch 497
+Epoch [498/10000], Loss: 11.8136
+Checkpoint saved at epoch 498
+Best model saved with loss 11.8136
+Epoch [499/10000], Loss: 11.7969
+Checkpoint saved at epoch 499
+Best model saved with loss 11.7969
+Epoch [500/10000], Loss: 11.7843
+Checkpoint saved at epoch 500
+Best model saved with loss 11.7843
+Epoch [501/10000], Loss: 11.7758
+Checkpoint saved at epoch 501
+Best model saved with loss 11.7758
+Epoch [502/10000], Loss: 11.8200
+Checkpoint saved at epoch 502
+Epoch [503/10000], Loss: 11.8151
+Checkpoint saved at epoch 503
+Epoch [504/10000], Loss: 11.7834
+Checkpoint saved at epoch 504
+Epoch [505/10000], Loss: 11.8384
+Checkpoint saved at epoch 505
+Epoch [506/10000], Loss: 11.7633
+Checkpoint saved at epoch 506
+Best model saved with loss 11.7633
+Epoch [507/10000], Loss: 11.7971
+Checkpoint saved at epoch 507
+Epoch [508/10000], Loss: 11.7859
+Checkpoint saved at epoch 508
+Epoch [509/10000], Loss: 11.7458
+Checkpoint saved at epoch 509
+Best model saved with loss 11.7458
+Epoch [510/10000], Loss: 11.6874
+Checkpoint saved at epoch 510
+Best model saved with loss 11.6874
+Epoch [511/10000], Loss: 11.7331
+Checkpoint saved at epoch 511
+Epoch [512/10000], Loss: 11.6899
+Checkpoint saved at epoch 512
+Epoch [513/10000], Loss: 11.5858
+Checkpoint saved at epoch 513
+Best model saved with loss 11.5858
+Epoch [514/10000], Loss: 11.5355
+Checkpoint saved at epoch 514
+Best model saved with loss 11.5355
+Epoch [515/10000], Loss: 11.5239
+Checkpoint saved at epoch 515
+Best model saved with loss 11.5239
+Epoch [516/10000], Loss: 11.4734
+Checkpoint saved at epoch 516
+Best model saved with loss 11.4734
+Epoch [517/10000], Loss: 11.4987
+Checkpoint saved at epoch 517
+Epoch [518/10000], Loss: 11.3864
+Checkpoint saved at epoch 518
+Best model saved with loss 11.3864
+Epoch [519/10000], Loss: 11.3823
+Checkpoint saved at epoch 519
+Best model saved with loss 11.3823
+Epoch [520/10000], Loss: 11.3805
+Checkpoint saved at epoch 520
+Best model saved with loss 11.3805
+Epoch [521/10000], Loss: 11.5091
+Checkpoint saved at epoch 521
+Epoch [522/10000], Loss: 11.4823
+Checkpoint saved at epoch 522
+Epoch [523/10000], Loss: 11.4195
+Checkpoint saved at epoch 523
+Epoch [524/10000], Loss: 11.3603
+Checkpoint saved at epoch 524
+Best model saved with loss 11.3603
+Epoch [525/10000], Loss: 11.3206
+Checkpoint saved at epoch 525
+Best model saved with loss 11.3206
+Epoch [526/10000], Loss: 11.3036
+Checkpoint saved at epoch 526
+Best model saved with loss 11.3036
+Epoch [527/10000], Loss: 11.2657
+Checkpoint saved at epoch 527
+Best model saved with loss 11.2657
+Epoch [528/10000], Loss: 11.2464
+Checkpoint saved at epoch 528
+Best model saved with loss 11.2464
+Epoch [529/10000], Loss: 11.2240
+Checkpoint saved at epoch 529
+Best model saved with loss 11.2240
+Epoch [530/10000], Loss: 11.2519
+Checkpoint saved at epoch 530
+Epoch [531/10000], Loss: 11.2180
+Checkpoint saved at epoch 531
+Best model saved with loss 11.2180
+Epoch [532/10000], Loss: 11.2006
+Checkpoint saved at epoch 532
+Best model saved with loss 11.2006
+Epoch [533/10000], Loss: 11.2047
+Checkpoint saved at epoch 533
+Epoch [534/10000], Loss: 11.1776
+Checkpoint saved at epoch 534
+Best model saved with loss 11.1776
+Epoch [535/10000], Loss: 11.1963
+Checkpoint saved at epoch 535
+Epoch [536/10000], Loss: 11.2124
+Checkpoint saved at epoch 536
+Epoch [537/10000], Loss: 11.2300
+Checkpoint saved at epoch 537
+Epoch [538/10000], Loss: 11.2256
+Checkpoint saved at epoch 538
+Epoch [539/10000], Loss: 11.1520
+Checkpoint saved at epoch 539
+Best model saved with loss 11.1520
+Epoch [540/10000], Loss: 11.1319
+Checkpoint saved at epoch 540
+Best model saved with loss 11.1319
+Epoch [541/10000], Loss: 11.0963
+Checkpoint saved at epoch 541
+Best model saved with loss 11.0963
+Epoch [542/10000], Loss: 11.0814
+Checkpoint saved at epoch 542
+Best model saved with loss 11.0814
+Epoch [543/10000], Loss: 11.1128
+Checkpoint saved at epoch 543
+Epoch [544/10000], Loss: 11.1566
+Checkpoint saved at epoch 544
+Epoch [545/10000], Loss: 11.0953
+Checkpoint saved at epoch 545
+Epoch [546/10000], Loss: 11.1128
+Checkpoint saved at epoch 546
+Epoch [547/10000], Loss: 11.1661
+Checkpoint saved at epoch 547
+Epoch [548/10000], Loss: 11.1575
+Checkpoint saved at epoch 548
+Epoch [549/10000], Loss: 11.0712
+Checkpoint saved at epoch 549
+Best model saved with loss 11.0712
+Epoch [550/10000], Loss: 11.0774
+Checkpoint saved at epoch 550
+Epoch [551/10000], Loss: 11.1349
+Checkpoint saved at epoch 551
+Epoch [552/10000], Loss: 11.1233
+Checkpoint saved at epoch 552
+Epoch [553/10000], Loss: 11.1122
+Checkpoint saved at epoch 553
+Epoch [554/10000], Loss: 11.0757
+Checkpoint saved at epoch 554
+Epoch [555/10000], Loss: 11.0484
+Checkpoint saved at epoch 555
+Best model saved with loss 11.0484
+Epoch [556/10000], Loss: 11.0440
+Checkpoint saved at epoch 556
+Best model saved with loss 11.0440
+Epoch [557/10000], Loss: 11.0433
+Checkpoint saved at epoch 557
+Best model saved with loss 11.0433
+Epoch [558/10000], Loss: 11.0949
+Checkpoint saved at epoch 558
+Epoch [559/10000], Loss: 11.0092
+Checkpoint saved at epoch 559
+Best model saved with loss 11.0092
+Epoch [560/10000], Loss: 11.0189
+Checkpoint saved at epoch 560
+Epoch [561/10000], Loss: 11.0335
+Checkpoint saved at epoch 561
+Epoch [562/10000], Loss: 11.0820
+Checkpoint saved at epoch 562
+Epoch [563/10000], Loss: 11.0504
+Checkpoint saved at epoch 563
+Epoch [564/10000], Loss: 11.1369
+Checkpoint saved at epoch 564
+Epoch [565/10000], Loss: 11.1105
+Checkpoint saved at epoch 565
+Epoch [566/10000], Loss: 11.0760
+Checkpoint saved at epoch 566
+Epoch [567/10000], Loss: 11.1144
+Checkpoint saved at epoch 567
+Epoch [568/10000], Loss: 11.0357
+Checkpoint saved at epoch 568
+Epoch [569/10000], Loss: 11.0017
+Checkpoint saved at epoch 569
+Best model saved with loss 11.0017
+Epoch [570/10000], Loss: 10.9686
+Checkpoint saved at epoch 570
+Best model saved with loss 10.9686
+Epoch [571/10000], Loss: 10.9839
+Checkpoint saved at epoch 571
+Epoch [572/10000], Loss: 10.9403
+Checkpoint saved at epoch 572
+Best model saved with loss 10.9403
+Epoch [573/10000], Loss: 10.8865
+Checkpoint saved at epoch 573
+Best model saved with loss 10.8865
+Epoch [574/10000], Loss: 11.0169
+Checkpoint saved at epoch 574
+Epoch [575/10000], Loss: 11.0069
+Checkpoint saved at epoch 575
+Epoch [576/10000], Loss: 10.9893
+Checkpoint saved at epoch 576
+Epoch [577/10000], Loss: 10.9321
+Checkpoint saved at epoch 577
+Epoch [578/10000], Loss: 10.9561
+Checkpoint saved at epoch 578
+Epoch [579/10000], Loss: 10.9667
+Checkpoint saved at epoch 579
+Epoch [580/10000], Loss: 10.9264
+Checkpoint saved at epoch 580
+Epoch [581/10000], Loss: 10.9361
+Checkpoint saved at epoch 581
+Epoch [582/10000], Loss: 10.9266
+Checkpoint saved at epoch 582
+Epoch [583/10000], Loss: 10.9261
+Checkpoint saved at epoch 583
+Epoch [584/10000], Loss: 10.9464
+Checkpoint saved at epoch 584
+Epoch [585/10000], Loss: 10.9393
+Checkpoint saved at epoch 585
+Epoch [586/10000], Loss: 10.8946
+Checkpoint saved at epoch 586
+Epoch [587/10000], Loss: 11.0493
+Checkpoint saved at epoch 587
+Epoch [588/10000], Loss: 11.0321
+Checkpoint saved at epoch 588
+Epoch [589/10000], Loss: 10.9294
+Checkpoint saved at epoch 589
+Epoch [590/10000], Loss: 10.9836
+Checkpoint saved at epoch 590
+Epoch [591/10000], Loss: 10.8612
+Checkpoint saved at epoch 591
+Best model saved with loss 10.8612
+Epoch [592/10000], Loss: 10.8882
+Checkpoint saved at epoch 592
+Epoch [593/10000], Loss: 10.8418
+Checkpoint saved at epoch 593
+Best model saved with loss 10.8418
+Epoch [594/10000], Loss: 10.8460
+Checkpoint saved at epoch 594
+Epoch [595/10000], Loss: 10.8364
+Checkpoint saved at epoch 595
+Best model saved with loss 10.8364
+Epoch [596/10000], Loss: 10.9168
+Checkpoint saved at epoch 596
+Epoch [597/10000], Loss: 10.9065
+Checkpoint saved at epoch 597
+Epoch [598/10000], Loss: 10.9734
+Checkpoint saved at epoch 598
+Epoch [599/10000], Loss: 10.9060
+Checkpoint saved at epoch 599
+Epoch [600/10000], Loss: 10.9417
+Checkpoint saved at epoch 600
+Epoch [601/10000], Loss: 10.9291
+Checkpoint saved at epoch 601
+Epoch [602/10000], Loss: 10.8276
+Checkpoint saved at epoch 602
+Best model saved with loss 10.8276
+Epoch [603/10000], Loss: 10.8072
+Checkpoint saved at epoch 603
+Best model saved with loss 10.8072
+Epoch [604/10000], Loss: 10.7367
+Checkpoint saved at epoch 604
+Best model saved with loss 10.7367
+Epoch [605/10000], Loss: 10.6798
+Checkpoint saved at epoch 605
+Best model saved with loss 10.6798
+Epoch [606/10000], Loss: 10.7279
+Checkpoint saved at epoch 606
+Epoch [607/10000], Loss: 10.7398
+Checkpoint saved at epoch 607
+Epoch [608/10000], Loss: 10.7407
+Checkpoint saved at epoch 608
+Epoch [609/10000], Loss: 10.7247
+Checkpoint saved at epoch 609
+Epoch [610/10000], Loss: 10.7555
+Checkpoint saved at epoch 610
+Epoch [611/10000], Loss: 10.7432
+Checkpoint saved at epoch 611
+Epoch [612/10000], Loss: 10.7158
+Checkpoint saved at epoch 612
