@@ -126,7 +126,7 @@ class DDSP_textenv_mlp(nn.Module):
         imag_param = a * torch.sin(p)
         return real_param, imag_param
 
-    def forward(self, input_ds, spectral_centroid, loudness):
+    def forward(self, spectral_centroid, loudness, input_ds):
         latent_vector = self.encoder(spectral_centroid, loudness, input_ds)
         real_param, imag_param = self.decoder(latent_vector)
 
@@ -265,7 +265,7 @@ class DDSP_textenv_stems_mlp(nn.Module):
         imag_param = a * torch.sin(p)
         return real_param, imag_param
 
-    def forward(self, input_ds, spectral_centroid, loudness):
+    def forward(self, spectral_centroid, loudness, input_ds):
         latent_vector = self.encoder(spectral_centroid, loudness, input_ds)
         real_param, imag_param = self.decoder(latent_vector)
 

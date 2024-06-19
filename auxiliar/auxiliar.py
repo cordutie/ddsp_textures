@@ -82,14 +82,3 @@ def seed_maker(size, fs, N_filter_bank):
         erb_subbands_noise[:, i] = noise_normalized
     
     return erb_subbands_noise
-
-#def plotter(y, fs):
-    ## Detach the tensor from the computation graph and convert to NumPy array
-    #y_np = y.detach().cpu().numpy()
-    #
-    ## Plot the waveform
-    #plt.plot(y_np)
-    #plt.show()
-    #
-    ## Display the audio
-    #ipd.display(ipd.Audio(data=y_np, rate=fs))
