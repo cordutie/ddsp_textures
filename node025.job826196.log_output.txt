@@ -1110,3 +1110,79 @@ Epoch [474/10000], Loss: 10.2038
 Checkpoint saved at epoch 474
 Epoch [475/10000], Loss: 10.2352
 Checkpoint saved at epoch 475
+Epoch [476/10000], Loss: 10.2625
+Checkpoint saved at epoch 476
+Epoch [477/10000], Loss: 10.3169
+Checkpoint saved at epoch 477
+Epoch [478/10000], Loss: 10.3044
+Checkpoint saved at epoch 478
+Epoch [479/10000], Loss: 10.2191
+Checkpoint saved at epoch 479
+Epoch [480/10000], Loss: 10.1715
+Checkpoint saved at epoch 480
+Best model saved with loss 10.1715
+Epoch [481/10000], Loss: 10.1925
+Checkpoint saved at epoch 481
+Epoch [482/10000], Loss: 10.1428
+Checkpoint saved at epoch 482
+Best model saved with loss 10.1428
+Epoch [483/10000], Loss: 10.3347
+Checkpoint saved at epoch 483
+Epoch [484/10000], Loss: 10.2565
+Checkpoint saved at epoch 484
+Epoch [485/10000], Loss: 10.2207
+Checkpoint saved at epoch 485
+Epoch [486/10000], Loss: 10.1631
+Checkpoint saved at epoch 486
+Epoch [487/10000], Loss: 10.1432
+Checkpoint saved at epoch 487
+Epoch [488/10000], Loss: 10.0882
+Checkpoint saved at epoch 488
+Best model saved with loss 10.0882
+Epoch [489/10000], Loss: 10.1605
+Checkpoint saved at epoch 489
+Epoch [490/10000], Loss: 10.1891
+Checkpoint saved at epoch 490
+Epoch [491/10000], Loss: 10.1649
+Checkpoint saved at epoch 491
+Epoch [492/10000], Loss: 10.1434
+Checkpoint saved at epoch 492
+Epoch [493/10000], Loss: 10.1993
+Checkpoint saved at epoch 493
+Epoch [494/10000], Loss: 10.2613
+Checkpoint saved at epoch 494
+Epoch [495/10000], Loss: 10.1715
+Checkpoint saved at epoch 495
+Epoch [496/10000], Loss: 10.1755
+Checkpoint saved at epoch 496
+Epoch [497/10000], Loss: 10.1422
+Checkpoint saved at epoch 497
+Epoch [498/10000], Loss: 10.1494
+Checkpoint saved at epoch 498
+Epoch [499/10000], Loss: 10.0904
+Checkpoint saved at epoch 499
+Epoch [500/10000], Loss: 10.0857
+Checkpoint saved at epoch 500
+Best model saved with loss 10.0857
+Epoch [501/10000], Loss: 10.1749
+Checkpoint saved at epoch 501
+Epoch [502/10000], Loss: 10.1624
+Checkpoint saved at epoch 502
+Epoch [503/10000], Loss: 10.0586
+Checkpoint saved at epoch 503
+Best model saved with loss 10.0586
+Epoch [504/10000], Loss: 10.0148
+Checkpoint saved at epoch 504
+Best model saved with loss 10.0148
+Epoch [505/10000], Loss: 10.0193
+Checkpoint saved at epoch 505
+Epoch [506/10000], Loss: 10.0384
+Checkpoint saved at epoch 506
+Epoch [507/10000], Loss: 10.0576
+Checkpoint saved at epoch 507
+Epoch [508/10000], Loss: 10.0837
+Checkpoint saved at epoch 508
+Epoch [509/10000], Loss: 10.1142
+Checkpoint saved at epoch 509
+Epoch [510/10000], Loss: 10.1252
+Checkpoint saved at epoch 510

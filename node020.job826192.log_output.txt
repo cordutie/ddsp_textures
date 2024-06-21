@@ -1403,3 +1403,83 @@ Epoch [580/10000], Loss: 9.2815
 Checkpoint saved at epoch 580
 Epoch [581/10000], Loss: 9.0652
 Checkpoint saved at epoch 581
+Epoch [582/10000], Loss: 9.1277
+Checkpoint saved at epoch 582
+Epoch [583/10000], Loss: 9.0238
+Checkpoint saved at epoch 583
+Epoch [584/10000], Loss: 8.9106
+Checkpoint saved at epoch 584
+Epoch [585/10000], Loss: 9.1646
+Checkpoint saved at epoch 585
+Epoch [586/10000], Loss: 9.0633
+Checkpoint saved at epoch 586
+Epoch [587/10000], Loss: 8.8600
+Checkpoint saved at epoch 587
+Epoch [588/10000], Loss: 8.8606
+Checkpoint saved at epoch 588
+Epoch [589/10000], Loss: 8.9057
+Checkpoint saved at epoch 589
+Epoch [590/10000], Loss: 8.7611
+Checkpoint saved at epoch 590
+Best model saved with loss 8.7611
+Epoch [591/10000], Loss: 8.7319
+Checkpoint saved at epoch 591
+Best model saved with loss 8.7319
+Epoch [592/10000], Loss: 8.6726
+Checkpoint saved at epoch 592
+Best model saved with loss 8.6726
+Epoch [593/10000], Loss: 8.6294
+Checkpoint saved at epoch 593
+Best model saved with loss 8.6294
+Epoch [594/10000], Loss: 8.6698
+Checkpoint saved at epoch 594
+Epoch [595/10000], Loss: 8.6326
+Checkpoint saved at epoch 595
+Epoch [596/10000], Loss: 8.6659
+Checkpoint saved at epoch 596
+Epoch [597/10000], Loss: 8.7225
+Checkpoint saved at epoch 597
+Epoch [598/10000], Loss: 8.7322
+Checkpoint saved at epoch 598
+Epoch [599/10000], Loss: 8.8538
+Checkpoint saved at epoch 599
+Epoch [600/10000], Loss: 8.7745
+Checkpoint saved at epoch 600
+Epoch [601/10000], Loss: 8.7883
+Checkpoint saved at epoch 601
+Epoch [602/10000], Loss: 8.8514
+Checkpoint saved at epoch 602
+Epoch [603/10000], Loss: 8.9489
+Checkpoint saved at epoch 603
+Epoch [604/10000], Loss: 9.1085
+Checkpoint saved at epoch 604
+Epoch [605/10000], Loss: 8.9072
+Checkpoint saved at epoch 605
+Epoch [606/10000], Loss: 8.7821
+Checkpoint saved at epoch 606
+Epoch [607/10000], Loss: 8.7382
+Checkpoint saved at epoch 607
+Epoch [608/10000], Loss: 8.6516
+Checkpoint saved at epoch 608
+Epoch [609/10000], Loss: 8.7440
+Checkpoint saved at epoch 609
+Epoch [610/10000], Loss: 8.8243
+Checkpoint saved at epoch 610
+Epoch [611/10000], Loss: 9.0055
+Checkpoint saved at epoch 611
+Epoch [612/10000], Loss: 9.1123
+Checkpoint saved at epoch 612
+Epoch [613/10000], Loss: 9.0329
+Checkpoint saved at epoch 613
+Epoch [614/10000], Loss: 9.0004
+Checkpoint saved at epoch 614
+Epoch [615/10000], Loss: 8.9141
+Checkpoint saved at epoch 615
+Epoch [616/10000], Loss: 8.7801
+Checkpoint saved at epoch 616
+Epoch [617/10000], Loss: 8.7489
+Checkpoint saved at epoch 617
+Epoch [618/10000], Loss: 8.6992
+Checkpoint saved at epoch 618
+Epoch [619/10000], Loss: 8.6774
+Checkpoint saved at epoch 619
