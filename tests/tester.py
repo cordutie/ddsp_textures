@@ -26,7 +26,17 @@ def short_long_decoder(name):
         sampling_rate = 44100  # Example sampling rate
         compression = 8  # Placeholder for compression
         batch_size = 32
-        
+    
+    elif name=='medium':
+        input_size = 2**12
+        hidden_size = 256  # Example hidden size
+        N_filter_bank = 16  # Example filter bank size
+        frame_size = 2**14  # Example frame size
+        hop_size = 2**13  # Example hop size
+        sampling_rate = 44100  # Example sampling rate
+        compression = 8  # Placeholder for compression
+        batch_size = 32
+    
     elif name=='long':
         input_size = 2**13
         hidden_size = 256  # Example hidden size
@@ -108,7 +118,7 @@ def model_tester(frame_type, model_type, loss_type, audio_path, model_name, best
     
     audio_final = torch.zeros(frame_size + (N_segments-1)*hop_size)
     window = torch.hann_window(frame_size)
-
+    
     for i in range(N_segments):
         [features, segment, target_loudness] = content[i]
         [sp_centroid, loudness, downsample_signal] = features
