@@ -120,3 +120,40 @@ def model_tester(frame_type, model_type, loss_type, audio_path, model_name, best
     audio_final = audio_final.detach().cpu().numpy()
     
     return audio_og, audio_final
+
+def audio_preprocess(frame_type, model_type, loss_type, audio_path, model_name):
+    input_size, hidden_size, N_filter_bank, frame_size, hop_size, sampling_rate, compression, batch_size = short_long_decoder(frame_type)
+    audio_og, _ = librosa.load(audio_path, sr=sampling_rate, mono=True)
+    
+    audio_tensor = torch.tensor(audio_og)
+    size = audio_tensor.shape[0]
+    N_segments = (size - frame_size) // hop_size
+    
+    content = []
+    for i in range(N_segments):
+        segment = audio_tensor[i * hop_size: i * hop_size + frame_size]
+        target_loudness = torch.std(segment)
+        segment = (segment - torch.mean(segment)) / torch.std(segment)
+        features = feature_extractor(segment, sampling_rate, N_filter_bank) #features contain sp_centroid, loudness of the filter bank and downsampled signal
+        content.append([features, target_loudness])
+    
+    return content
+
+def model_synthesizer(model, content, frame_type):
+    input_size, hidden_size, N_filter_bank, frame_size, hop_size, sampling_rate, compression, batch_size = short_long_decoder(frame_type)
+    N_segments = len(content)
+    
+    audio_final = torch.zeros(frame_size + (N_segments-1)*hop_size)
+    window = torch.hann_window(frame_size)
+
+    for i in range(N_segments):
+        [features, target_loudness] = content[i]
+        [sp_centroid, loudness, downsample_signal] = features
+        sp_centroid = sp_centroid.unsqueeze(0)
+        synthesized_segment = model.synthesizer(downsample_signal, sp_centroid, loudness, target_loudness)
+        synthesized_segment = synthesized_segment * window
+        audio_final[i * hop_size: i * hop_size + frame_size] += synthesized_segment
+    
+    audio_final = audio_final.detach().cpu().numpy()
+    
+    return audio_final
