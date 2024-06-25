@@ -40,13 +40,17 @@ class SoundDataset(Dataset):
         self.content = []
 
     def compute_dataset(self):
-        audio_tensor = torch.tensor(self.audio)
-        size = audio_tensor.shape[0]
-        dataset_size = (size - self.frame_size) // self.hop_size
-        for i in range(dataset_size):
-            segment = audio_tensor[i * self.hop_size: i * self.hop_size + self.frame_size]
-            if self.normalization == True:
-                segment = (segment - torch.mean(segment)) / torch.std(segment)
-            features = feature_extractor(segment, self.sampling_rate, self.N_filter_bank)
-            self.content.append([features, segment])
+        size = len(self.audio)
+        dataset_size_pre_dataaug = (size - self.frame_size) // self.hop_size
+        dataset_size_pre_dataaug = min(dataset_size_pre_dataaug, 60)
+        for i in range(dataset_size_pre_dataaug):
+            segment = self.audio[i * self.hop_size: i * self.hop_size + self.frame_size]
+            for j in range(9):
+                pitch_shift = 3*j - 12
+                segment_shifted = librosa.effects.pitch_shift(segment, self.sampling_rate, pitch_shift)
+                segment_shifted = torch.tensor(segment_shifted)
+                if self.normalization == True:
+                    segment_shifted = (segment_shifted - torch.mean(segment_shifted)) / torch.std(segment_shifted)
+                features = feature_extractor(segment_shifted, self.sampling_rate, self.N_filter_bank)
+                self.content.append([features, segment_shifted])
         return self.content
