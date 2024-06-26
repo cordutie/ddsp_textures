@@ -18,7 +18,7 @@ multispec; stats; stems
 
 water + fire long mlp stat
 
-for element in fire water; do for length in long; do for model in mlp; do for loss in stats; do sbatch submit.sh ${element}_${length}_${model}_${loss}; done; done; done; done
+for element in fire water rain; do for length in long; do for model in gru; do for loss in stats; do sbatch submit.sh ${element}_${length}_${model}_${loss}; done; done; done; done
 
 water + fire short mlp gru stat
 

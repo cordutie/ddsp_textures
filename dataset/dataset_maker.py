@@ -42,7 +42,7 @@ class SoundDataset(Dataset):
     def compute_dataset(self):
         size = len(self.audio)
         pre_dataset_size = (size - 4 * self.frame_size) // self.hop_size
-        pre_dataset_size = min(pre_dataset_size, 10) #Changeeeeeeeeeeeeeeeeeeeeeeee
+        pre_dataset_size = min(pre_dataset_size,30) #Changeeeeeeeeeeeeeeeeeeeeeeee
 
         print("Final dataset size will be: ",pre_dataset_size*9*5)
         

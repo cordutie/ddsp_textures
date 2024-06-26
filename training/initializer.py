@@ -22,7 +22,7 @@ def short_long_decoder(name):
         hop_size = 2048  # Example hop size
         sampling_rate = 44100  # Example sampling rate
         compression = 8  # Placeholder for compression
-        batch_size = 32
+        batch_size = 24
     
     elif name=='medium':
         input_size = 2**12
@@ -32,7 +32,7 @@ def short_long_decoder(name):
         hop_size = 2**13  # Example hop size
         sampling_rate = 44100  # Example sampling rate
         compression = 8  # Placeholder for compression
-        batch_size = 32
+        batch_size = 24
     
     elif name=='long':
         input_size = 2**13
@@ -42,7 +42,7 @@ def short_long_decoder(name):
         hop_size = 2**14  # Example hop size
         sampling_rate = 44100  # Example sampling rate
         compression = 8  # Placeholder for compression
-        batch_size = 32
+        batch_size = 24
         
     else:
         raise NameError(f"{name} is not a valid frame type")
