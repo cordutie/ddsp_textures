@@ -42,7 +42,7 @@ class SoundDataset(Dataset):
     def compute_dataset(self):
         size = len(self.audio)
         pre_dataset_size = (size - 4 * self.frame_size) // self.hop_size
-        pre_dataset_size = min(pre_dataset_size,30) #Changeeeeeeeeeeeeeeeeeeeeeeee
+        pre_dataset_size = min(pre_dataset_size, 5) #Changeeeeeeeeeeeeeeeeeeeeeeee
 
         print("Final dataset size will be: ",pre_dataset_size*9*5)
         
@@ -56,8 +56,8 @@ class SoundDataset(Dataset):
         # Data augmentation: pitch shifting
         for i in range(len(pre_dataset)):
             for j in range(4):
-                pitch_shift_left  = -1.5*(j+1) + (2*np.random.uniform(0, 1)-1)
-                pitch_shift_right =  1.5*(j+1) + (2*np.random.uniform(0, 1)-1)
+                pitch_shift_left  = -1.5*(j+1) + (2*np.random.uniform(0, 1)-1)*(3-j)/3
+                pitch_shift_right =  1.5*(j+1) + (2*np.random.uniform(0, 1)-1)*(3-j)/3
                 segment_shifted_left  = librosa.effects.pitch_shift(segment, sr=self.sampling_rate, n_steps=pitch_shift_left)
                 segment_shifted_right = librosa.effects.pitch_shift(segment, sr=self.sampling_rate, n_steps=pitch_shift_right)
                 pre_dataset.append(segment_shifted_left)
@@ -67,8 +67,8 @@ class SoundDataset(Dataset):
         for i in range(len(pre_dataset)):
             segment = pre_dataset[i]
             for j in range(5):
-                # Audio is rate shifter
-                rate = 2**((j + (np.random.uniform(0, 1) - 0.5)/2 - 2)/2)
+                # Audio is rate shifted
+                rate = 2**(np.random.normal(0, 1)*(4-j)/4)
                 segment_rate_shifted = librosa.effects.time_stretch(segment, rate=rate)
                 segment_rate_shifted = segment_rate_shifted[int(0.5*self.frame_size):int(0.5*self.frame_size)+self.frame_size] # audio is cropped to be as long as the frame size
                 segment_rate_shifted_tensor = torch.tensor(segment_rate_shifted)   

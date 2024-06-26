@@ -26,11 +26,11 @@ def short_long_decoder(name):
         batch_size = 32
     
     elif name=='medium':
-        input_size = 2**12
+        input_size = 2**13
         hidden_size = 256  # Example hidden size
         N_filter_bank = 16  # Example filter bank size
-        frame_size = 2**14  # Example frame size
-        hop_size = 2**13  # Example hop size
+        frame_size = 2**15  # Example frame size
+        hop_size = 2**15  # Example hop size
         sampling_rate = 44100  # Example sampling rate
         compression = 8  # Placeholder for compression
         batch_size = 32
@@ -39,8 +39,8 @@ def short_long_decoder(name):
         input_size = 2**13
         hidden_size = 256  # Example hidden size
         N_filter_bank = 16  # Example filter bank size
-        frame_size = 2**15  # Example frame size
-        hop_size = 2**14  # Example hop size
+        frame_size = 2**16  # Example frame size
+        hop_size = 2**16  # Example hop size
         sampling_rate = 44100  # Example sampling rate
         compression = 8  # Placeholder for compression
         batch_size = 32
@@ -102,7 +102,7 @@ def trainer(frame_type, model_type, loss_type, audio_path, model_name):
         # Create the filter banks for this loss
         erb_bank = fb.EqualRectangularBandwidth(frame_size, sampling_rate, N_filter_bank, 20, sampling_rate // 2) # the entire frame has to run over this
         log_bank = fb.Logarithmic(frame_size // 4, 11025, 6, 10, 11025 // 4)                                      # a downsampled version has to run over this (only works if sampling_rate = 44100 whch is highly recommended anyway)
-        batch_size = 24
+        # batch_size = 24
     elif loss_type == 'sub_statistics_loss':
         loss_function = batch_sub_statistics_loss
         # Create the filter banks for this loss
@@ -139,8 +139,7 @@ def trainer(frame_type, model_type, loss_type, audio_path, model_name):
             # Unpack batch data
             features, segments = batch
             spectral_centroid = features[0].unsqueeze(1).to(device)
-            loudness          = features[1].to(device)
-            ds_signal         = features[2].to(device)
+            rate              = features[1].to(device)
             segments          = segments.to(device)
 
             # Ensure the correct shape for spectral_centroid and loudness
@@ -153,7 +152,7 @@ def trainer(frame_type, model_type, loss_type, audio_path, model_name):
             optimizer.zero_grad()
 
             # Forward pass
-            reconstructed_signal = model(spectral_centroid, loudness, ds_signal)
+            reconstructed_signal = model(spectral_centroid, rate)
 
             # Compute loss (if stats loss is used the filter bank has to be added)
             if loss_type == 'statistics_loss':
