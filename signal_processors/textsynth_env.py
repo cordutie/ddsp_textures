@@ -33,6 +33,7 @@ def textsynth_env_param_extractor(signal, fs, N_filter_bank, percentage_use):
     
     return real_param, imag_param
 
+
 def textsynth_env(parameters_real, parameters_imag, seed, N_filter_bank, size, target_loudness=1):
     N = parameters_real.size(0)
     parameters_size = N // N_filter_bank

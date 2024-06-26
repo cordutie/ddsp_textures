@@ -82,12 +82,12 @@ def trainer(frame_type, model_type, loss_type, audio_path, model_name):
     # Model initialization
     if model_type   == 'DDSP_textenv_gru':
         model = DDSP_textenv_gru(                       hidden_size=hidden_size, N_filter_bank=N_filter_bank, deepness=3, compression=compression, frame_size=frame_size, sampling_rate=sampling_rate, seed=seed).to(device)
-    elif model_type == 'DDSP_textenv_mlp':
-        model = DDSP_textenv_mlp(input_size=input_size, hidden_size=hidden_size, N_filter_bank=N_filter_bank, deepness=3, compression=compression, frame_size=frame_size, sampling_rate=sampling_rate, seed=seed).to(device)
-    elif model_type == 'DDSP_textenv_stems_gru':
-        model = DDSP_textenv_stems_gru(                  hidden_size=hidden_size, N_filter_bank=N_filter_bank, deepness=3, compression=compression, frame_size=frame_size, sampling_rate=sampling_rate, seed=seed).to(device)
-    elif model_type == 'DDSP_textenv_stems_mlp':
-        model = DDSP_textenv_stems_mlp(input_size=input_size, hidden_size=hidden_size, N_filter_bank=N_filter_bank, deepness=3, compression=compression, frame_size=frame_size, sampling_rate=sampling_rate, seed=seed).to(device)
+    # elif model_type == 'DDSP_textenv_mlp':
+    #     model = DDSP_textenv_mlp(input_size=input_size, hidden_size=hidden_size, N_filter_bank=N_filter_bank, deepness=3, compression=compression, frame_size=frame_size, sampling_rate=sampling_rate, seed=seed).to(device)
+    # elif model_type == 'DDSP_textenv_stems_gru':
+    #     model = DDSP_textenv_stems_gru(                  hidden_size=hidden_size, N_filter_bank=N_filter_bank, deepness=3, compression=compression, frame_size=frame_size, sampling_rate=sampling_rate, seed=seed).to(device)
+    # elif model_type == 'DDSP_textenv_stems_mlp':
+    #     model = DDSP_textenv_stems_mlp(input_size=input_size, hidden_size=hidden_size, N_filter_bank=N_filter_bank, deepness=3, compression=compression, frame_size=frame_size, sampling_rate=sampling_rate, seed=seed).to(device)
     else:
         raise NameError("Invalid model type")
     

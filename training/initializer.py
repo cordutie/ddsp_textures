@@ -70,7 +70,7 @@ def initializer(frame_type, model_type, loss_type, audio_path, model_name):
     seed = seed.to(device)
 
     # Dataset maker
-    dataset = SoundDataset(audio_path=audio_path, frame_size=frame_size, hop_size=hop_size, sampling_rate=sampling_rate, N_filter_bank=N_filter_bank, normalize=False)
+    dataset = SoundDataset(audio_path=audio_path, frame_size=frame_size, hop_size=hop_size, sampling_rate=sampling_rate, normalize=False)
     print("Generating dataset from ", audio_path)
     dataset.compute_dataset()
     actual_dataset = dataset.content
@@ -84,13 +84,13 @@ def initializer(frame_type, model_type, loss_type, audio_path, model_name):
 
     # Model initialization
     if model_type   == 'DDSP_textenv_gru':
-        model = DDSP_textenv_gru(                       hidden_size=hidden_size, N_filter_bank=N_filter_bank, deepness=3, compression=compression, frame_size=frame_size, sampling_rate=sampling_rate, seed=seed).to(device)
-    elif model_type == 'DDSP_textenv_mlp':
-        model = DDSP_textenv_mlp(input_size=input_size, hidden_size=hidden_size, N_filter_bank=N_filter_bank, deepness=3, compression=compression, frame_size=frame_size, sampling_rate=sampling_rate, seed=seed).to(device)
-    elif model_type == 'DDSP_textenv_stems_gru':
-        model = DDSP_textenv_stems_gru(                  hidden_size=hidden_size, N_filter_bank=N_filter_bank, deepness=3, compression=compression, frame_size=frame_size, sampling_rate=sampling_rate, seed=seed).to(device)
-    elif model_type == 'DDSP_textenv_stems_mlp':
-        model = DDSP_textenv_stems_mlp(input_size=input_size, hidden_size=hidden_size, N_filter_bank=N_filter_bank, deepness=3, compression=compression, frame_size=frame_size, sampling_rate=sampling_rate, seed=seed).to(device)
+        model = DDSP_textenv_gru(hidden_size=hidden_size, N_filter_bank=N_filter_bank, deepness=3, compression=compression, frame_size=frame_size, sampling_rate=sampling_rate, seed=seed).to(device)
+    # elif model_type == 'DDSP_textenv_mlp':
+    #     model = DDSP_textenv_mlp(input_size=input_size, hidden_size=hidden_size, N_filter_bank=N_filter_bank, deepness=3, compression=compression, frame_size=frame_size, sampling_rate=sampling_rate, seed=seed).to(device)
+    # elif model_type == 'DDSP_textenv_stems_gru':
+    #     model = DDSP_textenv_stems_gru(                  hidden_size=hidden_size, N_filter_bank=N_filter_bank, deepness=3, compression=compression, frame_size=frame_size, sampling_rate=sampling_rate, seed=seed).to(device)
+    # elif model_type == 'DDSP_textenv_stems_mlp':
+    #     model = DDSP_textenv_stems_mlp(input_size=input_size, hidden_size=hidden_size, N_filter_bank=N_filter_bank, deepness=3, compression=compression, frame_size=frame_size, sampling_rate=sampling_rate, seed=seed).to(device)
     else:
         raise NameError("Invalid model type")
     
@@ -102,6 +102,9 @@ def initializer(frame_type, model_type, loss_type, audio_path, model_name):
         loss_function = multispectrogram_loss
     elif loss_type == 'statistics_loss':
         loss_function = batch_statistics_loss
+        # Create the filter banks for this loss
+        erb_bank = fb.EqualRectangularBandwidth(frame_size, sampling_rate, N_filter_bank, 20, sampling_rate // 2) # the entire frame has to run over this
+        log_bank = fb.Logarithmic(frame_size // 4, 11025, 6, 10, 11025 // 4)                                      # a downsampled version has to run over this (only works if sampling_rate = 44100 whch is highly recommended anyway)
     elif loss_type == 'stems_loss':
         loss_function = stems_loss
     else:
@@ -125,8 +128,8 @@ def initializer(frame_type, model_type, loss_type, audio_path, model_name):
             # Unpack batch data
             features, segments = batch
             spectral_centroid = features[0].unsqueeze(1).to(device)
-            loudness          = features[1].to(device)
-            ds_signal         = features[2].to(device)
+            rate              = features[1].to(device)
+            # ds_signal         = features[2].to(device)
             segments          = segments.to(device)
 
 
@@ -134,15 +137,17 @@ def initializer(frame_type, model_type, loss_type, audio_path, model_name):
             optimizer.zero_grad()
 
             # Forward pass
-            reconstructed_signal = model(spectral_centroid, loudness, ds_signal)
+            reconstructed_signal = model(spectral_centroid, rate)
 
             # print(segments.shape)
             # print(len(reconstructed_signal))
             # print(reconstructed_signal[0].shape)
 
-            # Compute loss
-            loss = loss_function(segments, reconstructed_signal)
-
+            # Compute loss (if stats loss is used the filter bank has to be added)
+            if loss_type == 'statistics_loss':
+                loss = loss_function(segments, reconstructed_signal, erb_bank, log_bank)
+            else:
+                loss = loss_function(segments, reconstructed_signal)
             # Backward pass and optimization
             loss.backward()
             optimizer.step()

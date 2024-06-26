@@ -49,6 +49,7 @@ def correlation_coefficient(tensor1, tensor2):
     correlation = torch.mean(standardized_tensor1 * standardized_tensor2)
     
     return correlation
+
 #Before using, make both and erb bank and a log bank:
 #erb_bank = fb.EqualRectangularBandwidth(size, sample_rate, N_filter_bank, low_lim, high_lim)
 #log_bank = fb.Logarithmic(new_size, sample_rate, 6, 10, new_sample_rate // 4)
