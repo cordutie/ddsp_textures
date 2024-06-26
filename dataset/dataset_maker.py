@@ -68,7 +68,7 @@ class SoundDataset(Dataset):
             segment = pre_dataset[i]
             for j in range(5):
                 # Audio is rate shifted
-                rate = 2**(np.random.normal(0, 1)*(4-j)/4)
+                rate = 2**(min(max(np.random.normal(0, 1),-1),1)*(4-j)/4)
                 segment_rate_shifted = librosa.effects.time_stretch(segment, rate=rate)
                 segment_rate_shifted = segment_rate_shifted[int(0.5*self.frame_size):int(0.5*self.frame_size)+self.frame_size] # audio is cropped to be as long as the frame size
                 segment_rate_shifted_tensor = torch.tensor(segment_rate_shifted)   
