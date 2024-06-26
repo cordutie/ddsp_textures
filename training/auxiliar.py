@@ -27,6 +27,8 @@ def model_name_to_parameters(model_name):
         loss_type = 'multispectrogram_loss'
     elif loss_type=='stats':
         loss_type = 'statistics_loss'
+    elif loss_type=='sub_stats':
+        loss_type = 'sub_statistics_loss'    
     elif loss_type=='stems':
         loss_type = 'stems_loss'
     else:
