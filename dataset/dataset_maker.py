@@ -6,30 +6,31 @@ import numpy as np
 import librosa
 import torchaudio
 
-def feature_extractor(signal, sample_rate, N_filter_bank, target_sampling_rate=11025):
-    size = signal.shape[0]
-    sp_centroid = torchaudio.functional.spectral_centroid(signal, sample_rate, 0, torch.hamming_window(size), size, size, size) 
+# def feature_extractor(signal, sample_rate, N_filter_bank, target_sampling_rate=11025):
+#     size = signal.shape[0]
+#     sp_centroid = torchaudio.functional.spectral_centroid(signal, sample_rate, 0, torch.hamming_window(size), size, size, size) 
 
-    low_lim = 20  # Low limit of filter
-    high_lim = sample_rate / 2  # Centre freq. of highest filter
+#     low_lim = 20  # Low limit of filter
+#     high_lim = sample_rate / 2  # Centre freq. of highest filter
 
-     # Initialize filter bank
-    erb_bank = fb.EqualRectangularBandwidth(size, sample_rate, N_filter_bank, low_lim, high_lim)
+#      # Initialize filter bank
+#     erb_bank = fb.EqualRectangularBandwidth(size, sample_rate, N_filter_bank, low_lim, high_lim)
     
-    # Generate subbands for noise
-    erb_bank.generate_subbands(signal)
+#     # Generate subbands for noise
+#     erb_bank.generate_subbands(signal)
     
-    # Extract subbands
-    erb_subbands_signal = erb_bank.subbands[:, 1: -1]
-    loudness = torch.norm(erb_subbands_signal, dim=0)
+#     # Extract subbands
+#     erb_subbands_signal = erb_bank.subbands[:, 1: -1]
+#     loudness = torch.norm(erb_subbands_signal, dim=0)
 
-    downsampler = torchaudio.transforms.Resample(sample_rate, target_sampling_rate)
-    downsample_signal = downsampler(signal)
+#     downsampler = torchaudio.transforms.Resample(sample_rate, target_sampling_rate)
+#     downsample_signal = downsampler(signal)
 
-    return [sp_centroid[0], loudness, downsample_signal]
+#     return [sp_centroid[0], loudness, downsample_signal]
 
+# for audios of more than 2 minute and long windows, recommended hop size = 2*frame_size. If less than 2 minutes try hop size = frame_size (this will generate overlaps between the data).
 class SoundDataset(Dataset):
-    def __init__(self, audio_path, frame_size, hop_size, sampling_rate, N_filter_bank, normalize):
+    def _init_(self, audio_path, frame_size, hop_size, sampling_rate, N_filter_bank, normalize):
         self.normalization = normalize
         self.audio_path = audio_path
         self.frame_size = frame_size
@@ -41,16 +42,42 @@ class SoundDataset(Dataset):
 
     def compute_dataset(self):
         size = len(self.audio)
-        dataset_size_pre_dataaug = (size - self.frame_size) // self.hop_size
-        dataset_size_pre_dataaug = min(dataset_size_pre_dataaug, 60)
-        for i in range(dataset_size_pre_dataaug):
-            segment = self.audio[i * self.hop_size: i * self.hop_size + self.frame_size]
-            for j in range(9):
-                pitch_shift = 3*j - 12
-                segment_shifted = librosa.effects.pitch_shift(segment, self.sampling_rate, pitch_shift)
-                segment_shifted = torch.tensor(segment_shifted)
+        pre_dataset_size = (size - 3 * self.frame_size) // self.hop_size
+        pre_dataset_size = min(pre_dataset_size, 60)
+
+        pre_dataset=[]
+
+        # Segments are added to the dataset. The segments are bigger than necessary to be able to apply time stretching
+        for i in range(pre_dataset_size):
+            segment = self.audio[i * self.hop_size: i * self.hop_size + 3*self.frame_size]
+            pre_dataset.append(segment)
+        
+        # Data augmentation: pitch shifting
+        for i in range(len(pre_dataset)):
+            for j in range(4):
+                pitch_shift_left  = -3*j + (2*np.random.uniform(0, 1)-1)
+                pitch_shift_right =  3*j + (2*np.random.uniform(0, 1)-1)
+                segment_shifted_left  = librosa.effects.pitch_shift(segment, self.sampling_rate, pitch_shift_left)
+                segment_shifted_right = librosa.effects.pitch_shift(segment, self.sampling_rate, pitch_shift_right)
+                pre_dataset.append(segment_shifted_left)
+                pre_dataset.append(segment_shifted_right)
+        
+        # Data augmentation: rate change + labeling
+        for i in range(pre_dataset):
+            segment = pre_dataset[i]
+            for j in range(5):
+                # Audio is rate shifter
+                rate = 2**((j + (np.random.uniform(0, 1) - 0.5) - 2)/2)
+                segment_rate_shifted = librosa.effects.time_stretch(segment, rate)
+                segment_rate_shifted = segment_rate_shifted[0:self.frame_size] # audio is cropped to be as long as the frame size
+                segment_rate_shifted_tensor = torch.tensor(segment_rate_shifted)   
+                # Audio is normalized
                 if self.normalization == True:
-                    segment_shifted = (segment_shifted - torch.mean(segment_shifted)) / torch.std(segment_shifted)
-                features = feature_extractor(segment_shifted, self.sampling_rate, self.N_filter_bank)
-                self.content.append([features, segment_shifted])
+                    segment_rate_shifted_tensor = (segment_rate_shifted_tensor - torch.mean(segment_rate_shifted_tensor)) / torch.std(segment_rate_shifted_tensor)
+                #Features are computed
+                feature_0 = torchaudio.functional.spectral_centroid(segment_rate_shifted_tensor, self.sampling_rate, 0, torch.hamming_window(self.frame_size), self.frame_size, self.frame_size, self.frame_size) 
+                feature_1 = torch.tensor([rate])
+                features = [feature_0, feature_1]
+                self.content.append([features, segment_rate_shifted_tensor])
+                
         return self.content
