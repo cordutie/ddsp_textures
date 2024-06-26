@@ -16,13 +16,11 @@ def feature_extractor(signal, sample_rate, N_filter_bank, target_sampling_rate=1
      # Initialize filter bank
     erb_bank = fb.EqualRectangularBandwidth(size, sample_rate, N_filter_bank, low_lim, high_lim)
     
-    ## Generate subbands for noise
-    #erb_bank.generate_subbands(signal)
-    #
-    ## Extract subbands
-    #erb_subbands_signal = erb_bank.subbands[:, 1: -1]
+    # Generate subbands for noise
+    erb_bank.generate_subbands(signal)
     
-    erb_subbands_signal = erb_bank.generate_subbands(signal)[:, 1:-1]
+    # Extract subbands
+    erb_subbands_signal = erb_bank.subbands[:, 1: -1]
     loudness = torch.norm(erb_subbands_signal, dim=0)
 
     downsampler = torchaudio.transforms.Resample(sample_rate, target_sampling_rate)
