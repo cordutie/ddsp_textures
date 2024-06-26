@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "main.py", line 31, in <module>
+    parameters = model_name_to_parameters(model_name)
+  File "/gpfs/home/egutierrez/ddsp_textures/training/auxiliar.py", line 35, in model_name_to_parameters
+    raise NameError("Invalid loss type")
+NameError: Invalid loss type
