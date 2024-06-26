@@ -22,7 +22,7 @@ def short_long_decoder(name):
         hop_size = 2048  # Example hop size
         sampling_rate = 44100  # Example sampling rate
         compression = 8  # Placeholder for compression
-        batch_size = 24
+        batch_size = 32
     
     elif name=='medium':
         input_size = 2**12
@@ -32,7 +32,7 @@ def short_long_decoder(name):
         hop_size = 2**13  # Example hop size
         sampling_rate = 44100  # Example sampling rate
         compression = 8  # Placeholder for compression
-        batch_size = 24
+        batch_size = 32
     
     elif name=='long':
         input_size = 2**13
@@ -42,7 +42,7 @@ def short_long_decoder(name):
         hop_size = 2**14  # Example hop size
         sampling_rate = 44100  # Example sampling rate
         compression = 8  # Placeholder for compression
-        batch_size = 24
+        batch_size = 32
         
     else:
         raise NameError(f"{name} is not a valid frame type")
@@ -105,6 +105,11 @@ def initializer(frame_type, model_type, loss_type, audio_path, model_name):
         # Create the filter banks for this loss
         erb_bank = fb.EqualRectangularBandwidth(frame_size, sampling_rate, N_filter_bank, 20, sampling_rate // 2) # the entire frame has to run over this
         log_bank = fb.Logarithmic(frame_size // 4, 11025, 6, 10, 11025 // 4)                                      # a downsampled version has to run over this (only works if sampling_rate = 44100 whch is highly recommended anyway)
+        batch_size = 24
+    elif loss_type == 'sub_statistics_loss':
+        loss_function = batch_sub_statistics_loss
+        # Create the filter banks for this loss
+        erb_bank = fb.EqualRectangularBandwidth(frame_size, sampling_rate, N_filter_bank, 20, sampling_rate // 2) # the entire frame has to run over this
     elif loss_type == 'stems_loss':
         loss_function = stems_loss
     else:
@@ -146,6 +151,8 @@ def initializer(frame_type, model_type, loss_type, audio_path, model_name):
             # Compute loss (if stats loss is used the filter bank has to be added)
             if loss_type == 'statistics_loss':
                 loss = loss_function(segments, reconstructed_signal, erb_bank, log_bank)
+            if loss_type == 'sub_statistics_loss':
+                loss = loss_function(segments, reconstructed_signal, erb_bank)
             else:
                 loss = loss_function(segments, reconstructed_signal)
             # Backward pass and optimization
