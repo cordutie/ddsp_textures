@@ -70,11 +70,13 @@ def seed_maker(size, fs, N_filter_bank):
     # Generate noise using PyTorch
     noise = torch.randn(size)
     
-    # Generate subbands for noise
-    erb_bank.generate_subbands(noise)
+    ## Generate subbands for noise
+    #erb_bank.generate_subbands(noise)
+    #
+    ## Extract subbands
+    #erb_subbands_noise = erb_bank.subbands[:, 1:-1]
     
-    # Extract subbands
-    erb_subbands_noise = erb_bank.subbands[:, 1:-1]
+    erb_subbands_noise = erb_bank.generate_subbands(noise)[:, 1:-1]
     
     for i in range(N_filter_bank):
         noise_local = erb_subbands_noise[:, i]

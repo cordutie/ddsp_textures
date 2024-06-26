@@ -124,6 +124,9 @@ def model_tester(frame_type, model_type, loss_type, audio_path, model_name, best
         [sp_centroid, loudness, downsample_signal] = features
         sp_centroid = sp_centroid.unsqueeze(0)
         synthesized_segment = model.synthesizer(downsample_signal, sp_centroid, loudness, target_loudness)
+        #shif the synthesized_segment in a random amount of steps
+        synthesized_segment = synthesized_segment.roll(shifts=np.random.randint(0, len(synthesized_segment)))
+        #Apply window
         synthesized_segment = synthesized_segment * window
         audio_final[i * hop_size: i * hop_size + frame_size] += synthesized_segment
     
@@ -155,12 +158,15 @@ def model_synthesizer(model, content, frame_type):
     
     audio_final = torch.zeros(frame_size + (N_segments-1)*hop_size)
     window = torch.hann_window(frame_size)
-
+        
     for i in range(N_segments):
         [features, target_loudness] = content[i]
         [sp_centroid, loudness, downsample_signal] = features
         sp_centroid = sp_centroid.unsqueeze(0)
         synthesized_segment = model.synthesizer(downsample_signal, sp_centroid, loudness, target_loudness)
+        #shif the synthesized_segment in a random amount of steps
+        synthesized_segment = synthesized_segment.roll(shifts=np.random.randint(0, len(synthesized_segment)))
+        #Apply window
         synthesized_segment = synthesized_segment * window
         audio_final[i * hop_size: i * hop_size + frame_size] += synthesized_segment
     

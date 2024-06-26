@@ -99,6 +99,9 @@ def trainer(frame_type, model_type, loss_type, audio_path, model_name):
         loss_function = multispectrogram_loss
     elif loss_type == 'statistics_loss':
         loss_function = batch_statistics_loss
+        # Create the filter banks for this loss
+        erb_bank = fb.EqualRectangularBandwidth(frame_size, sampling_rate, N_filter_bank, 20, sampling_rate // 2) # the entire frame has to run over this
+        log_bank = fb.Logarithmic(frame_size // 4, 11025, 6, 10, 11025 // 4)                                      # a downsampled version has to run over this (only works if sampling_rate = 44100 whch is highly recommended anyway)
     elif loss_type == 'stems_loss':
         loss_function = stems_loss
     else:
@@ -147,8 +150,11 @@ def trainer(frame_type, model_type, loss_type, audio_path, model_name):
             # Forward pass
             reconstructed_signal = model(spectral_centroid, loudness, ds_signal)
 
-            # Compute loss
-            loss = loss_function(segments, reconstructed_signal)
+            # Compute loss (if stats loss is used the filter bank has to be added)
+            if loss_type == 'statistics_loss':
+                loss = loss_function(segments, reconstructed_signal, erb_bank, log_bank)
+            else:
+                loss = loss_function(segments, reconstructed_signal)
 
             # Backward pass and optimization
             loss.backward()
