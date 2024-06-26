@@ -296,8 +296,8 @@ def sub_statistics(signal, N_filter_bank, sample_rate, erb_bank):
     return [statistics_1, statistics_2]
 
 def sub_statistics_loss(original_signal, reconstructed_signal, erb_bank):
-    original_statistics      = sub_statistics(original_signal,      16, 44100, erb_bank, log_bank)
-    reconstructed_statistics = sub_statistics(reconstructed_signal, 16, 44100, erb_bank, log_bank)
+    original_statistics      = sub_statistics(original_signal,      16, 44100, erb_bank)
+    reconstructed_statistics = sub_statistics(reconstructed_signal, 16, 44100, erb_bank)
     
     loss = []
     for i in range(2):
