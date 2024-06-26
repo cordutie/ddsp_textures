@@ -316,7 +316,7 @@ def batch_sub_statistics_loss(original_signals, reconstructed_signals, erb_bank)
     for i in range(batch_size):
         original_signal = original_signals[i]
         reconstructed_signal = reconstructed_signals[i]
-        loss = sub_statistics_loss(original_signal, reconstructed_signal, erb_bank, log_bank)
+        loss = sub_statistics_loss(original_signal, reconstructed_signal, erb_bank)
         total_loss += loss
 
     average_loss = total_loss / batch_size
