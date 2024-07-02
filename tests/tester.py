@@ -28,11 +28,11 @@ def short_long_decoder(name):
         batch_size = 32
     
     elif name=='medium':
-        input_size = 2**12
+        input_size = 2**13
         hidden_size = 256  # Example hidden size
         N_filter_bank = 16  # Example filter bank size
-        frame_size = 2**14  # Example frame size
-        hop_size = 2**13  # Example hop size
+        frame_size = 2**15  # Example frame size
+        hop_size = 2**15  # Example hop size
         sampling_rate = 44100  # Example sampling rate
         compression = 8  # Placeholder for compression
         batch_size = 32
@@ -41,8 +41,8 @@ def short_long_decoder(name):
         input_size = 2**13
         hidden_size = 256  # Example hidden size
         N_filter_bank = 16  # Example filter bank size
-        frame_size = 2**15  # Example frame size
-        hop_size = 2**14  # Example hop size
+        frame_size = 2**16  # Example frame size
+        hop_size = 2**16  # Example hop size
         sampling_rate = 44100  # Example sampling rate
         compression = 8  # Placeholder for compression
         batch_size = 32
@@ -102,6 +102,8 @@ def model_tester(frame_type, model_type, loss_type, audio_path, model_name, best
     model = model_loader(frame_type, model_type, loss_type, audio_path, model_name, best)
     input_size, hidden_size, N_filter_bank, frame_size, hop_size, sampling_rate, compression, batch_size = short_long_decoder(frame_type)
     
+    hop_size = frame_size // 2
+    
     audio_og, _ = librosa.load(audio_path, sr=sampling_rate)
     
     audio_tensor = torch.tensor(audio_og)
@@ -113,7 +115,10 @@ def model_tester(frame_type, model_type, loss_type, audio_path, model_name, best
         segment = audio_tensor[i * hop_size: i * hop_size + frame_size]
         target_loudness = torch.std(segment)
         segment = (segment - torch.mean(segment)) / torch.std(segment)
-        features = feature_extractor(segment, sampling_rate, N_filter_bank)
+        feature_0 = torchaudio.functional.spectral_centroid(segment, sampling_rate, 0, torch.hamming_window(frame_size), frame_size, frame_size, frame_size)[0].float()
+        feature_1 = torch.tensor([1]).float()
+        features = [feature_0, feature_1]
+        # features = feature_extractor(segment, sampling_rate, N_filter_bank)
         content.append([features, segment, target_loudness])
     
     audio_final = torch.zeros(frame_size + (N_segments-1)*hop_size)
@@ -121,9 +126,9 @@ def model_tester(frame_type, model_type, loss_type, audio_path, model_name, best
     
     for i in range(N_segments):
         [features, segment, target_loudness] = content[i]
-        [sp_centroid, loudness, downsample_signal] = features
+        [sp_centroid, rate] = features
         sp_centroid = sp_centroid.unsqueeze(0)
-        synthesized_segment = model.synthesizer(downsample_signal, sp_centroid, loudness, target_loudness)
+        synthesized_segment = model.synthesizer(sp_centroid, rate, target_loudness)
         #shif the synthesized_segment in a random amount of steps
         synthesized_segment = synthesized_segment.roll(shifts=np.random.randint(0, len(synthesized_segment)))
         #Apply window
@@ -138,6 +143,8 @@ def audio_preprocess(frame_type, model_type, loss_type, audio_path, model_name):
     input_size, hidden_size, N_filter_bank, frame_size, hop_size, sampling_rate, compression, batch_size = short_long_decoder(frame_type)
     audio_og, _ = librosa.load(audio_path, sr=sampling_rate, mono=True)
     
+    hop_size = frame_size // 2
+
     audio_tensor = torch.tensor(audio_og)
     size = audio_tensor.shape[0]
     N_segments = (size - frame_size) // hop_size
@@ -147,8 +154,11 @@ def audio_preprocess(frame_type, model_type, loss_type, audio_path, model_name):
         segment = audio_tensor[i * hop_size: i * hop_size + frame_size]
         target_loudness = torch.std(segment)
         segment = (segment - torch.mean(segment)) / torch.std(segment)
-        features = feature_extractor(segment, sampling_rate, N_filter_bank) #features contain sp_centroid, loudness of the filter bank and downsampled signal
-        content.append([features, target_loudness])
+        feature_0 = torchaudio.functional.spectral_centroid(segment, sampling_rate, 0, torch.hamming_window(frame_size), frame_size, frame_size, frame_size)[0].float()
+        feature_1 = torch.tensor([1]).float()
+        features = [feature_0, feature_1]
+        # features = feature_extractor(segment, sampling_rate, N_filter_bank)
+        content.append([features, segment, target_loudness])
     
     return content
 
@@ -156,14 +166,16 @@ def model_synthesizer(model, content, frame_type):
     input_size, hidden_size, N_filter_bank, frame_size, hop_size, sampling_rate, compression, batch_size = short_long_decoder(frame_type)
     N_segments = len(content)
     
+    hop_size = frame_size // 2 
+    
     audio_final = torch.zeros(frame_size + (N_segments-1)*hop_size)
     window = torch.hann_window(frame_size)
         
     for i in range(N_segments):
-        [features, target_loudness] = content[i]
-        [sp_centroid, loudness, downsample_signal] = features
+        [features, segment, target_loudness] = content[i]
+        [sp_centroid, rate] = features
         sp_centroid = sp_centroid.unsqueeze(0)
-        synthesized_segment = model.synthesizer(downsample_signal, sp_centroid, loudness, target_loudness)
+        synthesized_segment = model.synthesizer(sp_centroid, rate, target_loudness)
         #shif the synthesized_segment in a random amount of steps
         synthesized_segment = synthesized_segment.roll(shifts=np.random.randint(0, len(synthesized_segment)))
         #Apply window

@@ -157,7 +157,7 @@ def trainer(frame_type, model_type, loss_type, audio_path, model_name):
             # Compute loss (if stats loss is used the filter bank has to be added)
             if loss_type == 'statistics_loss':
                 loss = loss_function(segments, reconstructed_signal, erb_bank, log_bank)
-            if loss_type == 'sub_statistics_loss':
+            elif loss_type == 'sub_statistics_loss':
                 loss = loss_function(segments, reconstructed_signal, erb_bank)
             else:
                 loss = loss_function(segments, reconstructed_signal)
