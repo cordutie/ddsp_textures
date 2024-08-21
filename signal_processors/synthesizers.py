@@ -16,7 +16,7 @@ def TextEnv_param_extractor(signal, fs, N_filter_bank, param_per_env):
     erb_bank = ddsp_textures.auxiliar.filterbanks.EqualRectangularBandwidth(size, fs, N_filter_bank, low_lim, high_lim)
     subbands = erb_bank.generate_subbands(signal)  # generate subbands for signal y
     
-    erb_subbands = torch.tensor(subbands[:, 1:-1], dtype=torch.float32)
+    erb_subbands = subbands[:, 1:-1].clone().to(dtype=torch.float32).detach()
     erb_envs = torch.abs(hilbert(erb_subbands.transpose(0, 1)).transpose(0, 1))
     
     # print(f"The signal has a size of {size} samples.")
