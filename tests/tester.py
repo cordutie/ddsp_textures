@@ -1,11 +1,11 @@
 from architectures.DDSP import *
-from auxiliar.auxiliar import *
+from auxiliar.seeds import *
 from auxiliar.filterbanks import *
-from dataset.dataset_maker import *
-from loss.loss_functions import *
-from signal_processors.textsynth_env import *
-from training.initializer import *
-from training.trainer import *
+from dataset.makers import *
+from loss.functions import *
+from signal_processors.synthesizers import *
+from training.wrapper import *
+from training.wrapper import *
 
 import torch
 import torch.optim as optim
@@ -16,135 +16,51 @@ import pickle
 import os
 import matplotlib.pyplot as plt
 
-def short_long_decoder(name):
-    if name=='short':
-        input_size = 1024
-        hidden_size = 128  # Example hidden size
-        N_filter_bank = 16  # Example filter bank size
-        frame_size = 4096  # Example frame size
-        hop_size = 2048  # Example hop size
-        sampling_rate = 44100  # Example sampling rate
-        compression = 8  # Placeholder for compression
-        batch_size = 32
+def model_loader(model_folder_path):
+    configurations_path = os.path.join(model_folder_path, "configurations.json")
     
-    elif name=='medium':
-        input_size = 2**13
-        hidden_size = 256  # Example hidden size
-        N_filter_bank = 16  # Example filter bank size
-        frame_size = 2**15  # Example frame size
-        hop_size = 2**15  # Example hop size
-        sampling_rate = 44100  # Example sampling rate
-        compression = 8  # Placeholder for compression
-        batch_size = 32
+    #read configurations
+    parameters_dict = model_name_to_parameters(configurations_path)
     
-    elif name=='long':
-        input_size = 2**13
-        hidden_size = 256  # Example hidden size
-        N_filter_bank = 16  # Example filter bank size
-        frame_size = 2**16  # Example frame size
-        hop_size = 2**16  # Example hop size
-        sampling_rate = 44100  # Example sampling rate
-        compression = 8  # Placeholder for compression
-        batch_size = 32
-        
-    else:
-        raise NameError(f"{name} is not a valid frame type")
+    # Print parameters in bold
+    print("\033[1mModel Parameters:\033[0m\n")
+    for key, value in parameters_dict.items():
+        print(f"{key}: {value}")
     
-    return input_size, hidden_size, N_filter_bank, frame_size, hop_size, sampling_rate, compression, batch_size
-
-def model_loader(frame_type, model_type, loss_type, audio_path, model_name, best):    
-    input_size, hidden_size, N_filter_bank, frame_size, hop_size, sampling_rate, compression, batch_size = short_long_decoder(frame_type)
-
-    # Construct the directory and file path
-    directory = os.path.join("trained_models", model_name)
+    # Unpack parameters
+    hidden_size      = parameters_dict['hidden_size']
+    deepness         = parameters_dict['deepness']        
+    param_per_env    = parameters_dict['param_per_env']
+    model_class      = parameters_dict['architecture']
 
     # Device configuration
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # Load the seed
-    seed_path = os.path.join(directory, "seed.pkl")
+    # Seed loading
+    seed_path = os.path.join(model_folder_path, "seed.pkl")
     if os.path.exists(seed_path):
         with open(seed_path, 'rb') as file:
             seed = pickle.load(file)
-    else:
-        raise NameError(f"{seed_path} not found. Please ensure the dataset is created and saved correctly.")
     seed = seed.to(device)
 
     # Model initialization
-    if model_type == 'DDSP_textenv_gru':
-        model = DDSP_textenv_gru(                       hidden_size=hidden_size, N_filter_bank=N_filter_bank, deepness=3, compression=compression, frame_size=frame_size, sampling_rate=sampling_rate, seed=seed).to(device)
-    elif model_type == 'DDSP_textenv_mlp':
-        model = DDSP_textenv_mlp(input_size=input_size, hidden_size=hidden_size, N_filter_bank=N_filter_bank, deepness=3, compression=compression, frame_size=frame_size, sampling_rate=sampling_rate, seed=seed).to(device)
-
-    # Initialize the optimizer
-    optimizer = optim.Adam(model.parameters(), lr=1e-2)
-
-    # loss initialization
-    if loss_type == 'multispectrogram_loss':
-        loss_function = multispectrogram_loss
-    elif loss_type == 'statistics_loss':
-        loss_function = batch_statistics_loss
-
-    # Checkpoint path
-    checkpoint_path = os.path.join(directory, "checkpoint.pkl")
-    checkpoint_best_path = os.path.join(directory, "checkpoint_best_local.pkl")
-
-    if best==True:
-        checkpoint = torch.load(checkpoint_best_path, map_location=device)
-        model.load_state_dict(checkpoint['model_state_dict'])
-    else:
-        checkpoint = torch.load(checkpoint_path, map_location=device)
-        model.load_state_dict(checkpoint['model_state_dict'])
+    model = model_class(hidden_size, deepness, param_per_env, seed).to(device)
     
-    return model
-
-def model_tester(frame_type, model_type, loss_type, audio_path, model_name, best):
-    model = model_loader(frame_type, model_type, loss_type, audio_path, model_name, best)
-    input_size, hidden_size, N_filter_bank, frame_size, hop_size, sampling_rate, compression, batch_size = short_long_decoder(frame_type)
+    # Loading model
+    model_path = os.path.join(model_folder_path, 'best_model.pth')
+    model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
     
+    # Loading loss dictionary
+    loss_dict_path = os.path.join(model_folder_path, 'loss_dict.pkl')
+    with open(loss_dict_path, 'rb') as file:
+        loss_dict = pickle.load(file)
+    
+    return model, parameters_dict, loss_dict
+
+def audio_preprocess(audio_path, frame_size, sampling_rate, features_annotator):
     hop_size = frame_size // 2
-    
-    audio_og, _ = librosa.load(audio_path, sr=sampling_rate)
-    
-    audio_tensor = torch.tensor(audio_og)
-    size = audio_tensor.shape[0]
-    N_segments = (size - frame_size) // hop_size
-    
-    content = []
-    for i in range(N_segments):
-        segment = audio_tensor[i * hop_size: i * hop_size + frame_size]
-        target_loudness = torch.std(segment)
-        segment = (segment - torch.mean(segment)) / torch.std(segment)
-        feature_0 = torchaudio.functional.spectral_centroid(segment, sampling_rate, 0, torch.hamming_window(frame_size), frame_size, frame_size, frame_size)[0].float()
-        feature_1 = torch.tensor([1]).float()
-        features = [feature_0, feature_1]
-        # features = feature_extractor(segment, sampling_rate, N_filter_bank)
-        content.append([features, segment, target_loudness])
-    
-    audio_final = torch.zeros(frame_size + (N_segments-1)*hop_size)
-    window = torch.hann_window(frame_size)
-    
-    for i in range(N_segments):
-        [features, segment, target_loudness] = content[i]
-        [sp_centroid, rate] = features
-        sp_centroid = sp_centroid.unsqueeze(0)
-        synthesized_segment = model.synthesizer(sp_centroid, rate, target_loudness)
-        #shif the synthesized_segment in a random amount of steps
-        synthesized_segment = synthesized_segment.roll(shifts=np.random.randint(0, len(synthesized_segment)))
-        #Apply window
-        synthesized_segment = synthesized_segment * window
-        audio_final[i * hop_size: i * hop_size + frame_size] += synthesized_segment
-    
-    audio_final = audio_final.detach().cpu().numpy()
-    
-    return audio_og, audio_final
-
-def audio_preprocess(frame_type, model_type, loss_type, audio_path, model_name):
-    input_size, hidden_size, N_filter_bank, frame_size, hop_size, sampling_rate, compression, batch_size = short_long_decoder(frame_type)
     audio_og, _ = librosa.load(audio_path, sr=sampling_rate, mono=True)
     
-    hop_size = frame_size // 2
-
     audio_tensor = torch.tensor(audio_og)
     size = audio_tensor.shape[0]
     N_segments = (size - frame_size) // hop_size
@@ -154,34 +70,137 @@ def audio_preprocess(frame_type, model_type, loss_type, audio_path, model_name):
         segment = audio_tensor[i * hop_size: i * hop_size + frame_size]
         target_loudness = torch.std(segment)
         segment = (segment - torch.mean(segment)) / torch.std(segment)
-        feature_0 = torchaudio.functional.spectral_centroid(segment, sampling_rate, 0, torch.hamming_window(frame_size), frame_size, frame_size, frame_size)[0].float()
-        feature_1 = torch.tensor([1]).float()
-        features = [feature_0, feature_1]
-        # features = feature_extractor(segment, sampling_rate, N_filter_bank)
-        content.append([features, segment, target_loudness])
+        features = features_annotator(segment, sampling_rate)
+        content.append([features, target_loudness])
     
     return content
 
-def model_synthesizer(model, content, frame_type):
-    input_size, hidden_size, N_filter_bank, frame_size, hop_size, sampling_rate, compression, batch_size = short_long_decoder(frame_type)
-    N_segments = len(content)
+def model_synthesizer(content, model, parameters_dict, random_shift=True):
+    # Unpack parameters
+    frame_size       = parameters_dict['frame_size']
+    sampling_rate    = parameters_dict['sampling_rate']
+    features_annotator = parameters_dict['features_annotator']
+    batch_features_annotator = parameters_dict['batch_features_annotator']
+    freq_avg_level   = parameters_dict['freq_avg_level']
+    hidden_size      = parameters_dict['hidden_size']
+    deepness         = parameters_dict['deepness']        
+    param_per_env    = parameters_dict['param_per_env']
+    N_filter_bank    = parameters_dict['N_filter_bank']
+    model_class      = parameters_dict['architecture']
+    onset_detection_model_path = parameters_dict['onset_detection_model_path']
+    loss_function    = parameters_dict['loss_function']
+    regularization   = parameters_dict['regularization']
+    batch_size       = parameters_dict['batch_size']       
+    num_epochs       = parameters_dict['epochs']      
+    models_directory = parameters_dict['directory']   
     
-    hop_size = frame_size // 2 
+    hop_size = frame_size // 2
+    
+    N_segments = len(content)
     
     audio_final = torch.zeros(frame_size + (N_segments-1)*hop_size)
     window = torch.hann_window(frame_size)
-        
+
     for i in range(N_segments):
-        [features, segment, target_loudness] = content[i]
-        [sp_centroid, rate] = features
-        sp_centroid = sp_centroid.unsqueeze(0)
-        synthesized_segment = model.synthesizer(sp_centroid, rate, target_loudness)
-        #shif the synthesized_segment in a random amount of steps
-        synthesized_segment = synthesized_segment.roll(shifts=np.random.randint(0, len(synthesized_segment)))
+        [features, target_loudness] = content[i]
+        # transform 0d into 1d features of size 1
+        features = [feature.unsqueeze(0) for feature in features]
+        synthesized_segment = model.synthesizer(features[0], features[1], target_loudness)
+        if random_shift:    
+            #shif the synthesized_segment in a random amount of steps
+            synthesized_segment = synthesized_segment.roll(shifts=np.random.randint(0, len(synthesized_segment)))
         #Apply window
         synthesized_segment = synthesized_segment * window
         audio_final[i * hop_size: i * hop_size + frame_size] += synthesized_segment
-    
+
     audio_final = audio_final.detach().cpu().numpy()
     
     return audio_final
+
+# def model_tester(frame_type, model_type, loss_type, audio_path, model_name, best):
+#     model = model_loader(frame_type, model_type, loss_type, audio_path, model_name, best)
+#     input_size, hidden_size, N_filter_bank, frame_size, hop_size, sampling_rate, compression, batch_size = short_long_decoder(frame_type)
+    
+#     hop_size = frame_size // 2
+    
+#     audio_og, _ = librosa.load(audio_path, sr=sampling_rate)
+    
+#     audio_tensor = torch.tensor(audio_og)
+#     size = audio_tensor.shape[0]
+#     N_segments = (size - frame_size) // hop_size
+    
+#     content = []
+#     for i in range(N_segments):
+#         segment = audio_tensor[i * hop_size: i * hop_size + frame_size]
+#         target_loudness = torch.std(segment)
+#         segment = (segment - torch.mean(segment)) / torch.std(segment)
+#         feature_0 = torchaudio.functional.spectral_centroid(segment, sampling_rate, 0, torch.hamming_window(frame_size), frame_size, frame_size, frame_size)[0].float()
+#         feature_1 = torch.tensor([1]).float()
+#         features = [feature_0, feature_1]
+#         # features = feature_extractor(segment, sampling_rate, N_filter_bank)
+#         content.append([features, segment, target_loudness])
+    
+#     audio_final = torch.zeros(frame_size + (N_segments-1)*hop_size)
+#     window = torch.hann_window(frame_size)
+    
+#     for i in range(N_segments):
+#         [features, segment, target_loudness] = content[i]
+#         [sp_centroid, rate] = features
+#         sp_centroid = sp_centroid.unsqueeze(0)
+#         synthesized_segment = model.synthesizer(sp_centroid, rate, target_loudness)
+#         #shif the synthesized_segment in a random amount of steps
+#         synthesized_segment = synthesized_segment.roll(shifts=np.random.randint(0, len(synthesized_segment)))
+#         #Apply window
+#         synthesized_segment = synthesized_segment * window
+#         audio_final[i * hop_size: i * hop_size + frame_size] += synthesized_segment
+    
+#     audio_final = audio_final.detach().cpu().numpy()
+    
+#     return audio_og, audio_final
+
+# def audio_preprocess(frame_type, model_type, loss_type, audio_path, model_name):
+#     input_size, hidden_size, N_filter_bank, frame_size, hop_size, sampling_rate, compression, batch_size = short_long_decoder(frame_type)
+#     audio_og, _ = librosa.load(audio_path, sr=sampling_rate, mono=True)
+    
+#     hop_size = frame_size // 2
+
+#     audio_tensor = torch.tensor(audio_og)
+#     size = audio_tensor.shape[0]
+#     N_segments = (size - frame_size) // hop_size
+    
+#     content = []
+#     for i in range(N_segments):
+#         segment = audio_tensor[i * hop_size: i * hop_size + frame_size]
+#         target_loudness = torch.std(segment)
+#         segment = (segment - torch.mean(segment)) / torch.std(segment)
+#         feature_0 = torchaudio.functional.spectral_centroid(segment, sampling_rate, 0, torch.hamming_window(frame_size), frame_size, frame_size, frame_size)[0].float()
+#         feature_1 = torch.tensor([1]).float()
+#         features = [feature_0, feature_1]
+#         # features = feature_extractor(segment, sampling_rate, N_filter_bank)
+#         content.append([features, segment, target_loudness])
+    
+#     return content
+
+# def model_synthesizer(model, content, frame_type):
+#     input_size, hidden_size, N_filter_bank, frame_size, hop_size, sampling_rate, compression, batch_size = short_long_decoder(frame_type)
+#     N_segments = len(content)
+    
+#     hop_size = frame_size // 2 
+    
+#     audio_final = torch.zeros(frame_size + (N_segments-1)*hop_size)
+#     window = torch.hann_window(frame_size)
+
+#     for i in range(N_segments):
+#         [features, segment, target_loudness] = content[i]
+#         [sp_centroid, rate] = features
+#         sp_centroid = sp_centroid.unsqueeze(0)
+#         synthesized_segment = model.synthesizer(sp_centroid, rate, target_loudness)
+#         #shif the synthesized_segment in a random amount of steps
+#         synthesized_segment = synthesized_segment.roll(shifts=np.random.randint(0, len(synthesized_segment)))
+#         #Apply window
+#         synthesized_segment = synthesized_segment * window
+#         audio_final[i * hop_size: i * hop_size + frame_size] += synthesized_segment
+
+#     audio_final = audio_final.detach().cpu().numpy()
+    
+#     return audio_final

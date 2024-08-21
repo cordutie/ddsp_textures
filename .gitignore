@@ -1,5 +1,11 @@
 # Ignore datasets (they are too heavy!)
 dataset.pkl
 
-# Ignore unnecesary cache
-**/__pycache__/
+# Ignore unnecessary cache
+__pycache__/
+
+# Ignore trained models (they are too heavy for git hub)
+trained_models/
+
+# Ignore basurero
+alabasura/

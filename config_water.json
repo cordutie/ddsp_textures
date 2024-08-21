@@ -1,0 +1,20 @@
+{
+    "audio_path": "sounds/water.wav",
+    "frame_size": 32768,
+    "hop_size": 16384,
+    "sampling_rate": 44100,
+    "features_annotator": "batch_features_freqavg_rate",
+    "freq_avg_level": 2,
+    "hidden_size": 512,
+    "deepness": 3,
+    "param_per_env": 1024,
+    "N_filter_bank": 16,
+    "architecture": "DDSP_TextEnv",
+    "onset_detection_model_path": "none",
+    "loss_function": "statistics_loss",
+    "regularization": 1,
+    "batch_size": 16,
+    "epochs": 100,
+    "directory": "trained_models"   
+}
+
