@@ -1,7 +1,7 @@
 import torch
 import torchaudio
 import numpy as np
-import auxiliar.filterbanks as fb
+import ddsp_textures.auxiliar.filterbanks as fb
 
 def hilbert(x, N=None, axis=-1):
     """

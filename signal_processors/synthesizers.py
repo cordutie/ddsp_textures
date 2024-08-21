@@ -1,7 +1,7 @@
 import torch
 import numpy as np
-import auxiliar.filterbanks
-from auxiliar.seeds import *
+import ddsp_textures.auxiliar.filterbanks
+from ddsp_textures.auxiliar.seeds import *
 
 # SubEnv ----------------------------------------------------------------------------------------------
 
@@ -13,7 +13,7 @@ def TextEnv_param_extractor(signal, fs, N_filter_bank, param_per_env):
     size = signal.size(0)
     
     # Assuming fb.EqualRectangularBandwidth works with torch tensors
-    erb_bank = auxiliar.filterbanks.EqualRectangularBandwidth(size, fs, N_filter_bank, low_lim, high_lim)
+    erb_bank = ddsp_textures.auxiliar.filterbanks.EqualRectangularBandwidth(size, fs, N_filter_bank, low_lim, high_lim)
     subbands = erb_bank.generate_subbands(signal)  # generate subbands for signal y
     
     erb_subbands = torch.tensor(subbands[:, 1:-1], dtype=torch.float32)

@@ -5,8 +5,8 @@ import numpy as np
 import librosa
 import torchaudio
 import torch
-import auxiliar.seeds
-import dataset.makers
+import ddsp_textures.auxiliar.seeds
+import ddsp_textures.dataset.makers
 
 # def multiscale_fft(signal, scales, overlap):
 #     stfts = []
@@ -73,7 +73,7 @@ def statistics(signal, N_filter_bank, sample_rate, erb_bank, log_bank):
     erb_subbands_signal = erb_bank.generate_subbands(signal)[:, 1:-1]
     
     # Extract envelopes
-    env_subbands = torch.abs(auxiliar.seeds.hilbert(erb_subbands_signal))
+    env_subbands = torch.abs(ddsp_textures.auxiliar.seeds.hilbert(erb_subbands_signal))
     
     new_sample_rate = sample_rate // 4
     downsampler = torchaudio.transforms.Resample(sample_rate, new_sample_rate).to(device)  # Move downsampler to device
@@ -188,7 +188,7 @@ def sub_statistics(signal, N_filter_bank, sample_rate, erb_bank):
     erb_subbands_signal = erb_bank.generate_subbands(signal)[:, 1:-1]
     
     # Extract envelopes
-    env_subbands = torch.abs(auxiliar.seeds.hilbert(erb_subbands_signal))
+    env_subbands = torch.abs(ddsp_textures.auxiliar.seeds.hilbert(erb_subbands_signal))
     
     # new_sample_rate = 11025
     # downsampler = torchaudio.transforms.Resample(sample_rate, new_sample_rate).to(device)  # Move downsampler to device

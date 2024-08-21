@@ -1,9 +1,9 @@
 import os
 import json
-from auxiliar.features import *
-from dataset.makers import *
-from loss.functions import *
-from architectures.DDSP import *
+from ddsp_textures.auxiliar.features import *
+from ddsp_textures.dataset.makers import *
+from ddsp_textures.loss.functions import *
+from ddsp_textures.architectures.DDSP import *
 
 # EDIT WHEN NEW STUFF IS ADDED -------------------------------------------------------------------------
 def model_name_to_parameters(json_file_path):

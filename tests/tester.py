@@ -1,11 +1,11 @@
-from architectures.DDSP import *
-from auxiliar.seeds import *
-from auxiliar.filterbanks import *
-from dataset.makers import *
-from loss.functions import *
-from signal_processors.synthesizers import *
-from training.wrapper import *
-from training.wrapper import *
+from ddsp_textures.architectures.DDSP import *
+from ddsp_textures.auxiliar.seeds import *
+from ddsp_textures.auxiliar.filterbanks import *
+from ddsp_textures.dataset.makers import *
+from ddsp_textures.loss.functions import *
+from ddsp_textures.signal_processors.synthesizers import *
+from ddsp_textures.training.wrapper import *
+from ddsp_textures.training.wrapper import *
 
 import torch
 import torch.optim as optim

@@ -1,11 +1,11 @@
-from signal_processors.synthesizers import *
+from ddsp_textures.signal_processors.synthesizers import *
 import torch.nn as nn
 import torch
 from torch.utils.data import Dataset, DataLoader
 import numpy as np
 import librosa
 import torchaudio
-from auxiliar.features import *
+from ddsp_textures.auxiliar.features import *
 
 # Audio improver for segments -----------------------------------------------
 
