@@ -3,7 +3,7 @@
     "frame_size": 32768,
     "hop_size": 16384,
     "sampling_rate": 44100,
-    "features_annotator": "batch_features_freqavg_rate",
+    "features_annotator": "features_freqavg_rate",
     "freq_avg_level": 4,
     "hidden_size": 512,
     "deepness": 3,
