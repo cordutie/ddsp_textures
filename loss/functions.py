@@ -164,9 +164,12 @@ def batch_statistics_loss(original_signals, reconstructed_signals, N_filter_bank
         reconstructed_signal = reconstructed_signals[i]
         loss = statistics_loss(original_signal, reconstructed_signal, N_filter_bank, sample_rate, erb_bank, log_bank)
         total_loss += loss
-
-    average_loss = total_loss / batch_size
-    return average_loss
+    loss_tensor = torch.stack(loss)
+    
+    #dot product between lists loss and alpha (ensure equal dtype)
+    alpha = torch.tensor([10, 50, 100, 100, 100], dtype=loss[0].dtype, device=loss[0].device)
+    final_loss = torch.dot(loss_tensor, alpha)
+    return final_loss 
 
 # substatistics loss ---------------------------------------------------------------------------------------------
 
