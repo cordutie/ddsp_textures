@@ -15,4 +15,4 @@ if __name__ == "__main__":
     else:
         parameters_json_path = sys.argv[1]
     print("Let's go!")
-    ddsp_textures.training.wrapper(parameters_json_path)
+    ddsp_textures.training.wrapper.train(parameters_json_path)
