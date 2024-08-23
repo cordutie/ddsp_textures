@@ -13,14 +13,14 @@ def convolution_step(time_stamps, atoms, K):
     result = torch.zeros(N+M-1)
     for i in range(K):
         atom_local       = atoms[i*M:(i+1)*M].view(1, 1, -1)
-        print("atom local size: ", atom_local.size())
+        # print("atom local size: ", atom_local.size())
         time_stamp_local = time_stamps[i*n:(i+1)*n].view(1, 1, -1)
-        print("time stamp local size: ", time_stamp_local.size())
+        # print("time stamp local size: ", time_stamp_local.size())
         # Perform the full convolution
         padding = max(M, n)-1
         synthesis_local = F.conv1d(time_stamp_local, atom_local, padding=padding)
         # synthesis_local  = torch.convolution(time_stamp_local, atom_local) #size = n+M-1
-        print("synthesis local size: ", synthesis_local.size())
+        # print("synthesis local size: ", synthesis_local.size())
         #squeeze
         synthesis_local = synthesis_local.squeeze()
         #overlap and add using hop size = n
