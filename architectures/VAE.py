@@ -1,20 +1,13 @@
 import torch
 import torch.nn as nn
-from ddsp_textures.signal_processors.synthesizers import *
-
-def mlp(in_size, hidden_size, n_layers):
-    channels = [in_size] + [hidden_size] * n_layers
-    net = []
-    for i in range(n_layers):
-        net.append(nn.Linear(channels[i], channels[i + 1]))
-        net.append(nn.LayerNorm(channels[i + 1]))
-        net.append(nn.LeakyReLU())
-    return nn.Sequential(*net)
+from ddsp_textures.signal_processors.synthesizers import SubEnv, SubEnv_batches
+from ddsp_textures.auxiliar.seeds import seed_maker
+from ddsp_textures.auxiliar.nn import mlp
 
 class VAE_SubEnv(nn.Module):
-    def __init__(self, frame_size, hidden_size, deepness, latent_dim, N_filter_bank, param_per_env, seed, device):
+    def __init__(self, hidden_size, deepness, latent_dim, N_filter_bank, param_per_env, seed, device):
         super(VAE_SubEnv, self).__init__()
-        self.seed = seed.to(device)  # Ensure seed is on the correct device
+        self.seed = seed.to(device)  # Seed is a tensor, so keep it on the device
         self.device = device
         
         # parameters
@@ -22,9 +15,8 @@ class VAE_SubEnv(nn.Module):
         self.param_per_env = param_per_env
         
         # encoder
-        self.encoder_1 = mlp(frame_size, hidden_size, deepness).to(device)
-        self.encoder_mean = nn.Linear(hidden_size, latent_dim).to(device)
-        self.encoder_logvar  = nn.Linear(hidden_size, latent_dim).to(device)
+        self.encoder_1 = mlp(N_filter_bank, hidden_size, deepness).to(device)
+        self.encoder_2 = nn.Linear(hidden_size, latent_dim).to(device)
         
         # decoder    
         self.a_decoder_1 = mlp(latent_dim, hidden_size, deepness).to(device)
@@ -35,14 +27,8 @@ class VAE_SubEnv(nn.Module):
     def encode(self, x):
         x = x.to(self.device)
         x = self.encoder_1(x)
-        mean, logvar = self.encoder_mean(x), self.encoder_logvar(x)
-        var = torch.exp(logvar)
-        return mean, var
-
-    def reparameterization(self, mean, var):
-        epsilon = torch.randn_like(var).to(self.device)      
-        z = mean + torch.sqrt(var) * epsilon
-        return z
+        l = self.encoder_2(x)
+        return torch.sigmoid(l)
 
     def decode(self, z):
         z = z.to(self.device)
@@ -58,16 +44,21 @@ class VAE_SubEnv(nn.Module):
 
     def forward(self, x):
         x = x.to(self.device)
-        mean, var = self.encode(x)
-        z = self.reparameterization(mean, var)
+        l = self.encode(x)
+        real_param, imag_param = self.decode(l)
+        x_hat = SubEnv_batches(real_param, imag_param, self.seed)
+        return x_hat
+    
+    def generate_batches(self, z):
+        z = z.to(self.device)
         real_param, imag_param = self.decode(z)
-        x_hat = TextEnv_batches(real_param.to(self.device), imag_param.to(self.device), self.seed)
-        return x_hat, mean, var
+        x_hat = SubEnv_batches(real_param, imag_param, self.seed)
+        return x_hat
     
     def generate(self, z):
         z = z.to(self.device)
         real_param, imag_param = self.decode(z)
-        x_hat = TextEnv(real_param.to(self.device), imag_param.to(self.device), self.seed)
+        x_hat = SubEnv(real_param, imag_param, self.seed)
         return x_hat
 
 import json
@@ -103,8 +94,7 @@ def load_model(model_path, settings_path, device):
     seed = seed.to(device)
 
     # Create model and load state dict
-    model = VAE_SubEnv(frame_size, hidden_size, deepness, latent_dim, N_filter_bank, param_per_env, seed, device).to(device)
+    model = VAE_SubEnv(hidden_size, deepness, latent_dim, N_filter_bank, param_per_env, seed, device).to(device)
     model.load_state_dict(torch.load(model_path, map_location=device))
     print(f'Model loaded from {model_path}')
     return model
-

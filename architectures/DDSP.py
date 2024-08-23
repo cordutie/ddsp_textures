@@ -1,21 +1,11 @@
 from ddsp_textures.signal_processors.synthesizers import *
+from ddsp_textures.auxiliar.nn import mlp, gru
 import torch.nn as nn
 import torch
 import numpy as np
 import librosa
 import torchaudio
 
-def mlp(in_size, hidden_size, n_layers):
-    channels = [in_size] + [hidden_size] * n_layers
-    net = []
-    for i in range(n_layers):
-        net.append(nn.Linear(channels[i], channels[i + 1]))
-        net.append(nn.LayerNorm(channels[i + 1]))
-        net.append(nn.LeakyReLU())
-    return nn.Sequential(*net)
-
-def gru(n_input, hidden_size):
-    return nn.GRU(n_input, hidden_size, batch_first=True)
 
 class DDSP_TextEnv(nn.Module):
     def __init__(self, hidden_size, deepness, param_per_env, seed):
@@ -71,7 +61,7 @@ class DDSP_TextEnv(nn.Module):
         feature_0 = feature_0.to(device)
         feature_1 = feature_1.to(device)
 
-        signal = TextEnv_batches(real_param, imag_param, self.seed)
+        signal = SubEnv_batches(real_param, imag_param, self.seed)
         return signal
 
     def synthesizer(self, feature_0, feature_1, target_loudness):
@@ -84,7 +74,7 @@ class DDSP_TextEnv(nn.Module):
         feature_0 = feature_0.to(device)
         feature_1 = feature_1.to(device)
 
-        signal = TextEnv(real_param, imag_param, self.seed, target_loudness)
+        signal = SubEnv(real_param, imag_param, self.seed, target_loudness)
         return signal
     
 # CHANGE WHEN PVAE IS IMPLEMENTED --------------------------------------------------------------
@@ -137,7 +127,7 @@ class DDSP_PVAE(nn.Module):
         feature_0 = feature_0.to(device)
         feature_1 = feature_1.to(device)
 
-        signal = TextEnv_batches(real_param, imag_param, self.seed)
+        signal = SubEnv_batches(real_param, imag_param, self.seed)
         return signal
 
     def synthesizer(self, feature_0, feature_1, target_loudness):
@@ -150,5 +140,5 @@ class DDSP_PVAE(nn.Module):
         feature_0 = feature_0.to(device)
         feature_1 = feature_1.to(device)
 
-        signal = TextEnv(real_param, imag_param, self.seed, target_loudness)
+        signal = SubEnv(real_param, imag_param, self.seed, target_loudness)
         return signal

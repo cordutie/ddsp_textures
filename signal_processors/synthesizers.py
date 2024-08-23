@@ -5,7 +5,7 @@ from ddsp_textures.auxiliar.seeds import *
 
 # SubEnv ----------------------------------------------------------------------------------------------
 
-def TextEnv_param_extractor(signal, fs, N_filter_bank, param_per_env):
+def SubEnv_param_extractor(signal, fs, N_filter_bank, param_per_env):
     # send error if param_per_env is not even
     if param_per_env % 2 != 0:
         raise ValueError("param_per_env must be an even number (cause tese are complex numbers).")
@@ -38,7 +38,7 @@ def TextEnv_param_extractor(signal, fs, N_filter_bank, param_per_env):
     return real_param, imag_param
 
 
-def TextEnv(parameters_real, parameters_imag, seed, target_loudness=1):
+def SubEnv(parameters_real, parameters_imag, seed, target_loudness=1):
     size          = seed.shape[0]
     N_filter_bank = seed.shape[1]
     
@@ -73,7 +73,7 @@ def TextEnv(parameters_real, parameters_imag, seed, target_loudness=1):
 
     return signal_final
 
-def TextEnv_batches(parameters_real, parameters_imag, seed):
+def SubEnv_batches(parameters_real, parameters_imag, seed):
     size          = seed.shape[0]
     N_filter_bank = seed.shape[1]
     
