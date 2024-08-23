@@ -9,49 +9,38 @@ import torchaudio
 def computer_freq_avg(signal_filtered, sampling_rate):
     device = signal_filtered.device
     window = torch.hann_window(signal_filtered.shape[-1]).to(device)
-    
     # windowing
     signal_filtered = signal_filtered * window
-
     # Compute the rfft of the signal
     rfft = torch.fft.rfft(signal_filtered)
-    
     # Compute the magnitude of the rfft
     magnitude_spectrum = torch.abs(rfft)
-    
     # Compute the frequency of each bin of the rfft
     n = signal_filtered.shape[-1]
-    freqs = torch.fft.rfftfreq(n, d=1/sampling_rate)
-    
+    freqs = torch.fft.rfftfreq(n, d=1/sampling_rate).to(device)
     # Compute the average frequency using the magnitude spectrum as weights
     weighted_sum_freqs = torch.inner(freqs, magnitude_spectrum)
     total_magnitude    = torch.sum(magnitude_spectrum)
     mean_frequency     = weighted_sum_freqs / total_magnitude
-    
     return mean_frequency
 
-def computer_freq_avg_and_std(signal_filtered, sampling_rate):# Compute the rfft of the signal
+def computer_freq_avg_and_std(signal_filtered, sampling_rate):
     device = signal_filtered.device
     window = torch.hann_window(signal_filtered.shape[-1]).to(device)
     
     # windowing
     signal_filtered = signal_filtered * window
-
     # Compute the rfft of the signal
     rfft = torch.fft.rfft(signal_filtered)
-    
     # Compute the magnitude of the rfft
     magnitude_spectrum = torch.abs(rfft)
-    
     # Compute the frequency of each bin of the rfft
     n = signal_filtered.shape[-1]
     freqs = torch.fft.rfftfreq(n, d=1/sampling_rate).to(device)
-    
     # Compute the average frequency using the magnitude spectrum as weights
     weighted_sum_freqs = torch.inner(freqs, magnitude_spectrum)
     total_magnitude    = torch.sum(magnitude_spectrum)
     mean_frequency     = weighted_sum_freqs / total_magnitude
-    
     # Compute the variance of the frequency using the magnitude spectrum as weights
     variance_freqs = torch.sum(magnitude_spectrum * (freqs - mean_frequency) ** 2) / total_magnitude
     std_freqs      = torch.sqrt(variance_freqs)
@@ -59,40 +48,41 @@ def computer_freq_avg_and_std(signal_filtered, sampling_rate):# Compute the rfft
     return mean_frequency, std_freqs
 
 def compute_spectrogram(waveform, n_fft=1024, hop_length=512):
-    spectrogram = torch.stft(waveform, n_fft=n_fft, hop_length=hop_length, return_complex=True, window=torch.hann_window(n_fft))
+    device = waveform.device
+    spectrogram = torch.stft(
+        waveform, 
+        n_fft=n_fft, 
+        hop_length=hop_length, 
+        return_complex=True, 
+        window=torch.hann_window(n_fft).to(device)
+    )
     magnitude = torch.abs(spectrogram)
     return magnitude
 
 def calculate_onset_strength(spectrogram):
+    device = spectrogram.device
     # Calculate the difference between consecutive frames (along the time axis)
     diff_spectrogram = spectrogram[:, 1:] - spectrogram[:, :-1]
-    
     # Apply ReLU to keep only positive differences
     onset_strength = torch.relu(diff_spectrogram)
-    
     # Average across frequency bins (dim=0)
     onset_strength_mean = torch.mean(onset_strength, dim=0)
-    
     # Prepend a zero at the start to match the original number of frames
-    onset_strength_mean = torch.cat((torch.zeros(1), onset_strength_mean), dim=0)
-    
+    onset_strength_mean = torch.cat((torch.zeros(1).to(device), onset_strength_mean), dim=0)
     return onset_strength_mean
 
 def compute_onset_peaks(onset_strength):
+    device = onset_strength.device
     # Normalize onset strength
     onset_strength = (onset_strength - torch.min(onset_strength)) / (torch.max(onset_strength) - torch.min(onset_strength)) - 0.5
-    
     # Apply sigmoid function
     onset = torch.sigmoid(onset_strength * 100)
-    
     # Compute the derivative and apply ReLU
     onset_shifted = torch.roll(onset, 1)
     onset_derivative = onset - onset_shifted
     onset_peaks = torch.relu(onset_derivative)
-    
     return onset_peaks
 
-# So far, this assumes sampling_rate = 44100
 def computer_rate(signal_tensor, sampling_rate):
     spectrogram = compute_spectrogram(signal_tensor)
     onset_strength = calculate_onset_strength(spectrogram)
