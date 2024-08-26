@@ -17,7 +17,8 @@ def convolution_step(time_stamps, atoms, K):
         time_stamp_local = time_stamps[i*n:(i+1)*n].view(1, 1, -1)
         # print("time stamp local size: ", time_stamp_local.size())
         # Perform the full convolution
-        padding = max(M, n)-1
+        # padding = min(M, n)-1
+        padding = M - 1
         synthesis_local = F.conv1d(time_stamp_local, atom_local, padding=padding)
         # synthesis_local  = torch.convolution(time_stamp_local, atom_local) #size = n+M-1
         # print("synthesis local size: ", synthesis_local.size())
@@ -25,7 +26,8 @@ def convolution_step(time_stamps, atoms, K):
         synthesis_local = synthesis_local.squeeze()
         #overlap and add using hop size = n
         result[i*n:(i+1)*n+M-1] += synthesis_local
-    return result
+    result_reversed = result.flip(dims=[0])
+    return result_reversed
 
 def convolution_step_batches(time_stamps, atoms, K):
     #compute batch size

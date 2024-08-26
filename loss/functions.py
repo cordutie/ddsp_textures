@@ -8,33 +8,36 @@ import torch
 import ddsp_textures.auxiliar.seeds
 import ddsp_textures.dataset.makers
 
-# def multiscale_fft(signal, scales, overlap):
-#     stfts = []
-#     for s in scales:
-#         S = torch.stft(
-#             signal,
-#             s,
-#             int(s * (1 - overlap)),
-#             s,
-#             torch.hann_window(s).to(signal),
-#             True,
-#             normalized=True,
-#             return_complex=True,
-#         ).abs()
-#         stfts.append(S)
-#     return stfts
+# MULTISCALE SPECTOGRAM HERE
+def multiscale_fft(signal, scales=[4096, 2048, 1024, 512, 256, 128], overlap=.75):
+    stfts = []
+    for s in scales:
+        S = torch.stft(
+            signal,
+            s,
+            int(s * (1 - overlap)),
+            s,
+            torch.hann_window(s).to(signal),
+            True,
+            normalized=True,
+            return_complex=True,
+        ).abs()
+        stfts.append(S)
+    return stfts
 
-# def multispectrogram_loss(original_signal, reconstructed_signal, scales=[2048, 1024, 512, 256], overlap=0.5):
-#     ori_stft = multiscale_fft(original_signal, scales, overlap)
-#     rec_stft = multiscale_fft(reconstructed_signal, scales, overlap)
+def safe_log(x):
+    return torch.log(x + 1e-7)
 
-#     loss = 0
-#     for s_x, s_y in zip(ori_stft, rec_stft):
-#         lin_loss = (s_x - s_y).abs().mean()
-#         log_loss = (torch.log(s_x + 1e-8) - torch.log(s_y + 1e-8)).abs().mean()
-#         loss += lin_loss + log_loss
+def multiscale_spectrogram_loss(x, x_hat):
+    ori_stft = multiscale_fft(x)
+    rec_stft = multiscale_fft(x_hat)
+    loss = 0
+    for s_x, s_y in zip(ori_stft, rec_stft):
+        lin_loss = (s_x - s_y).abs().mean()
+        log_loss = (safe_log(s_x) - safe_log(s_y)).abs().mean()
+        loss = loss + lin_loss + log_loss
+    return loss
 
-#     return loss
 
 ######## statistics loss ########
 
@@ -155,7 +158,7 @@ def statistics_loss(original_signal, reconstructed_signal, N_filter_bank, sample
     #dot product between lists loss and alpha (ensure equal dtype)
     alpha = torch.tensor([10, 50, 100, 100, 100], dtype=loss[0].dtype, device=loss[0].device)
     final_loss = torch.dot(loss_tensor, alpha)
-    return  2**(final_loss/3-1) 
+    return  2**(final_loss/9-1) 
 
 def batch_statistics_loss(original_signals, reconstructed_signals, N_filter_bank, sample_rate, erb_bank, log_bank):
     batch_size = original_signals.size(0)
