@@ -37,8 +37,8 @@ def train(json_path):
     with open(json_path, 'r') as file:
         parameters = json.load(file)
     architecture = parameters['architecture']
-    if architecture == 'DDSP_TextEnv':
-        print("DDSP_TextEnv trainer")
+    if architecture == 'DDSP_SubEnv':
+        print("DDSP_SubEnv trainer")
         trainer_SubEnv(json_path)
     elif architecture == 'DDSP_PVAE':
         print("DDSP_PVAE trainer")
