@@ -117,19 +117,21 @@ from ddsp_textures.auxiliar.convolution import *
 # VAE = object that has two methods
 # VAE.generate generates a tensor of size atoms_size from a tensor of size latent_dim
 # VAE.generate_batches generates a tensor of size batch_size x atoms_size from a tensor of size batch_size x latent_dim
-def P_VAE(time_stamps_size, lambda_rate, alpha, sr, VAE, latent_dim, atoms_size, encoded_atoms, atoms_new_size_factor = 1):
+def P_VAE(time_stamps_size, lambda_rate, alpha, sr, VAE, latent_dim, atoms_size, encoded_atoms, window=False):
     #time stamps generation
     time_stamps = ts.time_stamps_generator(time_stamps_size, sr, lambda_rate, alpha)
     #number of atoms = size of encoded atoms/latent dim
     K = encoded_atoms.size()[0] // latent_dim
     # print("Number of atoms: ", K)
     #create tensor 1d with all the atom
-    atoms_new_size_factor = min(1, atoms_new_size_factor)
-    new_atoms_size = int(atoms_size * atoms_new_size_factor)
+    new_atoms_size = atoms_size
     atoms = torch.zeros(K*new_atoms_size)
     for i in range(K):
         atom_local = VAE.generate(encoded_atoms[i*latent_dim:(i+1)*latent_dim])
         atom_local = atom_local[:new_atoms_size]
+        #check if windows is a boolean variable 
+        if type(window) != bool:
+            atom_local = atom_local * window
         # print("atom local size: ", atom_local.size())
         atoms[i*new_atoms_size:(i+1)*new_atoms_size] = atom_local
     #convolution step
@@ -137,7 +139,7 @@ def P_VAE(time_stamps_size, lambda_rate, alpha, sr, VAE, latent_dim, atoms_size,
     result = convolution_step(time_stamps, atoms, K)
     return result
 
-def P_VAE_batches(time_stamps_size, lambda_rate, alpha, sr, VAE, latent_dim, atoms_size, encoded_atoms, atoms_new_size_factor = 1):
+def P_VAE_batches(time_stamps_size, lambda_rate, alpha, sr, VAE, latent_dim, atoms_size, encoded_atoms, window=False):
     # lambda is a number but comes ina btach. Compute the size of the batch
     batch_size = lambda_rate.size()[0]
     # print(batch_size)
@@ -153,16 +155,19 @@ def P_VAE_batches(time_stamps_size, lambda_rate, alpha, sr, VAE, latent_dim, ato
     K = encoded_atoms.size()[1] // latent_dim
     # print("Number of atoms: ", K)
     
-    #create tensor 1d with all the atom
-    atoms_new_size_factor = min(1, atoms_new_size_factor)
-    # print("old atoms size: ", atoms_size)
-    new_atoms_size = int(atoms_size * atoms_new_size_factor)
-    # print("new atoms size: ", new_atoms_size)
+    # #create tensor 1d with all the atom
+    # atoms_new_size_factor = min(1, atoms_new_size_factor)
+    # # print("old atoms size: ", atoms_size)
+    # new_atoms_size = int(atoms_size * atoms_new_size_factor)
+    # # print("new atoms size: ", new_atoms_size)
+    new_atoms_size = atoms_size
     atoms_batch = torch.zeros(batch_size, K*new_atoms_size)
     
     for i in range(K):
         atom_local = VAE.generate_batches(encoded_atoms[:,i*latent_dim:(i+1)*latent_dim])
         atom_local = atom_local[:, :new_atoms_size]
+        if type(window) != bool:
+            atom_local = atom_local * window.unsqueeze(0)
         # print("atom local size: ", atom_local.size())
         # print("atom local size: ", atom_local.size())
         atoms_batch[:, i*new_atoms_size:(i+1)*new_atoms_size] = atom_local

@@ -1,0 +1,23 @@
+{
+    "audio_path": "../sounds/water.wav",
+    "frame_size": 65536,
+    "hop_size": 65536,
+    "sampling_rate": 44100,
+    "features_annotator": "features_freqavg_freqstd",
+    "freq_avg_level": 2,
+    "hidden_size": 256,
+    "deepness": 2,
+    "param_per_env": 512,
+    "N_filter_bank": 16,
+    "architecture": "DDSP_PVAE",
+    "onset_detection_model_path": "none",
+    "loss_function": "statistics_loss",
+    "regularization": 0,
+    "batch_size": 4,
+    "epochs": 2,
+    "directory": "../trained_models",
+    "VAE_model_directory": "../architectures/pre_trained_models/VAE_water/",    
+    "VAE_latent_dim": 2,
+    "VAE_atoms_size": 16384,
+    "atoms_number": 4
+}

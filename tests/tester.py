@@ -20,7 +20,7 @@ def model_loader(model_folder_path):
     configurations_path = os.path.join(model_folder_path, "configurations.json")
     
     #read configurations
-    parameters_dict = model_name_to_parameters(configurations_path)
+    parameters_dict = model_json_to_parameters(configurations_path)
     
     # Print parameters in bold
     print("\033[1mModel Parameters:\033[0m\n")

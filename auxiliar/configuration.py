@@ -6,7 +6,7 @@ from ddsp_textures.loss.functions import *
 from ddsp_textures.architectures.DDSP import *
 
 # EDIT WHEN NEW STUFF IS ADDED -------------------------------------------------------------------------
-def model_name_to_parameters(json_file_path):
+def model_json_to_parameters(json_file_path):
     # Features options ---------------------------------------------------------------------------------
     features_annotator_map = {
         'features_freqavg_freqstd': features_freqavg_freqstd,
@@ -52,6 +52,11 @@ def model_name_to_parameters(json_file_path):
     parameters_dict['batch_size']               = int(parameters['batch_size'])
     parameters_dict['epochs']                   = int(parameters['epochs'])
     parameters_dict['directory']                = parameters['directory']
+    
+    parameters_dict['VAE_model_directory']      = parameters['VAE_model_directory']    
+    parameters_dict['VAE_latent_dim']           = int(parameters['VAE_latent_dim'])
+    parameters_dict['VAE_atoms_size']           = int(parameters['VAE_atoms_size'])
+    parameters_dict['atoms_number']             = int(parameters['atoms_number'])
     
     return parameters_dict
 
