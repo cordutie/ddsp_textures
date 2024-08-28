@@ -1,5 +1,5 @@
 {
-    "audio_path": "/sounds/water_augmented.wav",
+    "audio_path": "sounds/water_augmented.wav",
     "frame_size": 16384,
     "hop_size": 16384,
     "sampling_rate": 44100,
