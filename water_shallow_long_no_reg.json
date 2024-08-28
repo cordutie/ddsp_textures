@@ -17,8 +17,8 @@
     "epochs": 50,
     "directory": "trained_models",
     "VAE_model_directory": "none",    
-    "VAE_latent_dim": "none",
-    "VAE_atoms_size": "none",
-    "atoms_number": "none"
+    "VAE_latent_dim": 0,
+    "VAE_atoms_size": 0,
+    "atoms_number": 0
 }
 
