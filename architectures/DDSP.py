@@ -6,8 +6,7 @@ import numpy as np
 import librosa
 import torchaudio
 
-
-class DDSP_TextEnv(nn.Module):
+class DDSP_SubEnv(nn.Module):
     def __init__(self, hidden_size, deepness, param_per_env, seed):
         super().__init__()
 

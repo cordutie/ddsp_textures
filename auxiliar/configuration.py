@@ -20,7 +20,7 @@ def model_json_to_parameters(json_file_path):
     
     # Architecture options ------------------------------------------------------------------------------
     architecture_map = {
-        'DDSP_TextEnv': DDSP_TextEnv,
+        'DDSP_SubEnv': DDSP_SubEnv,
         'DDSP_PVAE':    DDSP_PVAE
     }
     

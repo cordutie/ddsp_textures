@@ -1,0 +1,24 @@
+{
+    "audio_path": "/sounds/water_augmented.wav",
+    "frame_size": 16384,
+    "hop_size": 16384,
+    "sampling_rate": 44100,
+    "features_annotator": "features_freqavg_freqstd",
+    "freq_avg_level": 2,
+    "hidden_size": 256,
+    "deepness": 3,
+    "param_per_env": 512,
+    "N_filter_bank": 16,
+    "architecture": "DDSP_SubEnv",
+    "onset_detection_model_path": "none",
+    "loss_function": "statistics_loss",
+    "regularization": 0,
+    "batch_size": 16,
+    "epochs": 50,
+    "directory": "trained_models",
+    "VAE_model_directory": "none",    
+    "VAE_latent_dim": "none",
+    "VAE_atoms_size": "none",
+    "atoms_number": "none"
+}
+
