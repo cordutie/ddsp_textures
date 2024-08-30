@@ -1,6 +1,6 @@
 {
     "audio_path": "sounds/water_augmented.wav",
-    "frame_size": 16384,
+    "frame_size": 32768,
     "hop_size": 16384,
     "sampling_rate": 44100,
     "features_annotator": "features_freqavg_freqstd",
