@@ -16,16 +16,17 @@ import pickle
 import os
 import matplotlib.pyplot as plt
 
-def model_loader(model_folder_path):
+def model_loader(model_folder_path, print_parameters=True):
     configurations_path = os.path.join(model_folder_path, "configurations.json")
     
     #read configurations
     parameters_dict = model_json_to_parameters(configurations_path)
     
-    # Print parameters in bold
-    print("\033[1mModel Parameters:\033[0m\n")
-    for key, value in parameters_dict.items():
-        print(f"{key}: {value}")
+    if print_parameters:
+        # Print parameters in bold
+        print("\033[1mModel Parameters:\033[0m\n")
+        for key, value in parameters_dict.items():
+            print(f"{key}: {value}")
     
     # Unpack parameters
     hidden_size      = parameters_dict['hidden_size']
