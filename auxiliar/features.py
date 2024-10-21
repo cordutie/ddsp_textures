@@ -4,7 +4,22 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 import librosa
 import torchaudio
+from   ddsp_textures.auxiliar.seeds import *
 
+# All purpose functions ---------------------------------------------------------
+def audio_improver(signal_tensor, sampling_rate, level):
+    signal_filtered  = torchaudio.functional.bandpass_biquad(signal_tensor, sample_rate = sampling_rate, central_freq = 10000, Q = 0.1)
+    freq_mean        = computer_freq_avg(signal_filtered, sampling_rate)
+    # filtered audio is centered around the spectral centroid
+    segment_centered = torchaudio.functional.bandpass_biquad(signal_filtered, sample_rate = sampling_rate, central_freq = freq_mean, Q = 1)
+    # improved audio is the sum of the centered audio and the original audio
+    segment_improved = level*segment_centered + signal_tensor
+    return segment_improved
+
+def signal_normalizer(signal):
+    signal = (signal - torch.mean(signal))/torch.std(signal)
+    return signal
+    
 # All purpose features computation ----------------------------------------------
 def computer_freq_avg(signal_filtered, sampling_rate):
     device = signal_filtered.device
@@ -46,6 +61,23 @@ def computer_freq_avg_and_std(signal_filtered, sampling_rate):
     std_freqs      = torch.sqrt(variance_freqs)
     
     return mean_frequency, std_freqs
+
+def energy_bands(signal, erb_bank):
+    device = signal.device  # Get the device of the input signal tensor
+    erb_subbands_signal = erb_bank.generate_subbands(signal)[:, 1:-1]
+    
+    # Extract envelopes
+    env_subbands = torch.abs(hilbert(erb_subbands_signal))
+    N_filter_bank = env_subbands.shape[1]
+    
+    # Compute energy bands
+    energy_bands = []
+    for i in range(N_filter_bank):
+        envelope = env_subbands[:, i].float().to(device)  # Ensure the envelope is on the same device
+        enve_std = torch.std(envelope)
+        energy_bands.append(enve_std)
+        
+    return energy_bands
 
 def compute_spectrogram(waveform, n_fft=1024, hop_length=512):
     device = waveform.device
@@ -91,50 +123,61 @@ def computer_rate(signal_tensor, sampling_rate):
     return rate
 
 # Features annotators --------------------------------------------------------
-def features_freqavg_freqstd(signal_improved, sampling_rate, normalization=True):
-    mean_frequency, std_freqs = computer_freq_avg_and_std(signal_improved, sampling_rate)
+def features_freqavg_rate(signal_improved, sampling_rate, _):
+    normalization=True # amazing programming skills
+    freq_avg = computer_freq_avg(signal_improved, sampling_rate)
     if normalization:
         max_freq = torch.tensor(sampling_rate / 2)
+        mean_frequency = torch.log2(freq_avg) / torch.log2(max_freq)
+    return [mean_frequency]
+
+def features_freqavg_freqstd(signal_improved, sampling_rate, _):
+    normalization=True # amazing programming skills
+    mean_frequency, std_freqs = computer_freq_avg_and_std(signal_improved, sampling_rate)
+    if normalization:
+        max_freq       = torch.tensor(sampling_rate / 2)
         mean_frequency = torch.log2(mean_frequency) / torch.log2(max_freq)
         std_freqs      = torch.log2(std_freqs)      / torch.log2(max_freq)
     return [mean_frequency, std_freqs]
 
-def features_freqavg_rate(signal_improved, sampling_rate, normalization=True):
-    freq_avg = computer_freq_avg(signal_improved, sampling_rate)
+def features_rate(signal_improved, sampling_rate, _):
+    normalization=True # amazing programming skills
     rate     = computer_rate(signal_improved, sampling_rate)
     if normalization:
-        max_freq = torch.tensor(sampling_rate / 2)
-        freq_avg = torch.log2(freq_avg) / torch.log2(max_freq)
         time_length_signal = signal_improved.shape[-1] / sampling_rate # in seconds
         max_rate_per_second = 5 # 5 onsets per second
         max_rate = max_rate_per_second * time_length_signal # max_rate_per_second onsets in the whole signal
         rate = rate / max_rate # normalization
-    return [freq_avg, rate]
+    return [rate]
 
-# Features anotators in batches ----------------------------------------------
-def batch_features_freqavg_freqstd(signal_improved_batch, sampling_rate, normalization=True):
-    batch_size = signal_improved_batch.shape[0]
-    mean_freqs = []
-    std_freqs = []
-    for i in range(batch_size):
-        signal_filtered = signal_improved_batch[i]
-        mean_freq, std_freq = features_freqavg_freqstd(signal_filtered, sampling_rate, normalization)
-        mean_freqs.append(mean_freq)
-        std_freqs.append(std_freq)
-    mean_freqs = torch.stack(mean_freqs)
-    std_freqs = torch.stack(std_freqs)
-    return torch.stack((mean_freqs, std_freqs), dim=1)
+def features_energy_bands(signal, _, erb_bank):
+    return energy_bands(signal, erb_bank) # amazing programming skills
 
-def batch_features_freqavg_rate(signal_improved_batch, sampling_rate, normalization=True):
-    batch_size = signal_improved_batch.shape[0]
-    freq_avgs = []
-    rates = []
-    for i in range(batch_size):
-        signal_filtered = signal_improved_batch[i]
-        freq_avg, rate  = features_freqavg_rate(signal_filtered, sampling_rate, normalization)
-        freq_avgs.append(freq_avg)
-        rates.append(rate)
-    freq_avgs = torch.stack(freq_avgs)
-    rates = torch.stack(rates)
-    return torch.stack((freq_avgs, rates), dim=1)
+# Why this?
+# # Features anotators in batches ----------------------------------------------
+# def batch_features_freqavg_freqstd(signal_improved_batch, sampling_rate, normalization=True):
+#     batch_size = signal_improved_batch.shape[0]
+#     mean_freqs = []
+#     std_freqs = []
+#     for i in range(batch_size):
+#         signal_filtered = signal_improved_batch[i]
+#         mean_freq, std_freq = features_freqavg_freqstd(signal_filtered, sampling_rate, normalization)
+#         mean_freqs.append(mean_freq)
+#         std_freqs.append(std_freq)
+#     mean_freqs = torch.stack(mean_freqs)
+#     std_freqs = torch.stack(std_freqs)
+#     return torch.stack((mean_freqs, std_freqs), dim=1)
+
+# def batch_features_freqavg_rate(signal_improved_batch, sampling_rate, normalization=True):
+#     batch_size = signal_improved_batch.shape[0]
+#     freq_avgs = []
+#     rates = []
+#     for i in range(batch_size):
+#         signal_filtered = signal_improved_batch[i]
+#         freq_avg, rate  = features_freqavg_rate(signal_filtered, sampling_rate, normalization)
+#         freq_avgs.append(freq_avg)
+#         rates.append(rate)
+#     freq_avgs = torch.stack(freq_avgs)
+#     rates = torch.stack(rates)
+#     return torch.stack((freq_avgs, rates), dim=1)
 

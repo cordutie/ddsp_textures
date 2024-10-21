@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import ddsp_textures.auxiliar.filterbanks
-from ddsp_textures.auxiliar.seeds import *
+from   ddsp_textures.auxiliar.seeds import *
 
 # SubEnv ----------------------------------------------------------------------------------------------
 
@@ -36,7 +36,6 @@ def SubEnv_param_extractor(signal, fs, N_filter_bank, param_per_env):
     imag_param = torch.cat(imag_param)
     
     return real_param, imag_param
-
 
 def SubEnv(parameters_real, parameters_imag, seed, target_loudness=1):
     size          = seed.shape[0]
@@ -107,71 +106,178 @@ def SubEnv_batches(parameters_real, parameters_imag, seed):
     
     return signal_final
 
-# P-VAE ----------------------------------------------------------------------------------------------
+def SubEnv_stems(parameters_real, parameters_imag, frame_size, N_filter_bank, target_loudness=1):
+    size          = frame_size
+    N_filter_bank = N_filter_bank
+    
+    N = parameters_real.size(0)
+    parameters_size = N // N_filter_bank
+    
+    # Initialize a list to store env_locals
+    env_locals_list = []
+    
+    for i in range(N_filter_bank):
+        # Construct the local parameters as a complex array
+        parameters_local = parameters_real[i * parameters_size : (i + 1) * parameters_size] + 1j * parameters_imag[i * parameters_size : (i + 1) * parameters_size]
+        
+        # Initialize FFT coefficients array
+        fftcoeff_local = torch.zeros(int(size/2)+1, dtype=torch.complex64)
+        fftcoeff_local[:parameters_size] = parameters_local
+        
+        # Compute the inverse FFT to get the local envelope
+        env_local = torch.fft.irfft(fftcoeff_local)
+        
+        # Append the current env_local to the list
+        env_locals_list.append(env_local)
+    
+    # Return the list of env_locals
+    return env_locals_list
 
-import torch.nn.functional as F
-import ddsp_textures.auxiliar.time_stamps as ts
-from ddsp_textures.auxiliar.convolution import *
+def SubEnv_stems_batches(parameters_real, parameters_imag, frame_size, N_filter_bank):
+    size = frame_size
+    batch_size = parameters_real.size(0)
+    parameters_size = parameters_real.size(1) // N_filter_bank
 
-# REQUIREMENTS
-# VAE = object that has two methods
-# VAE.generate generates a tensor of size atoms_size from a tensor of size latent_dim
-# VAE.generate_batches generates a tensor of size batch_size x atoms_size from a tensor of size batch_size x latent_dim
-def P_VAE(time_stamps_size, lambda_rate, alpha, sr, VAE, latent_dim, atoms_size, encoded_atoms, window=False):
-    #time stamps generation
-    time_stamps = ts.time_stamps_generator(time_stamps_size, sr, lambda_rate, alpha)
-    #number of atoms = size of encoded atoms/latent dim
-    K = encoded_atoms.size()[0] // latent_dim
-    # print("Number of atoms: ", K)
-    #create tensor 1d with all the atom
-    new_atoms_size = atoms_size
-    atoms = torch.zeros(K*new_atoms_size)
-    for i in range(K):
-        atom_local = VAE.generate(encoded_atoms[i*latent_dim:(i+1)*latent_dim])
-        atom_local = atom_local[:new_atoms_size]
-        #check if windows is a boolean variable 
-        if type(window) != bool:
-            atom_local = atom_local * window
-        # print("atom local size: ", atom_local.size())
-        atoms[i*new_atoms_size:(i+1)*new_atoms_size] = atom_local
-    #convolution step
-    # print("convolution_step")
-    result = convolution_step(time_stamps, atoms, K)
-    return result
+    # Initialize a tensor to store the env_locals for each batch item and each filter
+    # Shape will be [batch_size, N_filter_bank, size]
+    env_locals_tensor = torch.zeros((batch_size, N_filter_bank, size), dtype=torch.float32)
 
-def P_VAE_batches(time_stamps_size, lambda_rate, alpha, sr, VAE, latent_dim, atoms_size, encoded_atoms, window=False):
-    # lambda is a number but comes ina btach. Compute the size of the batch
-    batch_size = lambda_rate.size()[0]
-    # print(batch_size)
+    for i in range(N_filter_bank):
+        # Construct the local parameters as a complex array for each filter in the batch
+        parameters_local = (parameters_real[:, i * parameters_size : (i + 1) * parameters_size] 
+                            + 1j * parameters_imag[:, i * parameters_size : (i + 1) * parameters_size])
+        
+        # Initialize FFT coefficients array for the entire batch
+        fftcoeff_local = torch.zeros((batch_size, int(size / 2) + 1), dtype=torch.complex64, device=parameters_real.device)
+        fftcoeff_local[:, :parameters_size] = parameters_local
+
+        # Compute the inverse FFT to get the local envelope for each batch item
+        env_local = torch.fft.irfft(fftcoeff_local).real
+        
+        # Store the current env_local for each batch item in the tensor
+        env_locals_tensor[:, i, :] = env_local
+
+    # Return the tensor of env_locals with shape [batch_size, N_filter_bank, size]
+    return env_locals_tensor
+
+def SubEnv_stems_to_signal(env_locals, seed, target_loudness=1):
+    size = seed.shape[0]
+    N_filter_bank = seed.shape[1]
+
+    # Initialize the final signal
+    signal_final = torch.zeros(size, dtype=torch.float32)
+
+    # Iterate over the filter bank to reconstruct the signal
+    for i in range(N_filter_bank):
+        env_local = env_locals[i]  # Get the local envelope
+        noise_local = seed[:, i]   # Get the corresponding noise
+
+        # Reconstruct the signal by multiplying envelope with noise
+        texture_sound_local = env_local * noise_local
+        
+        # Accumulate the result
+        signal_final += texture_sound_local
+
+    # Normalize the signal to match the target loudness
+    loudness = torch.sqrt(torch.mean(signal_final ** 2))
+    signal_final = signal_final / loudness
+    signal_final = target_loudness * signal_final
+
+    return signal_final
+
+def SubEnv_stems_batches_to_signals(env_locals_batch, seed, target_loudness=1):
+    size = seed.shape[0]
+    N_filter_bank = seed.shape[1]
+    batch_size = len(env_locals_batch)  # The number of items in the batch
+
+    # Initialize the final signal tensor for the entire batch
+    signal_final = torch.zeros((batch_size, size), dtype=torch.float32)
+
+    # Iterate over the batch items
+    for batch_idx in range(batch_size):
+        # Iterate over the filter bank to reconstruct each signal
+        for i in range(N_filter_bank):
+            env_local = env_locals_batch[batch_idx][i]  # Get the local envelope for this batch item
+            noise_local = seed[:, i]                    # Get the corresponding noise
+
+            # Reconstruct the signal by multiplying envelope with noise
+            texture_sound_local = env_local * noise_local
+            
+            # Accumulate the result for this batch item
+            signal_final[batch_idx] += texture_sound_local
+        
+        # Normalize the signal to match the target loudness
+        loudness = torch.sqrt(torch.mean(signal_final[batch_idx] ** 2))
+        signal_final[batch_idx] = signal_final[batch_idx] / loudness
+        signal_final[batch_idx] = target_loudness * signal_final[batch_idx]
+
+    return signal_final
+
+# # P-VAE ----------------------------------------------------------------------------------------------
+
+# import torch.nn.functional as F
+# import ddsp_textures.auxiliar.time_stamps as ts
+# from ddsp_textures.auxiliar.convolution import *
+
+# # REQUIREMENTS
+# # VAE = object that has two methods
+# # VAE.generate generates a tensor of size atoms_size from a tensor of size latent_dim
+# # VAE.generate_batches generates a tensor of size batch_size x atoms_size from a tensor of size batch_size x latent_dim
+# def P_VAE(time_stamps_size, lambda_rate, alpha, sr, VAE, latent_dim, atoms_size, encoded_atoms, window=False):
+#     #time stamps generation
+#     time_stamps = ts.time_stamps_generator(time_stamps_size, sr, lambda_rate, alpha)
+#     #number of atoms = size of encoded atoms/latent dim
+#     K = encoded_atoms.size()[0] // latent_dim
+#     # print("Number of atoms: ", K)
+#     #create tensor 1d with all the atom
+#     new_atoms_size = atoms_size
+#     atoms = torch.zeros(K*new_atoms_size)
+#     for i in range(K):
+#         atom_local = VAE.generate(encoded_atoms[i*latent_dim:(i+1)*latent_dim])
+#         atom_local = atom_local[:new_atoms_size]
+#         #check if windows is a boolean variable 
+#         if type(window) != bool:
+#             atom_local = atom_local * window
+#         # print("atom local size: ", atom_local.size())
+#         atoms[i*new_atoms_size:(i+1)*new_atoms_size] = atom_local
+#     #convolution step
+#     # print("convolution_step")
+#     result = convolution_step(time_stamps, atoms, K)
+#     return result
+
+# def P_VAE_batches(time_stamps_size, lambda_rate, alpha, sr, VAE, latent_dim, atoms_size, encoded_atoms, window=False):
+#     # lambda is a number but comes ina btach. Compute the size of the batch
+#     batch_size = lambda_rate.size()[0]
+#     # print(batch_size)
     
-    # print("let's compute the time stamps")
-    #make a batch of time stamps using the batch of lambdas and alphas
-    time_stamps_batch = torch.zeros(batch_size, time_stamps_size)
-    for i in range(batch_size):
-        time_stamps_batch[i] = ts.time_stamps_generator(time_stamps_size, sr, lambda_rate[i], alpha[i])
-        # print("time stamps number ", i, " computed")
+#     # print("let's compute the time stamps")
+#     #make a batch of time stamps using the batch of lambdas and alphas
+#     time_stamps_batch = torch.zeros(batch_size, time_stamps_size)
+#     for i in range(batch_size):
+#         time_stamps_batch[i] = ts.time_stamps_generator(time_stamps_size, sr, lambda_rate[i], alpha[i])
+#         # print("time stamps number ", i, " computed")
     
-    # number of atoms = size of encoded atoms/latent dim but atoms come in batches
-    K = encoded_atoms.size()[1] // latent_dim
-    # print("Number of atoms: ", K)
+#     # number of atoms = size of encoded atoms/latent dim but atoms come in batches
+#     K = encoded_atoms.size()[1] // latent_dim
+#     # print("Number of atoms: ", K)
     
-    # #create tensor 1d with all the atom
-    # atoms_new_size_factor = min(1, atoms_new_size_factor)
-    # # print("old atoms size: ", atoms_size)
-    # new_atoms_size = int(atoms_size * atoms_new_size_factor)
-    # # print("new atoms size: ", new_atoms_size)
-    new_atoms_size = atoms_size
-    atoms_batch = torch.zeros(batch_size, K*new_atoms_size)
+#     # #create tensor 1d with all the atom
+#     # atoms_new_size_factor = min(1, atoms_new_size_factor)
+#     # # print("old atoms size: ", atoms_size)
+#     # new_atoms_size = int(atoms_size * atoms_new_size_factor)
+#     # # print("new atoms size: ", new_atoms_size)
+#     new_atoms_size = atoms_size
+#     atoms_batch = torch.zeros(batch_size, K*new_atoms_size)
     
-    for i in range(K):
-        atom_local = VAE.generate_batches(encoded_atoms[:,i*latent_dim:(i+1)*latent_dim])
-        atom_local = atom_local[:, :new_atoms_size]
-        if type(window) != bool:
-            atom_local = atom_local * window.unsqueeze(0)
-        # print("atom local size: ", atom_local.size())
-        # print("atom local size: ", atom_local.size())
-        atoms_batch[:, i*new_atoms_size:(i+1)*new_atoms_size] = atom_local
-    #convolution step
-    # print("\nCONVOLUTION STEP\n")
-    result = convolution_step_batches(time_stamps_batch, atoms_batch, K)
-    return result
+#     for i in range(K):
+#         atom_local = VAE.generate_batches(encoded_atoms[:,i*latent_dim:(i+1)*latent_dim])
+#         atom_local = atom_local[:, :new_atoms_size]
+#         if type(window) != bool:
+#             atom_local = atom_local * window.unsqueeze(0)
+#         # print("atom local size: ", atom_local.size())
+#         # print("atom local size: ", atom_local.size())
+#         atoms_batch[:, i*new_atoms_size:(i+1)*new_atoms_size] = atom_local
+#     #convolution step
+#     # print("\nCONVOLUTION STEP\n")
+#     result = convolution_step_batches(time_stamps_batch, atoms_batch, K)
+#     return result
