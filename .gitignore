@@ -9,3 +9,6 @@ trained_models/
 
 # Ignore basurero
 alabasura/
+
+# Ignore stuff that ends in Identifier
+*.Identifier
