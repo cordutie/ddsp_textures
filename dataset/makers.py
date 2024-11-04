@@ -17,7 +17,7 @@ def read_wavs_from_folder(folder_path, sampling_rate):
         if filename.endswith('.wav'):
             file_path = os.path.join(folder_path, filename)
             # Load the audio file using librosa
-            audio, sr = librosa.load(file_path, sr=sampling_rate, mono=True)  # sr=None to preserve original sampling rate
+            audio, _ = librosa.load(file_path, sr=sampling_rate, mono=True)  # sr=None to preserve original sampling rate
             # audio to torch
             audio = torch.tensor(audio)
             audio_list.append(audio)      # Store the audio, sample rate, and filename
@@ -39,7 +39,7 @@ class DDSP_Dataset(Dataset):
             for i in range(number_of_segments):
                 segment = audio[i * hop_size : i * hop_size + frame_size]
                 self.segments_list.append(segment)
-        self.erb_bank_just_in_case_lol = EqualRectangularBandwidth(size, sampling_rate, N_filter_bank, 20, sampling_rate/2)
+        self.erb_bank_just_in_case_lol = EqualRectangularBandwidth(frame_size, sampling_rate, N_filter_bank, 20, sampling_rate//2)
 
     def compute_dataset(self):
         actual_dataset = []
@@ -60,5 +60,6 @@ class DDSP_Dataset(Dataset):
             actual_dataset.append(segment_annotated)
         print("Dataset computed!")
         return actual_dataset
-    # the output of this function is a list made of lists. Each list has this shape [segment, feature1, feature2, ...]
+    
+    # the output of this function is a list made of lists. Each sub list has this shape [segment, feature1, feature2, ...]
     # note that each feature is a list of tensors

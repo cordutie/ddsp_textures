@@ -122,14 +122,19 @@ def computer_rate(signal_tensor, sampling_rate):
     rate = torch.sum(onset_peaks)
     return rate
 
+def computer_envelopes_stems(signal_tensor, sampling_rate, erb_bank):
+    erb_subbands_signal = erb_bank.generate_subbands(signal_tensor)[:, 1:-1]
+    env_subbands = torch.abs(ddsp_textures.auxiliar.seeds.hilbert(erb_subbands_signal))
+    return env_subbands
+
 # Features annotators --------------------------------------------------------
-def features_freqavg_rate(signal_improved, sampling_rate, _):
+def features_freqavg(signal_improved, sampling_rate, _):
     normalization=True # amazing programming skills
     freq_avg = computer_freq_avg(signal_improved, sampling_rate)
     if normalization:
         max_freq = torch.tensor(sampling_rate / 2)
         mean_frequency = torch.log2(freq_avg) / torch.log2(max_freq)
-    return [mean_frequency]
+    return torch.tensor(mean_frequency)
 
 def features_freqavg_freqstd(signal_improved, sampling_rate, _):
     normalization=True # amazing programming skills
@@ -138,7 +143,7 @@ def features_freqavg_freqstd(signal_improved, sampling_rate, _):
         max_freq       = torch.tensor(sampling_rate / 2)
         mean_frequency = torch.log2(mean_frequency) / torch.log2(max_freq)
         std_freqs      = torch.log2(std_freqs)      / torch.log2(max_freq)
-    return [mean_frequency, std_freqs]
+    return torch.tensor([mean_frequency, std_freqs])
 
 def features_rate(signal_improved, sampling_rate, _):
     normalization=True # amazing programming skills
@@ -148,10 +153,13 @@ def features_rate(signal_improved, sampling_rate, _):
         max_rate_per_second = 5 # 5 onsets per second
         max_rate = max_rate_per_second * time_length_signal # max_rate_per_second onsets in the whole signal
         rate = rate / max_rate # normalization
-    return [rate]
+    return torch.tensor(rate)
 
 def features_energy_bands(signal, _, erb_bank):
-    return energy_bands(signal, erb_bank) # amazing programming skills
+    return torch.tensor(energy_bands(signal, erb_bank)) # amazing programming skills
+
+def features_envelopes_stems(signal_tensor, _, erb_bank):
+    return computer_envelopes_stems(signal_tensor, _, erb_bank) # incredible programming skills
 
 # Why this?
 # # Features anotators in batches ----------------------------------------------
