@@ -64,7 +64,7 @@ def computer_freq_avg_and_std(signal_filtered, sampling_rate):
 
 def energy_bands(signal, erb_bank):
     device = signal.device  # Get the device of the input signal tensor
-    erb_subbands_signal = erb_bank.generate_subbands(signal)[:, 1:-1]
+    erb_subbands_signal = erb_bank.generate_subbands(signal)[1:-1, :]
     
     # Extract envelopes
     env_subbands = torch.abs(hilbert(erb_subbands_signal))
@@ -123,7 +123,7 @@ def computer_rate(signal_tensor, sampling_rate):
     return rate
 
 def computer_envelopes_stems(signal_tensor, sampling_rate, erb_bank):
-    erb_subbands_signal = erb_bank.generate_subbands(signal_tensor)[:, 1:-1]
+    erb_subbands_signal = erb_bank.generate_subbands(signal_tensor)[1:-1, :]
     env_subbands = torch.abs(ddsp_textures.auxiliar.seeds.hilbert(erb_subbands_signal))
     return env_subbands
 

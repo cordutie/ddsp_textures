@@ -65,7 +65,7 @@ def statistics(signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsam
     device = signal.device  # Get the device of the input signal tensor
     size = signal.shape[0]
 
-    erb_subbands_signal = erb_bank.generate_subbands(signal)[:, 1:-1]
+    erb_subbands_signal = erb_bank.generate_subbands(signal)[1:-1, :]
     
     # Extract envelopes using erb bank
     env_subbands = torch.abs(ddsp_textures.auxiliar.seeds.hilbert(erb_subbands_signal))
@@ -73,7 +73,7 @@ def statistics(signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsam
     # Downsampling before computing 
     envelopes_downsampled = []
     for i in range(N_filter_bank):
-        envelope = env_subbands[:, i].float().to(device)  # Ensure the envelope is on the same device
+        envelope = env_subbands[i].float().to(device)  # Ensure the envelope is on the same device
         envelopes_downsampled.append(downsampler(envelope).to(torch.float64))
 
     subenvelopes = []
@@ -84,24 +84,24 @@ def statistics(signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsam
         signal = envelopes_downsampled[i]
     
         # Extract subbands
-        subenvelopes.append(log_bank.generate_subbands(signal)[:, 1:-1])
+        subenvelopes.append(log_bank.generate_subbands(signal)[1:-1, :])
     
     # FROM SUBENVS: extract statistics up to order 4
     statistics_1 = torch.zeros(N_filter_bank, 4, device=device)
     for i in range(N_filter_bank):
-        mu = torch.mean(env_subbands[:, i])
-        sigma = torch.sqrt(torch.mean((env_subbands[:, i] - mu) ** 2))
+        mu = torch.mean(env_subbands[i])
+        sigma = torch.sqrt(torch.mean((env_subbands[i] - mu) ** 2))
         statistics_1[i, 0] = mu * 100
         statistics_1[i, 1] = sigma ** 2 / mu ** 2
-        statistics_1[i, 2] = (torch.mean((env_subbands[:, i] - mu) ** 3) / sigma ** 3) / 50
-        statistics_1[i, 3] = (torch.mean((env_subbands[:, i] - mu) ** 4) / sigma ** 4) / 500
+        statistics_1[i, 2] = (torch.mean((env_subbands[i] - mu) ** 3) / sigma ** 3) / 50
+        statistics_1[i, 3] = (torch.mean((env_subbands[i] - mu) ** 4) / sigma ** 4) / 500
 
     # FROM SUBENVS: extract correlations
     statistics_2 = []
     for i in range(N_filter_bank):
         nice_neighbours = [j for j in range(i+1, N_filter_bank) if j - i < N_filter_bank // 2]
         for j in nice_neighbours:
-            statistics_2.append(correlation_coefficient(env_subbands[:, i], env_subbands[:, j]))
+            statistics_2.append(correlation_coefficient(env_subbands[i], env_subbands[j]))
     statistics_2 = torch.tensor(statistics_2)
 
     # FROM SUB-SUBENVS: extract weight of each sub-subenv
@@ -109,7 +109,7 @@ def statistics(signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsam
     for i in range(N_filter_bank):
         sigma_i = torch.std(envelopes_downsampled[i])
         for j in range(M_filter_bank):
-            statistics_3[M_filter_bank * i + j] = torch.std(subenvelopes[i][:, j]) / sigma_i
+            statistics_3[M_filter_bank * i + j] = torch.std(subenvelopes[i][j]) / sigma_i
 
     # FROM SUB-SUBENVS: extract correlations between sub-subenvs in the same subenv
     statistics_4 = []
@@ -118,14 +118,14 @@ def statistics(signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsam
             nice_neighbours = [j for j in range(i+1, N_filter_bank) if j - i < 2]
             for j in nice_neighbours:
                 for n in range(M_filter_bank//2):
-                    statistics_4.append(correlation_coefficient(subenvelopes[i][:, n], subenvelopes[j][:, n]))
+                    statistics_4.append(correlation_coefficient(subenvelopes[i][n], subenvelopes[j][n]))
     statistics_4 = torch.tensor(statistics_4)
     
     # FROM SUB-SUBENVS: extract correlations between sub-subenvs in different subenvs
     statistics_5 = []
     for i in range(N_filter_bank):
         for j in range(M_filter_bank//2):
-            statistics_5.append(correlation_coefficient(subenvelopes[i][:, j], subenvelopes[i][:, j+1]))
+            statistics_5.append(correlation_coefficient(subenvelopes[i][j], subenvelopes[i][j+1]))
     statistics_5 = torch.tensor(statistics_5)
 
     return [statistics_1, statistics_2, statistics_3, statistics_4, statistics_5]
@@ -175,7 +175,7 @@ def statistics_stems(stems_torch, N_filter_bank, M_filter_bank, log_bank, downsa
     # Downsampling before computing 
     envelopes_downsampled = []
     for i in range(N_filter_bank):
-        envelope = env_subbands[:, i].float().to(device)  # Ensure the envelope is on the same device
+        envelope = env_subbands[i].float().to(device)  # Ensure the envelope is on the same device
         envelopes_downsampled.append(downsampler(envelope).to(torch.float64))
 
     subenvelopes = []
@@ -186,24 +186,24 @@ def statistics_stems(stems_torch, N_filter_bank, M_filter_bank, log_bank, downsa
         signal = envelopes_downsampled[i]
     
         # Extract subbands
-        subenvelopes.append(log_bank.generate_subbands(signal)[:, 1:-1])
+        subenvelopes.append(log_bank.generate_subbands(signal)[1:-1, :])
     
     # FROM SUBENVS: extract statistics up to order 4
     statistics_1 = torch.zeros(N_filter_bank, 4, device=device)
     for i in range(N_filter_bank):
-        mu = torch.mean(env_subbands[:, i])
-        sigma = torch.sqrt(torch.mean((env_subbands[:, i] - mu) ** 2))
+        mu = torch.mean(env_subbands[i])
+        sigma = torch.sqrt(torch.mean((env_subbands[i] - mu) ** 2))
         statistics_1[i, 0] = mu * 100
         statistics_1[i, 1] = sigma ** 2 / mu ** 2
-        statistics_1[i, 2] = (torch.mean((env_subbands[:, i] - mu) ** 3) / sigma ** 3) / 50
-        statistics_1[i, 3] = (torch.mean((env_subbands[:, i] - mu) ** 4) / sigma ** 4) / 500
+        statistics_1[i, 2] = (torch.mean((env_subbands[i] - mu) ** 3) / sigma ** 3) / 50
+        statistics_1[i, 3] = (torch.mean((env_subbands[i] - mu) ** 4) / sigma ** 4) / 500
 
     # FROM SUBENVS: extract correlations
     statistics_2 = []
     for i in range(N_filter_bank):
         nice_neighbours = [j for j in range(i+1, N_filter_bank) if j - i < N_filter_bank // 2]
         for j in nice_neighbours:
-            statistics_2.append(correlation_coefficient(env_subbands[:, i], env_subbands[:, j]))
+            statistics_2.append(correlation_coefficient(env_subbands[i], env_subbands[j]))
     statistics_2 = torch.tensor(statistics_2)
 
     # FROM SUB-SUBENVS: extract weight of each sub-subenv
@@ -211,7 +211,7 @@ def statistics_stems(stems_torch, N_filter_bank, M_filter_bank, log_bank, downsa
     for i in range(N_filter_bank):
         sigma_i = torch.std(envelopes_downsampled[i])
         for j in range(M_filter_bank):
-            statistics_3[M_filter_bank * i + j] = torch.std(subenvelopes[i][:, j]) / sigma_i
+            statistics_3[M_filter_bank * i + j] = torch.std(subenvelopes[i][j]) / sigma_i
 
     # FROM SUB-SUBENVS: extract correlations between sub-subenvs in the same subenv
     statistics_4 = []
@@ -220,14 +220,14 @@ def statistics_stems(stems_torch, N_filter_bank, M_filter_bank, log_bank, downsa
             nice_neighbours = [j for j in range(i+1, N_filter_bank) if j - i < 2]
             for j in nice_neighbours:
                 for n in range(M_filter_bank//2):
-                    statistics_4.append(correlation_coefficient(subenvelopes[i][:, n], subenvelopes[j][:, n]))
+                    statistics_4.append(correlation_coefficient(subenvelopes[i][n], subenvelopes[j][n]))
     statistics_4 = torch.tensor(statistics_4)
     
     # FROM SUB-SUBENVS: extract correlations between sub-subenvs in different subenvs
     statistics_5 = []
     for i in range(N_filter_bank):
         for j in range(M_filter_bank//2):
-            statistics_5.append(correlation_coefficient(subenvelopes[i][:, j], subenvelopes[i][:, j+1]))
+            statistics_5.append(correlation_coefficient(subenvelopes[i][j], subenvelopes[i][j+1]))
     statistics_5 = torch.tensor(statistics_5)
 
     return [statistics_1, statistics_2, statistics_3, statistics_4, statistics_5]

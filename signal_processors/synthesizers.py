@@ -37,6 +37,8 @@ def SubEnv_param_extractor(signal, fs, N_filter_bank, param_per_env):
     
     return real_param, imag_param
 
+# Actual synth ----------------------------------------------------------------------------------------------
+
 def SubEnv(parameters_real, parameters_imag, seed, target_loudness=1):
     size          = seed.shape[0]
     N_filter_bank = seed.shape[1]
@@ -106,6 +108,8 @@ def SubEnv_batches(parameters_real, parameters_imag, seed):
     
     return signal_final
 
+# Actual Synth Stems -------------------------------------------------------------------------------
+
 def SubEnv_stems(parameters_real, parameters_imag, frame_size, N_filter_bank, target_loudness=1):
     size          = frame_size
     N_filter_bank = N_filter_bank
@@ -160,6 +164,8 @@ def SubEnv_stems_batches(parameters_real, parameters_imag, frame_size, N_filter_
     # Return the tensor of env_locals with shape [batch_size, N_filter_bank, size]
     return env_locals_tensor
 
+# Stems to signal -------------------------------------------------------------------------------
+
 def SubEnv_stems_to_signal(env_locals, seed, target_loudness=1):
     size = seed.shape[0]
     N_filter_bank = seed.shape[1]
@@ -185,7 +191,7 @@ def SubEnv_stems_to_signal(env_locals, seed, target_loudness=1):
 
     return signal_final
 
-def SubEnv_stems_batches_to_signals(env_locals_batch, seed, target_loudness=1):
+def SubEnv_stems_to_signals_batches(env_locals_batch, seed, target_loudness=1):
     size = seed.shape[0]
     N_filter_bank = seed.shape[1]
     batch_size = len(env_locals_batch)  # The number of items in the batch
@@ -212,72 +218,3 @@ def SubEnv_stems_batches_to_signals(env_locals_batch, seed, target_loudness=1):
         signal_final[batch_idx] = target_loudness * signal_final[batch_idx]
 
     return signal_final
-
-# # P-VAE ----------------------------------------------------------------------------------------------
-
-# import torch.nn.functional as F
-# import ddsp_textures.auxiliar.time_stamps as ts
-# from ddsp_textures.auxiliar.convolution import *
-
-# # REQUIREMENTS
-# # VAE = object that has two methods
-# # VAE.generate generates a tensor of size atoms_size from a tensor of size latent_dim
-# # VAE.generate_batches generates a tensor of size batch_size x atoms_size from a tensor of size batch_size x latent_dim
-# def P_VAE(time_stamps_size, lambda_rate, alpha, sr, VAE, latent_dim, atoms_size, encoded_atoms, window=False):
-#     #time stamps generation
-#     time_stamps = ts.time_stamps_generator(time_stamps_size, sr, lambda_rate, alpha)
-#     #number of atoms = size of encoded atoms/latent dim
-#     K = encoded_atoms.size()[0] // latent_dim
-#     # print("Number of atoms: ", K)
-#     #create tensor 1d with all the atom
-#     new_atoms_size = atoms_size
-#     atoms = torch.zeros(K*new_atoms_size)
-#     for i in range(K):
-#         atom_local = VAE.generate(encoded_atoms[i*latent_dim:(i+1)*latent_dim])
-#         atom_local = atom_local[:new_atoms_size]
-#         #check if windows is a boolean variable 
-#         if type(window) != bool:
-#             atom_local = atom_local * window
-#         # print("atom local size: ", atom_local.size())
-#         atoms[i*new_atoms_size:(i+1)*new_atoms_size] = atom_local
-#     #convolution step
-#     # print("convolution_step")
-#     result = convolution_step(time_stamps, atoms, K)
-#     return result
-
-# def P_VAE_batches(time_stamps_size, lambda_rate, alpha, sr, VAE, latent_dim, atoms_size, encoded_atoms, window=False):
-#     # lambda is a number but comes ina btach. Compute the size of the batch
-#     batch_size = lambda_rate.size()[0]
-#     # print(batch_size)
-    
-#     # print("let's compute the time stamps")
-#     #make a batch of time stamps using the batch of lambdas and alphas
-#     time_stamps_batch = torch.zeros(batch_size, time_stamps_size)
-#     for i in range(batch_size):
-#         time_stamps_batch[i] = ts.time_stamps_generator(time_stamps_size, sr, lambda_rate[i], alpha[i])
-#         # print("time stamps number ", i, " computed")
-    
-#     # number of atoms = size of encoded atoms/latent dim but atoms come in batches
-#     K = encoded_atoms.size()[1] // latent_dim
-#     # print("Number of atoms: ", K)
-    
-#     # #create tensor 1d with all the atom
-#     # atoms_new_size_factor = min(1, atoms_new_size_factor)
-#     # # print("old atoms size: ", atoms_size)
-#     # new_atoms_size = int(atoms_size * atoms_new_size_factor)
-#     # # print("new atoms size: ", new_atoms_size)
-#     new_atoms_size = atoms_size
-#     atoms_batch = torch.zeros(batch_size, K*new_atoms_size)
-    
-#     for i in range(K):
-#         atom_local = VAE.generate_batches(encoded_atoms[:,i*latent_dim:(i+1)*latent_dim])
-#         atom_local = atom_local[:, :new_atoms_size]
-#         if type(window) != bool:
-#             atom_local = atom_local * window.unsqueeze(0)
-#         # print("atom local size: ", atom_local.size())
-#         # print("atom local size: ", atom_local.size())
-#         atoms_batch[:, i*new_atoms_size:(i+1)*new_atoms_size] = atom_local
-#     #convolution step
-#     # print("\nCONVOLUTION STEP\n")
-#     result = convolution_step_batches(time_stamps_batch, atoms_batch, K)
-#     return result

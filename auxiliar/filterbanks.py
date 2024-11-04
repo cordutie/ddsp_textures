@@ -43,7 +43,7 @@ class FilterBank:
         tile = fft_sample.unsqueeze(1) * torch.ones(1, N + 2, device=device)
         fft_subbands = fft_filts * tile
         # self.subbands = torch.fft.ifft(fft_subbands, dim=0).real.to(device)
-        return torch.fft.ifft(fft_subbands, dim=0).real.to(device)
+        return torch.fft.ifft(fft_subbands, dim=0).real.to(device).transpose(0, 1)
 
 class EqualRectangularBandwidth(FilterBank):
     def __init__(self, leny, fs, N, low_lim, high_lim):
