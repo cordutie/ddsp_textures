@@ -3,7 +3,7 @@
     "frame_size": 32768,
     "hop_size": 16384,
     "sampling_rate": 44100,
-    "features_list": "features_freqavg_rate,features_freqavg,features_freqavg_freqstd,features_rate,features_energy_bands,features_envelopes_stems",
+    "features_list": "freqavg_rate,freqavg,freqavg_freqstd,rate,energy_bands,envelopes_stems",
     "hidden_size_enc": 512,
     "hidden_size_dec": 512,
     "deepness_enc": 3,
@@ -12,9 +12,10 @@
     "N_filter_bank": 16,
     "M_filter_bank": 16,
     "architecture": "DDSP_TextEnv",
-    "loss_function": "statistics_loss",
-    "regularization": 1,
+    "stems": 1,
+    "loss_function": "statistics",
+    "regularizers_list": "freqavg_rate,rate,energy_bands",
     "batch_size": 16,
     "epochs": 2,
-    "directory": "../trained_models"
+    "models_directory": "../trained_models"
 }

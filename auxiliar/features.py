@@ -161,31 +161,45 @@ def features_energy_bands(signal, _, erb_bank):
 def features_envelopes_stems(signal_tensor, _, erb_bank):
     return computer_envelopes_stems(signal_tensor, _, erb_bank) # incredible programming skills
 
-# Why this?
-# # Features anotators in batches ----------------------------------------------
-# def batch_features_freqavg_freqstd(signal_improved_batch, sampling_rate, normalization=True):
-#     batch_size = signal_improved_batch.shape[0]
-#     mean_freqs = []
-#     std_freqs = []
-#     for i in range(batch_size):
-#         signal_filtered = signal_improved_batch[i]
-#         mean_freq, std_freq = features_freqavg_freqstd(signal_filtered, sampling_rate, normalization)
-#         mean_freqs.append(mean_freq)
-#         std_freqs.append(std_freq)
-#     mean_freqs = torch.stack(mean_freqs)
-#     std_freqs = torch.stack(std_freqs)
-#     return torch.stack((mean_freqs, std_freqs), dim=1)
+# Features anotators in batches (FOR REGULARIZATION) ----------------------------------------------
+def batch_features_freqavg(signals_batch, sampling_rate, _):
+    batch_size = signals_batch.shape[0]
+    features = []
+    for i in range(batch_size):
+        signal = signals_batch[i]
+        features.append(features_freqavg(signal, sampling_rate, _))
+    return torch.stack(features)
 
-# def batch_features_freqavg_rate(signal_improved_batch, sampling_rate, normalization=True):
-#     batch_size = signal_improved_batch.shape[0]
-#     freq_avgs = []
-#     rates = []
-#     for i in range(batch_size):
-#         signal_filtered = signal_improved_batch[i]
-#         freq_avg, rate  = features_freqavg_rate(signal_filtered, sampling_rate, normalization)
-#         freq_avgs.append(freq_avg)
-#         rates.append(rate)
-#     freq_avgs = torch.stack(freq_avgs)
-#     rates = torch.stack(rates)
-#     return torch.stack((freq_avgs, rates), dim=1)
+def batch_features_freqavg_freqstd(signals_batch, sampling_rate, _):
+    batch_size = signals_batch.shape[0]
+    features = []
+    for i in range(batch_size):
+        signal = signals_batch[i]
+        features.append(features_freqavg_freqstd(signal, sampling_rate, _))
+    return torch.stack(features)
+
+def batch_features_rate(signals_batch, sampling_rate, _):
+    batch_size = signals_batch.shape[0]
+    features = []
+    for i in range(batch_size):
+        signal = signals_batch[i]
+        features.append(features_rate(signal, sampling_rate, _))
+    return torch.stack(features)
+
+def batch_features_energy_bands(signals_batch, _, erb_bank):
+    batch_size = signals_batch.shape[0]
+    features = []
+    for i in range(batch_size):
+        signal = signals_batch[i]
+        features.append(features_energy_bands(signal, _, erb_bank))
+    return torch.stack(features)
+
+def batch_features_envelopes_stems(signals_batch, _, erb_bank):
+    batch_size = signals_batch.shape[0]
+    features = []
+    for i in range(batch_size):
+        signal = signals_batch[i]
+        features.append(features_envelopes_stems(signal, _, erb_bank))
+    return torch.stack(features)
+
 
