@@ -62,7 +62,7 @@ class DDSP_SubEnv(nn.Module):
         if self.stems:
             output = SubEnv_stems_batches(real_param, imag_param)
         else:
-            output = SubEnv_stems(real_param, imag_param)
+            output = SubEnv_batches(real_param, imag_param)
         return output
 
     def synthesizer(self, features, target_loudness, seed):

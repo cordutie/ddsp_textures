@@ -102,10 +102,10 @@ def model_json_to_parameters(json_file_path):
     stems                                         = bool(int(parameters_json['stems'])) 
     actual_parameters['stems']                    = stems
     actual_parameters['loss_function']            = loss_picker(parameters_json['loss_function'], stems)
-    actual_parameters['regularizer']              = []
+    actual_parameters['regularizers']              = []
     regularizers_strings = parameters_json['regularizers_list'].split(',')
     for regularizer in regularizers_strings:
-        actual_parameters['regularizer'].append(regularizers_map[regularizer])
+        actual_parameters['regularizers'].append(regularizers_map[regularizer])
     actual_parameters['batch_size']               = int(parameters_json['batch_size'])
     actual_parameters['epochs']                   = int(parameters_json['epochs'])
     actual_parameters['models_directory']         = parameters_json['models_directory']

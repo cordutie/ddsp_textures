@@ -68,12 +68,12 @@ def energy_bands(signal, erb_bank):
     
     # Extract envelopes
     env_subbands = torch.abs(hilbert(erb_subbands_signal))
-    N_filter_bank = env_subbands.shape[1]
+    N_filter_bank = env_subbands.shape[0]
     
     # Compute energy bands
     energy_bands = []
     for i in range(N_filter_bank):
-        envelope = env_subbands[:, i].float().to(device)  # Ensure the envelope is on the same device
+        envelope = env_subbands[i].float().to(device)  # Ensure the envelope is on the same device
         enve_std = torch.std(envelope)
         energy_bands.append(enve_std)
         

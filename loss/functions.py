@@ -250,7 +250,7 @@ def statistics_loss_stems(original_stems, reconstructed_stems, N_filter_bank, M_
     
     return  final_loss
 
-def batch_statistics_loss_stems(original_stems_batch, reconstructed_stems_batch, N_filter_bank, M_filter_bank, log_bank, downsampler, alpha=[10,50,100,100,100]):
+def batch_statistics_loss_stems(original_stems_batch, reconstructed_stems_batch, N_filter_bank, M_filter_bank, _, log_bank, downsampler, alpha=[10,50,100,100,100]):
     batch_size = original_stems_batch.size(0)
     total_loss = 0.0
 
