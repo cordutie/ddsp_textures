@@ -38,16 +38,16 @@ def model_json_to_parameters(json_file_path):
         "freqavg_freqstd": features_freqavg_freqstd,
         "freqavg":         features_freqavg,
         "rate":            features_rate,
-        "energy_bands":    features_energy_bands,
-        "envelopes_stems": features_envelopes_stems 
+        "energy_bands":    features_energy_bands
+    #    ,"envelopes_stems": features_envelopes_stems 
     }
 
     regularizers_map = {
         "freqavg_freqstd": batch_features_freqavg_freqstd,
         "freqavg":         batch_features_freqavg,
         "rate":            batch_features_rate,
-        "energy_bands":    batch_features_energy_bands,
-        "envelopes_stems": batch_features_envelopes_stems 
+        "energy_bands":    batch_features_energy_bands
+    #    ,"envelopes_stems": batch_features_envelopes_stems 
     }
 
     N  = int(parameters_json['N_filter_bank'])

@@ -1,5 +1,4 @@
 from ddsp_textures.architectures.DDSP import *
-from ddsp_textures.architectures.VAE import *
 from ddsp_textures.auxiliar.seeds import *
 from ddsp_textures.auxiliar.filterbanks import *
 from ddsp_textures.auxiliar.configuration import *
@@ -139,9 +138,10 @@ def trainer_SubEnv(json_path):
 
         for batch in tqdm(dataloader, desc=f"Epoch {epoch + 1}/{epochs}"):
             # Unpack batch data
-            segments_batch = batch[0].to(device)
+            segments_batch       = batch[0].to(device)
+            segments_stems_batch = batch[1].to(device)
             features_batch = []
-            for i in range(1, number_of_features + 1):
+            for i in range(2, number_of_features + 2):
                 features_batch.append(batch[i]).to(device)
 
             # Zero the parameter gradients
@@ -150,8 +150,14 @@ def trainer_SubEnv(json_path):
             # Forward pass
             reconstructed_signal = model(features_batch).to(device)
 
+            # Decide what to use to compare
+            if stems==True:
+                og_signal = segments_stems_batch
+            else:
+                og_signal = segments_batch
+
             # Compute main loss
-            loss_main = loss_function(segments_batch, reconstructed_signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler) 
+            loss_main = loss_function(og_signal, reconstructed_signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler) 
             
             loss_regularizer = 0
             for i in range(1,number_of_features+1):
@@ -170,7 +176,7 @@ def trainer_SubEnv(json_path):
             # Accumulate the losses
             running_loss        += loss_total.item()
             running_main_loss   += loss_main.item()
-            running_regularizer += loss_regularizer.item() if regularization else 0
+            running_regularizer += loss_regularizer.item()
 
         epoch_loss = running_loss / len(dataloader)
         epoch_main_loss = running_main_loss / len(dataloader)

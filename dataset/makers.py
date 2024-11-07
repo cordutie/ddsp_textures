@@ -52,6 +52,8 @@ class DDSP_Dataset(Dataset):
             segment = signal_normalizer(segment)
             # adding the segment to the element
             segment_annotated.append(segment)
+            segment_stems = features_envelopes_stems(segment, 0, self.erb_bank_just_in_case_lol)
+            segment_annotated.append(segment_stems)
             # features computation
             for feature_annotator in self.features_annotators_list:
                 feature_loc = feature_annotator(segment, self.sampling_rate, self.erb_bank_just_in_case_lol)

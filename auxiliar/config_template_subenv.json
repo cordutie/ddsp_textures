@@ -3,7 +3,7 @@
     "frame_size": 32768,
     "hop_size": 16384,
     "sampling_rate": 44100,
-    "features_list": "freqavg,freqavg_freqstd,rate,energy_bands,envelopes_stems",
+    "features_list": "freqavg,freqavg_freqstd,rate,energy_bands",
     "hidden_size_enc": 512,
     "hidden_size_dec": 512,
     "deepness_enc": 3,
