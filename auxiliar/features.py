@@ -115,10 +115,17 @@ def compute_onset_peaks(onset_strength):
     onset_peaks = torch.relu(onset_derivative)
     return onset_peaks
 
-def computer_rate(signal_tensor, sampling_rate):
-    spectrogram = compute_spectrogram(signal_tensor)
+def computer_onset_count(signal_tensor, sampling_rate):
+    spectrogram    = compute_spectrogram(signal_tensor)
     onset_strength = calculate_onset_strength(spectrogram)
-    onset_peaks = compute_onset_peaks(onset_strength)
+    onset_peaks    = compute_onset_peaks(onset_strength)
+    rate = torch.sum(onset_peaks)
+    return rate
+
+def computer_onset_comp(signal_tensor, sampling_rate):
+    spectrogram    = compute_spectrogram(signal_tensor)
+    onset_strength = calculate_onset_strength(spectrogram)
+    onset_peaks    = compute_onset_peaks(onset_strength)
     rate = torch.sum(onset_peaks)
     return rate
 
@@ -147,7 +154,7 @@ def features_freqavg_freqstd(signal_improved, sampling_rate, _):
 
 def features_rate(signal_improved, sampling_rate, _):
     normalization=True # amazing programming skills
-    rate     = computer_rate(signal_improved, sampling_rate)
+    rate     = computer_onset_count(signal_improved, sampling_rate)
     if normalization:
         time_length_signal = signal_improved.shape[-1] / sampling_rate # in seconds
         max_rate_per_second = 5 # 5 onsets per second

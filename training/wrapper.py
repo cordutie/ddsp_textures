@@ -129,6 +129,7 @@ def trainer_SubEnv(json_path):
     print("Training starting!")
 
     number_of_features = len(features_annotators)
+    num_of_regularizers = len(regularizers)
 
     for epoch in range(epochs):
         model.train()
@@ -160,7 +161,7 @@ def trainer_SubEnv(json_path):
             loss_main = loss_function(og_signal, reconstructed_signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler) 
             
             loss_regularizer = 0
-            for i in range(1,number_of_features+1):
+            for i in range(num_of_regularizers):
                 # Make features from reconstructed signal
                 feature_reconstructed = regularizers[i](reconstructed_signal, sampling_rate, erb_bank).to(device)
                 feature_og            = features_batch[i].to(device)

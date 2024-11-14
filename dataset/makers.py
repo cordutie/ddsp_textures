@@ -63,5 +63,5 @@ class DDSP_Dataset(Dataset):
         print("Dataset computed!")
         return actual_dataset
     
-    # the output of this function is a list made of lists. Each sub list has this shape [segment, feature1, feature2, ...]
+    # the output of this function is a list made of lists. Each sub list has this shape [segment, stems, feature1, feature2, ...]
     # note that each feature is a list of tensors

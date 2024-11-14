@@ -18,7 +18,7 @@ class DDSP_SubEnv(nn.Module):
         
         self.encoders = nn.ModuleList()
         
-        # Loop through the input list and create an MLP for each in_size
+        # Loop through the input list and create an MLP for each in_size in input_sizes
         for in_size in input_sizes:
             self.encoders.append(mlp(in_size, enc_hidden_size, enc_deepness))
         # Create z encoder

@@ -54,11 +54,11 @@ def model_json_to_parameters(json_file_path):
     fs = int(parameters_json['frame_size'])
 
     features_dim_map = {
-        "freqavg_freqstd": [2],
-        "freqavg":         [1],
-        "rate":            [1],
-        "energy_bands":    [N],
-        "envelopes_stems": [N,fs]
+        "freqavg_freqstd": 2,
+        "freqavg":         1,
+        "rate":            1,
+        "energy_bands":    N
+        # ,"envelopes_stems": N*fs
     }
     
     # Architecture options ------------------------------------------------------------------------------
@@ -78,19 +78,39 @@ def model_json_to_parameters(json_file_path):
         if stems and loss_input == 'multiscale':
             raise ValueError("Multiscale loss is not compatible with stems.")
         return loss_function_map.get(loss_input)
-
+    
+    # actual parameters initialization -----------------------------------------------------------------
     actual_parameters = {}
+
+    # Checking reg subset of features
+    features_strings = parameters_json['features_list'].split(',')
+    regularizers_strings = parameters_json['regularizers_list'].split(',')
+
+    if set(regularizers_strings).issubset(set(features_strings))==False:
+        raise ValueError("Regularizers must be a subset of features.")
+    
+    # Initialize the actual parameters
+    actual_parameters['features']         = []
+    actual_parameters['regularizers']     = []
+    actual_parameters['input_dimensions'] = []
+
+    # Append regularizers first (keeping their order)
+    for regularizer in regularizers_strings:
+        actual_parameters['features'].append(features_map[regularizer])
+        actual_parameters['regularizers'].append(regularizers_map[regularizer])
+        actual_parameters['input_dimensions'].append(features_dim_map[regularizer])
+
+    # Append the remaining features that are not in regularizers
+    for feature in features_strings:
+        if feature not in regularizers_strings:
+            actual_parameters['features'].append(features_map[feature])
+            actual_parameters['input_dimensions'].append(features_dim_map[feature])
+
     actual_parameters['audio_path']               = parameters_json['audio_path']
     actual_parameters['frame_size']               = int(parameters_json['frame_size'])
     actual_parameters['hop_size']                 = int(parameters_json['hop_size'])
     actual_parameters['sampling_rate']            = int(parameters_json['sampling_rate'])
-    actual_parameters['features']                 = []
-    features_strings = parameters_json['features_list'].split(',')
-    for features in features_strings:
-        actual_parameters['features'].append(features_map[features])
-    actual_parameters['input_dimensions']         = []
-    for features in features_strings:
-        actual_parameters['features']+=features_dim_map[features]
+
     actual_parameters['hidden_size_enc']          = int(parameters_json['hidden_size_enc'])
     actual_parameters['hidden_size_dec']          = int(parameters_json['hidden_size_dec'])
     actual_parameters['deepness_enc']             = int(parameters_json['deepness_enc'])
@@ -102,10 +122,6 @@ def model_json_to_parameters(json_file_path):
     stems                                         = bool(int(parameters_json['stems'])) 
     actual_parameters['stems']                    = stems
     actual_parameters['loss_function']            = loss_picker(parameters_json['loss_function'], stems)
-    actual_parameters['regularizers']              = []
-    regularizers_strings = parameters_json['regularizers_list'].split(',')
-    for regularizer in regularizers_strings:
-        actual_parameters['regularizers'].append(regularizers_map[regularizer])
     actual_parameters['batch_size']               = int(parameters_json['batch_size'])
     actual_parameters['epochs']                   = int(parameters_json['epochs'])
     actual_parameters['models_directory']         = parameters_json['models_directory']

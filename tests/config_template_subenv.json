@@ -1,0 +1,21 @@
+{
+    "audio_path": "../sounds/mini_dataset_example",
+    "frame_size": 32768,
+    "hop_size": 16384,
+    "sampling_rate": 44100,
+    "features_list": "freqavg,freqavg_freqstd,rate,energy_bands",
+    "hidden_size_enc": 512,
+    "hidden_size_dec": 512,
+    "deepness_enc": 3,
+    "deepness_dec": 3,
+    "param_per_env": 512,
+    "N_filter_bank": 16,
+    "M_filter_bank": 16,
+    "architecture": "DDSP_SubEnv",
+    "stems": 1,
+    "loss_function": "statistics",
+    "regularizers_list": "rate,energy_bands",
+    "batch_size": 16,
+    "epochs": 2,
+    "models_directory": "../trained_models"
+}

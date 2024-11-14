@@ -139,6 +139,7 @@ def statistics_loss(original_signal, reconstructed_signal, N_filter_bank, M_filt
         loss_i = torch.sqrt(torch.sum((original_statistics[i] - reconstructed_statistics[i])**2))
         # normalize depending on the amount of data (compute data from shape)
         loss_i = loss_i / original_statistics[i].numel()
+        print("loss_i", loss_i)
         loss.append(loss_i)
     loss_tensor = torch.stack(loss)
     
@@ -241,6 +242,7 @@ def statistics_loss_stems(original_stems, reconstructed_stems, N_filter_bank, M_
         loss_i = torch.sqrt(torch.sum((original_statistics[i] - reconstructed_statistics[i])**2))
         # normalize depending on the amount of data (compute data from shape)
         loss_i = loss_i / original_statistics[i].numel()
+        print("loss_i", loss_i)
         loss.append(loss_i)
     loss_tensor = torch.stack(loss)
     
