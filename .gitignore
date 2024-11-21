@@ -12,3 +12,6 @@ alabasura/
 
 # Ignore stuff that ends in Identifier
 *.Identifier
+
+# Ignore environment
+env_ddsp_textures/
