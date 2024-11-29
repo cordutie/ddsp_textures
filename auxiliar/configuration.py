@@ -77,14 +77,23 @@ def model_json_to_parameters(json_file_path):
     def loss_picker(loss_input, stems):
         if stems and loss_input == 'multiscale':
             raise ValueError("Multiscale loss is not compatible with stems.")
-        return loss_function_map.get(loss_input)
+        elif stems:
+            return loss_function_map.get(loss_input + '_stems')
+        else:
+            return loss_function_map.get(loss_input)
     
     # actual parameters initialization -----------------------------------------------------------------
     actual_parameters = {}
 
     # Checking reg subset of features
-    features_strings = parameters_json['features_list'].split(',')
-    regularizers_strings = parameters_json['regularizers_list'].split(',')
+    features_strings     = parameters_json['features_list'].split(',')
+    if parameters_json['regularizers_list'] == "":
+        regularizers_strings = []
+    else:
+        regularizers_strings = parameters_json['regularizers_list'].split(',')
+
+    print(features_strings)
+    print(regularizers_strings)
 
     if set(regularizers_strings).issubset(set(features_strings))==False:
         raise ValueError("Regularizers must be a subset of features.")
@@ -110,7 +119,6 @@ def model_json_to_parameters(json_file_path):
     actual_parameters['frame_size']               = int(parameters_json['frame_size'])
     actual_parameters['hop_size']                 = int(parameters_json['hop_size'])
     actual_parameters['sampling_rate']            = int(parameters_json['sampling_rate'])
-
     actual_parameters['hidden_size_enc']          = int(parameters_json['hidden_size_enc'])
     actual_parameters['hidden_size_dec']          = int(parameters_json['hidden_size_dec'])
     actual_parameters['deepness_enc']             = int(parameters_json['deepness_enc'])

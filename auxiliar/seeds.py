@@ -79,8 +79,8 @@ def seed_maker(size, fs, N_filter_bank):
     erb_subbands_noise = erb_bank.generate_subbands(noise)[1:-1, :]
     
     for i in range(N_filter_bank):
-        noise_local = erb_subbands_noise[:, i]
+        noise_local = erb_subbands_noise[i]
         noise_normalized = env_normalizer(noise_local)
-        erb_subbands_noise[:, i] = noise_normalized
+        erb_subbands_noise[i] = noise_normalized
     
     return erb_subbands_noise

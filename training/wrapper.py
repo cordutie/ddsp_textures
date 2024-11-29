@@ -116,7 +116,10 @@ def trainer_SubEnv(json_path):
     log_bank    = fb.Logarithmic(          new_frame_size, new_sampling_rate, M_filter_bank, 10, new_sampling_rate // 4)
 
     import torchaudio
-    downsampler = torchaudio.transforms.Resample(sampling_rate, new_sampling_rate)
+    downsampler = torchaudio.transforms.Resample(sampling_rate, new_sampling_rate).to(device)
+
+    # Seed for the synthesizer (necessary for some regularizers)
+    seed = ddsp_textures.auxiliar.seeds.seed_maker(frame_size, sampling_rate, N_filter_bank).to(device)
 
     # Variables to track the best model and loss history
     best_loss = float('inf')
@@ -128,8 +131,10 @@ def trainer_SubEnv(json_path):
     # Training loop
     print("Training starting!")
 
-    number_of_features = len(features_annotators)
+    number_of_features  = len(features_annotators)
+    print("number_of_features", number_of_features)
     num_of_regularizers = len(regularizers)
+    print("num_of_regularizers", num_of_regularizers)
 
     for epoch in range(epochs):
         model.train()
@@ -143,12 +148,15 @@ def trainer_SubEnv(json_path):
             segments_stems_batch = batch[1].to(device)
             features_batch = []
             for i in range(2, number_of_features + 2):
-                features_batch.append(batch[i]).to(device)
+                feature = batch[i].to(device)
+                if feature.ndimension() == 1:  # If feature is 1D (i.e., shape: (batch_size,))
+                    feature = feature.unsqueeze(-1)  # Add an extra dimension, making it shape (batch_size, 1)
+                features_batch.append(feature)
 
             # Zero the parameter gradients
             optimizer.zero_grad()
 
-            # Forward pass
+            # Forward pass (Note that if stems=True, the model will return the stems)
             reconstructed_signal = model(features_batch).to(device)
 
             # Decide what to use to compare
@@ -160,10 +168,15 @@ def trainer_SubEnv(json_path):
             # Compute main loss
             loss_main = loss_function(og_signal, reconstructed_signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler) 
             
-            loss_regularizer = 0
+            loss_regularizer = torch.tensor(0)
+
+            # if there are regularizers and the model uses stems lets remake the signal to compute their features
+            if stems==True:
+                reconstructed_full_signal_= SubEnv_stems_to_signals_batches(reconstructed_signal, seed)
+            
             for i in range(num_of_regularizers):
                 # Make features from reconstructed signal
-                feature_reconstructed = regularizers[i](reconstructed_signal, sampling_rate, erb_bank).to(device)
+                feature_reconstructed = regularizers[i](reconstructed_full_signal_, sampling_rate, erb_bank).to(device)
                 feature_og            = features_batch[i].to(device)
                 loss_regularizer      += torch.norm(feature_reconstructed - feature_og, p=2) 
 

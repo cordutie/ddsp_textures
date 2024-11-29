@@ -74,7 +74,7 @@ def statistics(signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsam
     envelopes_downsampled = []
     for i in range(N_filter_bank):
         envelope = env_subbands[i].float().to(device)  # Ensure the envelope is on the same device
-        envelopes_downsampled.append(downsampler(envelope).to(torch.float64))
+        envelopes_downsampled.append(downsampler(envelope))
 
     subenvelopes = []
     # new_size = envelopes_downsampled[0].shape[0]
@@ -87,14 +87,17 @@ def statistics(signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsam
         subenvelopes.append(log_bank.generate_subbands(signal)[1:-1, :])
     
     # FROM SUBENVS: extract statistics up to order 4
-    statistics_1 = torch.zeros(N_filter_bank, 4, device=device)
+    statistics_11 = torch.zeros(N_filter_bank, device=device)
+    statistics_12 = torch.zeros(N_filter_bank, device=device)
+    statistics_13 = torch.zeros(N_filter_bank, device=device)
+    statistics_14 = torch.zeros(N_filter_bank, device=device)
     for i in range(N_filter_bank):
         mu = torch.mean(env_subbands[i])
         sigma = torch.sqrt(torch.mean((env_subbands[i] - mu) ** 2))
-        statistics_1[i, 0] = mu * 100
-        statistics_1[i, 1] = sigma ** 2 / mu ** 2
-        statistics_1[i, 2] = (torch.mean((env_subbands[i] - mu) ** 3) / sigma ** 3) / 50
-        statistics_1[i, 3] = (torch.mean((env_subbands[i] - mu) ** 4) / sigma ** 4) / 500
+        statistics_11[i] = mu
+        statistics_12[i] = sigma ** 2 / mu ** 2
+        statistics_13[i] = (torch.mean((env_subbands[i] - mu) ** 3) / sigma ** 3)
+        statistics_14[i] = (torch.mean((env_subbands[i] - mu) ** 4) / sigma ** 4)
 
     # FROM SUBENVS: extract correlations
     statistics_2 = []
@@ -114,42 +117,52 @@ def statistics(signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsam
     # FROM SUB-SUBENVS: extract correlations between sub-subenvs in the same subenv
     statistics_4 = []
     for i in range(N_filter_bank):
-        if i < N_filter_bank-2:
-            nice_neighbours = [j for j in range(i+1, N_filter_bank) if j - i < 2]
-            for j in nice_neighbours:
-                for n in range(M_filter_bank//2):
-                    statistics_4.append(correlation_coefficient(subenvelopes[i][n], subenvelopes[j][n]))
+        for j in range(i+1, N_filter_bank):
+            for n in range(M_filter_bank):
+                statistics_4.append(correlation_coefficient(subenvelopes[i][n], subenvelopes[j][n]))
     statistics_4 = torch.tensor(statistics_4)
-    
+
     # FROM SUB-SUBENVS: extract correlations between sub-subenvs in different subenvs
     statistics_5 = []
     for i in range(N_filter_bank):
-        for j in range(M_filter_bank//2):
-            statistics_5.append(correlation_coefficient(subenvelopes[i][j], subenvelopes[i][j+1]))
+        for j in range(M_filter_bank):
+            for k in range(j+1, M_filter_bank):
+                statistics_5.append(correlation_coefficient(subenvelopes[i][j], subenvelopes[i][k]))
     statistics_5 = torch.tensor(statistics_5)
 
-    return [statistics_1, statistics_2, statistics_3, statistics_4, statistics_5]
+    return [statistics_11, statistics_12, statistics_13, statistics_14, statistics_2, statistics_3, statistics_4, statistics_5]
 
-def statistics_loss(original_signal, reconstructed_signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler, alpha=[10,50,100,100,100]):
+def statistics_loss(original_signal, reconstructed_signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler, alpha=torch.tensor([0.0070, 0.0035, 0.8993, 0.0049, 0.0431, 0.0265, 0.0067, 0.0089])):
     original_statistics      = statistics(original_signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler)
     reconstructed_statistics = statistics(reconstructed_signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler)
-    
+
     loss = []
-    for i in range(5):
-        loss_i = torch.sqrt(torch.sum((original_statistics[i] - reconstructed_statistics[i])**2))
-        # normalize depending on the amount of data (compute data from shape)
-        loss_i = loss_i / original_statistics[i].numel()
-        print("loss_i", loss_i)
-        loss.append(loss_i)
-    loss_tensor = torch.stack(loss)
     
+    # Determine device from the first tensor in original_statistics or reconstructed_statistics
+    device = original_statistics[0].device if original_statistics else reconstructed_statistics[0].device
+
+    for i in range(8):
+        loss_i = torch.sqrt(torch.sum((original_statistics[i] - reconstructed_statistics[i])**2))
+        # Normalize depending on the amount of data (compute data from shape)
+        loss_i = loss_i / original_statistics[i].numel()
+
+        # Ensure loss_i is on the same device as the original signal's statistics
+        loss.append(loss_i.to(device))
+
+    # Stack all losses on the same device
+    loss_tensor = torch.stack(loss).to(device)
+    
+    # transform alpha to tensor if it is not already
+    if not isinstance(alpha, torch.Tensor):
+        print("alpha is not a tensor, transforming to tensor")
+        alpha = torch.tensor(alpha, dtype=loss_tensor.dtype, device=loss_tensor.device)
+
     #dot product between lists loss and alpha (ensure equal dtype)
-    alpha = torch.tensor(alpha, dtype=loss_tensor.dtype, device=loss_tensor.device)
     final_loss = torch.dot(loss_tensor, alpha)
     
     return  final_loss
 
-def batch_statistics_loss(original_signals, reconstructed_signals, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler, alpha=[10,50,100,100,100]):
+def batch_statistics_loss(original_signals, reconstructed_signals, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler, alpha=torch.tensor([0.0070, 0.0035, 0.8993, 0.0049, 0.0431, 0.0265, 0.0067, 0.0089])):
     batch_size = original_signals.size(0)
     total_loss = 0.0
 
@@ -177,7 +190,7 @@ def statistics_stems(stems_torch, N_filter_bank, M_filter_bank, log_bank, downsa
     envelopes_downsampled = []
     for i in range(N_filter_bank):
         envelope = env_subbands[i].float().to(device)  # Ensure the envelope is on the same device
-        envelopes_downsampled.append(downsampler(envelope).to(torch.float64))
+        envelopes_downsampled.append(downsampler(envelope))
 
     subenvelopes = []
     # new_size = envelopes_downsampled[0].shape[0]
@@ -190,14 +203,17 @@ def statistics_stems(stems_torch, N_filter_bank, M_filter_bank, log_bank, downsa
         subenvelopes.append(log_bank.generate_subbands(signal)[1:-1, :])
     
     # FROM SUBENVS: extract statistics up to order 4
-    statistics_1 = torch.zeros(N_filter_bank, 4, device=device)
+    statistics_11 = torch.zeros(N_filter_bank, device=device)
+    statistics_12 = torch.zeros(N_filter_bank, device=device)
+    statistics_13 = torch.zeros(N_filter_bank, device=device)
+    statistics_14 = torch.zeros(N_filter_bank, device=device)
     for i in range(N_filter_bank):
         mu = torch.mean(env_subbands[i])
         sigma = torch.sqrt(torch.mean((env_subbands[i] - mu) ** 2))
-        statistics_1[i, 0] = mu * 100
-        statistics_1[i, 1] = sigma ** 2 / mu ** 2
-        statistics_1[i, 2] = (torch.mean((env_subbands[i] - mu) ** 3) / sigma ** 3) / 50
-        statistics_1[i, 3] = (torch.mean((env_subbands[i] - mu) ** 4) / sigma ** 4) / 500
+        statistics_11[i] = mu
+        statistics_12[i] = sigma ** 2 / mu ** 2
+        statistics_13[i] = (torch.mean((env_subbands[i] - mu) ** 3) / sigma ** 3)
+        statistics_14[i] = (torch.mean((env_subbands[i] - mu) ** 4) / sigma ** 4)
 
     # FROM SUBENVS: extract correlations
     statistics_2 = []
@@ -217,42 +233,54 @@ def statistics_stems(stems_torch, N_filter_bank, M_filter_bank, log_bank, downsa
     # FROM SUB-SUBENVS: extract correlations between sub-subenvs in the same subenv
     statistics_4 = []
     for i in range(N_filter_bank):
-        if i < N_filter_bank-2:
-            nice_neighbours = [j for j in range(i+1, N_filter_bank) if j - i < 2]
-            for j in nice_neighbours:
-                for n in range(M_filter_bank//2):
-                    statistics_4.append(correlation_coefficient(subenvelopes[i][n], subenvelopes[j][n]))
+        for j in range(i+1, N_filter_bank):
+            for n in range(M_filter_bank):
+                statistics_4.append(correlation_coefficient(subenvelopes[i][n], subenvelopes[j][n]))
     statistics_4 = torch.tensor(statistics_4)
-    
+
     # FROM SUB-SUBENVS: extract correlations between sub-subenvs in different subenvs
     statistics_5 = []
     for i in range(N_filter_bank):
-        for j in range(M_filter_bank//2):
-            statistics_5.append(correlation_coefficient(subenvelopes[i][j], subenvelopes[i][j+1]))
+        for j in range(M_filter_bank):
+            for k in range(j+1, M_filter_bank):
+                statistics_5.append(correlation_coefficient(subenvelopes[i][j], subenvelopes[i][k]))
     statistics_5 = torch.tensor(statistics_5)
 
-    return [statistics_1, statistics_2, statistics_3, statistics_4, statistics_5]
+    return [statistics_11, statistics_12, statistics_13, statistics_14, statistics_2, statistics_3, statistics_4, statistics_5]
 
-def statistics_loss_stems(original_stems, reconstructed_stems, N_filter_bank, M_filter_bank, log_bank, downsampler, alpha=[10,50,100,100,100]):
+def statistics_loss_stems(original_stems, reconstructed_stems, N_filter_bank, M_filter_bank, log_bank, downsampler, alpha=torch.tensor([0.0070, 0.0035, 0.8993, 0.0049, 0.0431, 0.0265, 0.0067, 0.0089])):
     original_statistics      = statistics_stems(original_stems,      N_filter_bank, M_filter_bank, log_bank, downsampler)
     reconstructed_statistics = statistics_stems(reconstructed_stems, N_filter_bank, M_filter_bank, log_bank, downsampler)
     
     loss = []
-    for i in range(5):
-        loss_i = torch.sqrt(torch.sum((original_statistics[i] - reconstructed_statistics[i])**2))
-        # normalize depending on the amount of data (compute data from shape)
-        loss_i = loss_i / original_statistics[i].numel()
-        print("loss_i", loss_i)
-        loss.append(loss_i)
-    loss_tensor = torch.stack(loss)
     
+    # Determine device from the first tensor in original_statistics or reconstructed_statistics
+    device = original_statistics[0].device if original_statistics else reconstructed_statistics[0].device
+
+    for i in range(8):
+        loss_i = torch.sqrt(torch.sum((original_statistics[i] - reconstructed_statistics[i])**2))
+        # Normalize depending on the amount of data (compute data from shape)
+        loss_i = loss_i / original_statistics[i].numel()
+
+        # Ensure loss_i is on the same device as the original signal's statistics
+        loss.append(loss_i.to(device))
+
+    # Stack all losses on the same device
+    loss_tensor = torch.stack(loss).to(device)
+
+    # transform alpha to tensor if it is not already
+    if not isinstance(alpha, torch.Tensor):
+        print("alpha is not a tensor, transforming to tensor")
+        alpha = torch.tensor(alpha, dtype=loss_tensor.dtype)
+    
+    alpha = alpha.to(loss_tensor.device)
+
     #dot product between lists loss and alpha (ensure equal dtype)
-    alpha = torch.tensor(alpha, dtype=loss_tensor.dtype, device=loss_tensor.device)
     final_loss = torch.dot(loss_tensor, alpha)
     
     return  final_loss
 
-def batch_statistics_loss_stems(original_stems_batch, reconstructed_stems_batch, N_filter_bank, M_filter_bank, _, log_bank, downsampler, alpha=[10,50,100,100,100]):
+def batch_statistics_loss_stems(original_stems_batch, reconstructed_stems_batch, N_filter_bank, M_filter_bank, _, log_bank, downsampler, alpha=torch.tensor([0.0070, 0.0035, 0.8993, 0.0049, 0.0431, 0.0265, 0.0067, 0.0089])):
     batch_size = original_stems_batch.size(0)
     total_loss = 0.0
 

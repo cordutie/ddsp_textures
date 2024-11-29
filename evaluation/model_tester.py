@@ -28,28 +28,29 @@ def model_loader(model_folder_path, print_parameters=True):
         for key, value in parameters_dict.items():
             print(f"{key}: {value}")
     
-    # Unpack parameters
-    hidden_size      = parameters_dict['hidden_size']
-    deepness         = parameters_dict['deepness']        
-    param_per_env    = parameters_dict['param_per_env']
-    model_class      = parameters_dict['architecture']
+    # Unpack some parameters
+    frame_size = parameters_dict['frame_size']
+    sampling_rate = parameters_dict['sampling_rate']  
+    hidden_size_enc = parameters_dict['hidden_size_enc']      
+    hidden_size_dec = parameters_dict['hidden_size_dec']      
+    deepness_enc = parameters_dict['deepness_enc']
+    deepness_dec = parameters_dict['deepness_dec']     
+    param_per_env = parameters_dict['param_per_env']         
+    N_filter_bank = parameters_dict['N_filter_bank']          
+    M_filter_bank = parameters_dict['M_filter_bank']    
+    architecture  = parameters_dict['architecture']
+    input_dimensions = parameters_dict['input_dimensions']
+    stems = parameters_dict['stems']
 
     # Device configuration
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # Seed loading
-    seed_path = os.path.join(model_folder_path, "seed.pkl")
-    if os.path.exists(seed_path):
-        with open(seed_path, 'rb') as file:
-            seed = pickle.load(file)
-    seed = seed.to(device)
-
     # Model initialization
-    model = model_class(hidden_size, deepness, param_per_env, seed).to(device)
+    model = architecture(input_dimensions, hidden_size_enc, hidden_size_dec, deepness_enc, deepness_dec, param_per_env, frame_size, N_filter_bank, stems).to(device)
     
     # Loading model
     model_path = os.path.join(model_folder_path, 'best_model.pth')
-    model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+    model.load_state_dict(torch.load(model_path, map_location=torch.device(device)))
     
     # Loading loss dictionary
     loss_dict_path = os.path.join(model_folder_path, 'loss_dict.pkl')
@@ -58,56 +59,82 @@ def model_loader(model_folder_path, print_parameters=True):
     
     return model, parameters_dict, loss_dict
 
-def audio_preprocess(audio_path, frame_size, sampling_rate, features_annotator):
+def audio_preprocess(audio_path, frame_size, sampling_rate, features_annotators, erb_bank):
     hop_size = frame_size // 2
     audio_og, _ = librosa.load(audio_path, sr=sampling_rate, mono=True)
     
     audio_tensor = torch.tensor(audio_og)
-    size = audio_tensor.shape[0]
-    N_segments = (size - frame_size) // hop_size
+    size         = audio_tensor.shape[0]
+    N_segments   = (size - frame_size) // hop_size
+    
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
     content = []
     for i in range(N_segments):
-        segment = audio_tensor[i * hop_size: i * hop_size + frame_size]
-        target_loudness = torch.std(segment)
-        segment = (segment - torch.mean(segment)) / torch.std(segment)
-        features = features_annotator(segment, sampling_rate)
-        content.append([features, target_loudness])
-    
+        segment_annotated = []
+        segment         = audio_tensor[i * hop_size: i * hop_size + frame_size]
+        # segment = audio_improver(segment, sampling_rate, 4)
+        target_loudness = torch.std(segment).to(device)
+        segment = signal_normalizer(segment).to(device)
+
+        # adding the segment to the element
+        segment_annotated.append(segment)
+        segment_stems = features_envelopes_stems(segment, 0, erb_bank).to(device)
+        segment_annotated.append(segment_stems)
+        # features computation
+        for feature_annotator in features_annotators:
+            feature_loc = feature_annotator(segment, sampling_rate, erb_bank).to(device)
+            # If feature loc is just a tensor number transform into a 1d tensor
+            if len(feature_loc.shape) == 0:
+                feature_loc = torch.tensor([feature_loc]).to(device)  
+            # adding features to the element
+            segment_annotated.append(feature_loc)
+        segment_annotated.append(target_loudness)
+        content.append(segment_annotated)
     return content
 
 def model_synthesizer(content, model, parameters_dict, random_shift=True):
     # Unpack parameters
-    frame_size       = parameters_dict['frame_size']
-    sampling_rate    = parameters_dict['sampling_rate']
-    features_annotator = parameters_dict['features_annotator']
-    batch_features_annotator = parameters_dict['batch_features_annotator']
-    freq_avg_level   = parameters_dict['freq_avg_level']
-    hidden_size      = parameters_dict['hidden_size']
-    deepness         = parameters_dict['deepness']        
-    param_per_env    = parameters_dict['param_per_env']
-    N_filter_bank    = parameters_dict['N_filter_bank']
-    model_class      = parameters_dict['architecture']
-    onset_detection_model_path = parameters_dict['onset_detection_model_path']
-    loss_function    = parameters_dict['loss_function']
-    regularization   = parameters_dict['regularization']
-    batch_size       = parameters_dict['batch_size']       
-    num_epochs       = parameters_dict['epochs']      
-    models_directory = parameters_dict['directory']   
+    audio_path                      = parameters_dict['audio_path']
+    frame_size                      = parameters_dict['frame_size']
+    hop_size                        = parameters_dict['hop_size']
+    sampling_rate                   = parameters_dict['sampling_rate']
+    features_annotators             = parameters_dict['features']
+    input_dimensions                = parameters_dict['input_dimensions']
+    hidden_size_enc                 = parameters_dict['hidden_size_enc']
+    hidden_size_dec                 = parameters_dict['hidden_size_dec']
+    deepness_enc                    = parameters_dict['deepness_enc']
+    deepness_dec                    = parameters_dict['deepness_dec']
+    param_per_env                   = parameters_dict['param_per_env']
+    N_filter_bank                   = parameters_dict['N_filter_bank']
+    M_filter_bank                   = parameters_dict['M_filter_bank']
+    architecture                    = parameters_dict['architecture']
+    stems                           = parameters_dict['stems']
+    loss_function                   = parameters_dict['loss_function']
+    regularizers                    = parameters_dict['regularizers']
+    batch_size                      = parameters_dict['batch_size']
+    epochs                          = parameters_dict['epochs']
+    models_directory                = parameters_dict['models_directory']  
     
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    seed = ddsp_textures.auxiliar.seeds.seed_maker(frame_size, sampling_rate, N_filter_bank).to(device)
+
     hop_size = frame_size // 2
     
     N_segments = len(content)
     
-    audio_final = torch.zeros(frame_size + (N_segments-1)*hop_size)
-    window = torch.hann_window(frame_size)
+    audio_final = torch.zeros(frame_size + (N_segments-1)*hop_size).to(device)
+    window      = torch.hann_window(frame_size).to(device)
 
     for i in range(N_segments):
-        [features, target_loudness] = content[i]
-        # transform 0d into 1d features of size 1
-        features = [feature.unsqueeze(0) for feature in features]
-        synthesized_segment = model.synthesizer(features[0], features[1], target_loudness)
-        if random_shift:    
+        local_content = content[i]
+        segment_loc   = local_content[0]
+        stems_loc     = local_content[1]
+        features_loc  = local_content[2:-1]
+        target_loudness_loc = local_content[-1]
+        synthesized_segment = model.synthesizer(features_loc, target_loudness_loc, seed)
+        if random_shift:
             #shif the synthesized_segment in a random amount of steps
             synthesized_segment = synthesized_segment.roll(shifts=np.random.randint(0, len(synthesized_segment)))
         #Apply window

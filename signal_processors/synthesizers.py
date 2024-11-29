@@ -8,7 +8,7 @@ from   ddsp_textures.auxiliar.seeds import *
 def SubEnv_param_extractor(signal, fs, N_filter_bank, param_per_env):
     # send error if param_per_env is not even
     if param_per_env % 2 != 0:
-        raise ValueError("param_per_env must be an even number (cause tese are complex numbers).")
+        raise ValueError("param_per_env must be an even number (cause these are complex numbers).")
     low_lim, high_lim = 20, fs / 2  # Low limit of filter
     size = signal.size(0)
     
@@ -16,8 +16,8 @@ def SubEnv_param_extractor(signal, fs, N_filter_bank, param_per_env):
     erb_bank = ddsp_textures.auxiliar.filterbanks.EqualRectangularBandwidth(size, fs, N_filter_bank, low_lim, high_lim)
     subbands = erb_bank.generate_subbands(signal)  # generate subbands for signal y
     
-    erb_subbands = subbands[:, 1:-1].clone().to(dtype=torch.float32).detach()
-    erb_envs = torch.abs(hilbert(erb_subbands.transpose(0, 1)).transpose(0, 1))
+    erb_subbands = subbands[1:-1, :].clone().to(dtype=torch.float32).detach()
+    erb_envs = torch.abs(hilbert(erb_subbands))
     
     # print(f"The signal has a size of {size} samples.")
     # print(f"Each envelope of the {N_filter_bank} filters will be approximated by {int(percentage_use * size * 0.5)} complex parameters.")
@@ -27,7 +27,7 @@ def SubEnv_param_extractor(signal, fs, N_filter_bank, param_per_env):
     imag_param = []
     
     for i in range(N_filter_bank):
-        erb_env_local = erb_envs[:, i]
+        erb_env_local = erb_envs[i]
         fft_coeffs = torch.fft.rfft(erb_env_local)[:param_per_env//2] ###########################
         real_param.append(fft_coeffs.real)
         imag_param.append(fft_coeffs.imag)
@@ -40,26 +40,26 @@ def SubEnv_param_extractor(signal, fs, N_filter_bank, param_per_env):
 # Actual synth ----------------------------------------------------------------------------------------------
 
 def SubEnv(parameters_real, parameters_imag, seed, target_loudness=1):
-    size          = seed.shape[0]
-    N_filter_bank = seed.shape[1]
+    size          = seed.shape[1]
+    N_filter_bank = seed.shape[0]
     
     N = parameters_real.size(0)
     parameters_size = N // N_filter_bank
-    signal_final = torch.zeros(size, dtype=torch.float32)
+    signal_final = torch.zeros(size, dtype=torch.float32).to(device=parameters_real.device)
     
     for i in range(N_filter_bank):
         # Construct the local parameters as a complex array
         parameters_local = parameters_real[i * parameters_size : (i + 1) * parameters_size] + 1j * parameters_imag[i * parameters_size : (i + 1) * parameters_size]
         
         # Initialize FFT coefficients array
-        fftcoeff_local = torch.zeros(int(size/2)+1, dtype=torch.complex64)
-        fftcoeff_local[:parameters_size] = parameters_local ###########################################3
+        fftcoeff_local = torch.zeros(int(size/2)+1, dtype=torch.complex64).to(parameters_real.device)
+        fftcoeff_local[:parameters_size] = parameters_local ###########################################
         
         # Compute the inverse FFT to get the local envelope
         env_local = torch.fft.irfft(fftcoeff_local)
         
         # Extract the local noise
-        noise_local = seed[:, i]
+        noise_local = seed[i, :]
         
         # Generate the texture sound by multiplying the envelope and noise
         texture_sound_local = env_local * noise_local
@@ -75,8 +75,8 @@ def SubEnv(parameters_real, parameters_imag, seed, target_loudness=1):
     return signal_final
 
 def SubEnv_batches(parameters_real, parameters_imag, seed):
-    size          = seed.shape[0]
-    N_filter_bank = seed.shape[1]
+    size          = seed.shape[1]
+    N_filter_bank = seed.shape[0]
     
     # Get the batch size
     batch_size = parameters_real.size(0)
@@ -98,7 +98,7 @@ def SubEnv_batches(parameters_real, parameters_imag, seed):
         env_local = torch.fft.irfft(fftcoeff_local).real
 
         # Extract the local noise for each batch item
-        noise_local = seed[:, i]
+        noise_local = seed[i, :]
 
         # Generate the texture sound by multiplying the envelope and noise for each batch item
         texture_sound_local = env_local * noise_local
@@ -148,11 +148,10 @@ def SubEnv_stems_batches(parameters_real, parameters_imag, frame_size, N_filter_
 
     for i in range(N_filter_bank):
         # Construct the local parameters as a complex array for each filter in the batch
-        parameters_local = (parameters_real[:, i * parameters_size : (i + 1) * parameters_size] 
-                            + 1j * parameters_imag[:, i * parameters_size : (i + 1) * parameters_size])
+        parameters_local = (parameters_real[:, i * parameters_size : (i + 1) * parameters_size] + 1j * parameters_imag[:, i * parameters_size : (i + 1) * parameters_size])
         
         # Initialize FFT coefficients array for the entire batch
-        fftcoeff_local = torch.zeros((batch_size, int(size / 2) + 1), dtype=torch.complex64, device=parameters_real.device)
+        fftcoeff_local                      = torch.zeros((batch_size, int(size / 2) + 1), dtype=torch.complex64, device=parameters_real.device)
         fftcoeff_local[:, :parameters_size] = parameters_local
 
         # Compute the inverse FFT to get the local envelope for each batch item
@@ -167,8 +166,8 @@ def SubEnv_stems_batches(parameters_real, parameters_imag, frame_size, N_filter_
 # Stems to signal -------------------------------------------------------------------------------
 
 def SubEnv_stems_to_signal(env_locals, seed, target_loudness=1):
-    size = seed.shape[0]
-    N_filter_bank = seed.shape[1]
+    size          = seed.shape[1]
+    N_filter_bank = seed.shape[0]
 
     # Initialize the final signal
     signal_final = torch.zeros(size, dtype=torch.float32)
@@ -176,7 +175,7 @@ def SubEnv_stems_to_signal(env_locals, seed, target_loudness=1):
     # Iterate over the filter bank to reconstruct the signal
     for i in range(N_filter_bank):
         env_local = env_locals[i]  # Get the local envelope
-        noise_local = seed[:, i]   # Get the corresponding noise
+        noise_local = seed[i]   # Get the corresponding noise
 
         # Reconstruct the signal by multiplying envelope with noise
         texture_sound_local = env_local * noise_local
@@ -192,19 +191,21 @@ def SubEnv_stems_to_signal(env_locals, seed, target_loudness=1):
     return signal_final
 
 def SubEnv_stems_to_signals_batches(env_locals_batch, seed, target_loudness=1):
-    size = seed.shape[0]
-    N_filter_bank = seed.shape[1]
+    size          = seed.shape[1]
+    N_filter_bank = seed.shape[0]
     batch_size = len(env_locals_batch)  # The number of items in the batch
 
+    device_seed = seed.device
+
     # Initialize the final signal tensor for the entire batch
-    signal_final = torch.zeros((batch_size, size), dtype=torch.float32)
+    signal_final = torch.zeros((batch_size, size), dtype=torch.float32).to(device_seed)
 
     # Iterate over the batch items
     for batch_idx in range(batch_size):
         # Iterate over the filter bank to reconstruct each signal
         for i in range(N_filter_bank):
             env_local = env_locals_batch[batch_idx][i]  # Get the local envelope for this batch item
-            noise_local = seed[:, i]                    # Get the corresponding noise
+            noise_local = seed[i]                    # Get the corresponding noise
 
             # Reconstruct the signal by multiplying envelope with noise
             texture_sound_local = env_local * noise_local

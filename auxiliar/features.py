@@ -208,5 +208,3 @@ def batch_features_envelopes_stems(signals_batch, _, erb_bank):
         signal = signals_batch[i]
         features.append(features_envelopes_stems(signal, _, erb_bank))
     return torch.stack(features)
-
-

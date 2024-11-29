@@ -48,7 +48,7 @@ class DDSP_Dataset(Dataset):
             # dataset element
             segment_annotated = []
             # prepocessing
-            segment = audio_improver(segment, self.sampling_rate, 4)
+            # segment = audio_improver(segment, self.sampling_rate, 4) # look at thiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiis
             segment = signal_normalizer(segment)
             # adding the segment to the element
             segment_annotated.append(segment)
