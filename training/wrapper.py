@@ -103,10 +103,10 @@ def trainer_SubEnv(json_path):
     dataloader = DataLoader(actual_dataset, batch_size=batch_size, shuffle=True)
 
     # Model initialization
-    model = architecture(input_dimensions, hidden_size_enc, hidden_size_dec, deepness_enc, deepness_dec, param_per_env, frame_size, N_filter_bank, stems).to(device)
+    model = architecture(input_dimensions, hidden_size_enc, hidden_size_dec, deepness_enc, deepness_dec, param_per_env, frame_size, N_filter_bank, device, sampling_rate, stems).to(device)
     
     # Initialize the optimizer
-    optimizer = optim.Adam(model.parameters(), lr=1e-2)
+    optimizer = optim.Adam(model.parameters(), lr=5*1e-3)
 
     # Frame sizes for downsampling
     new_frame_size, new_sampling_rate   = frame_size // 4, sampling_rate // 4
@@ -119,7 +119,7 @@ def trainer_SubEnv(json_path):
     downsampler = torchaudio.transforms.Resample(sampling_rate, new_sampling_rate).to(device)
 
     # Seed for the synthesizer (necessary for some regularizers)
-    seed = ddsp_textures.auxiliar.seeds.seed_maker(frame_size, sampling_rate, N_filter_bank).to(device)
+    seed = model.seed_retrieve()
 
     # Variables to track the best model and loss history
     best_loss = float('inf')
@@ -168,21 +168,21 @@ def trainer_SubEnv(json_path):
             # Compute main loss
             loss_main = loss_function(og_signal, reconstructed_signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler) 
             
-            loss_regularizer = torch.tensor(0)
+            loss_regularizer = torch.tensor(0.0).to(device)
 
             # if there are regularizers and the model uses stems lets remake the signal to compute their features
-            if stems==True:
-                reconstructed_full_signal_= SubEnv_stems_to_signals_batches(reconstructed_signal, seed)
+            if stems==True & num_of_regularizers>0:
+                reconstructed_signal= SubEnv_stems_to_signals_batches(reconstructed_signal, seed)
             
             for i in range(num_of_regularizers):
                 # Make features from reconstructed signal
-                feature_reconstructed = regularizers[i](reconstructed_full_signal_, sampling_rate, erb_bank).to(device)
+                feature_reconstructed = regularizers[i](reconstructed_signal, sampling_rate, erb_bank).to(device)
                 feature_og            = features_batch[i].to(device)
-                loss_regularizer      += torch.norm(feature_reconstructed - feature_og, p=2) 
+                loss_regularizer      += 0.2 * 1/(feature_reconstructed.numel()) * torch.norm(feature_reconstructed - feature_og, p=2)
 
             # Final loss
             loss_total = loss_main + loss_regularizer
-            
+
             # Backward pass and optimization
             loss_total.backward()
             optimizer.step()

@@ -46,7 +46,7 @@ def model_loader(model_folder_path, print_parameters=True):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Model initialization
-    model = architecture(input_dimensions, hidden_size_enc, hidden_size_dec, deepness_enc, deepness_dec, param_per_env, frame_size, N_filter_bank, stems).to(device)
+    model = architecture(input_dimensions, hidden_size_enc, hidden_size_dec, deepness_enc, deepness_dec, param_per_env, frame_size, N_filter_bank, device, sampling_rate, stems).to(device)
     
     # Loading model
     model_path = os.path.join(model_folder_path, 'best_model.pth')
@@ -93,7 +93,7 @@ def audio_preprocess(audio_path, frame_size, sampling_rate, features_annotators,
         content.append(segment_annotated)
     return content
 
-def model_synthesizer(content, model, parameters_dict, random_shift=True):
+def model_synthesizer(content, model, parameters_dict, random_shift=True, R=5, ):
     # Unpack parameters
     audio_path                      = parameters_dict['audio_path']
     frame_size                      = parameters_dict['frame_size']
@@ -118,7 +118,11 @@ def model_synthesizer(content, model, parameters_dict, random_shift=True):
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    seed = ddsp_textures.auxiliar.seeds.seed_maker(frame_size, sampling_rate, N_filter_bank).to(device)
+    # Create R seeds
+    seeds = [
+        ddsp_textures.auxiliar.seeds.seed_maker(frame_size, sampling_rate, N_filter_bank).to(device)
+        for _ in range(R)
+    ]
 
     hop_size = frame_size // 2
     
@@ -127,23 +131,40 @@ def model_synthesizer(content, model, parameters_dict, random_shift=True):
     audio_final = torch.zeros(frame_size + (N_segments-1)*hop_size).to(device)
     window      = torch.hann_window(frame_size).to(device)
 
+    audio_og    = torch.zeros(frame_size + (N_segments-1)*hop_size).to(device)
+
     for i in range(N_segments):
         local_content = content[i]
         segment_loc   = local_content[0]
         stems_loc     = local_content[1]
         features_loc  = local_content[2:-1]
         target_loudness_loc = local_content[-1]
-        synthesized_segment = model.synthesizer(features_loc, target_loudness_loc, seed)
+        
+        # Select a random seed from the pre-generated seeds
+        selected_seed = seeds[np.random.randint(0, R)]
+        
+        synthesized_segment = model.synthesizer(features_loc, target_loudness_loc, selected_seed)
+        
         if random_shift:
-            #shif the synthesized_segment in a random amount of steps
-            synthesized_segment = synthesized_segment.roll(shifts=np.random.randint(0, len(synthesized_segment)))
-        #Apply window
+            # Shift the synthesized_segment in a random amount of steps
+            synthesized_segment = synthesized_segment.roll(shifts=np.random.randint(0, frame_size))
+        
+        # Apply window
         synthesized_segment = synthesized_segment * window
         audio_final[i * hop_size: i * hop_size + frame_size] += synthesized_segment
+        audio_og[i * hop_size: i * hop_size + frame_size]    += segment_loc * window
 
-    audio_final = audio_final.detach().cpu().numpy()
+    # Normalize the audio_final using window overlap sum
+    window_sum = torch.zeros_like(audio_final).to(device)
+    for i in range(N_segments):
+        window_sum[i * hop_size: i * hop_size + frame_size] += window
+    audio_final /= torch.clamp(window_sum, min=1e-6)  # Avoid division by zero
     
-    return audio_final
+    audio_final = audio_final.detach().cpu().numpy()
+    audio_og    = audio_og.detach().cpu().numpy()
+    
+    return audio_final, audio_og
+
 
 # def model_tester(frame_type, model_type, loss_type, audio_path, model_name, best):
 #     model = model_loader(frame_type, model_type, loss_type, audio_path, model_name, best)

@@ -28,7 +28,7 @@ def SubEnv_param_extractor(signal, fs, N_filter_bank, param_per_env):
     
     for i in range(N_filter_bank):
         erb_env_local = erb_envs[i]
-        fft_coeffs = torch.fft.rfft(erb_env_local)[:param_per_env//2] ###########################
+        fft_coeffs = torch.fft.rfft(erb_env_local, norm = "ortho")[:param_per_env//2] ###########################
         real_param.append(fft_coeffs.real)
         imag_param.append(fft_coeffs.imag)
     
@@ -56,7 +56,7 @@ def SubEnv(parameters_real, parameters_imag, seed, target_loudness=1):
         fftcoeff_local[:parameters_size] = parameters_local ###########################################
         
         # Compute the inverse FFT to get the local envelope
-        env_local = torch.fft.irfft(fftcoeff_local)
+        env_local = torch.fft.irfft(fftcoeff_local, norm = "ortho")
         
         # Extract the local noise
         noise_local = seed[i, :]
@@ -67,7 +67,7 @@ def SubEnv(parameters_real, parameters_imag, seed, target_loudness=1):
         # Accumulate the result
         signal_final += texture_sound_local
     
-    loudness = torch.sqrt(torch.mean(signal_final ** 2))
+    loudness = torch.std(signal_final)
     signal_final = signal_final / loudness
 
     signal_final = target_loudness * signal_final
@@ -89,13 +89,13 @@ def SubEnv_batches(parameters_real, parameters_imag, seed):
         # Construct the local parameters as a complex array for each filter in the batch
         parameters_local = (parameters_real[:, i * parameters_size : (i + 1) * parameters_size] 
                             + 1j * parameters_imag[:, i * parameters_size : (i + 1) * parameters_size])
-        
+                
         # Initialize FFT coefficients array for the entire batch
         fftcoeff_local = torch.zeros((batch_size, int(size / 2) + 1), dtype=torch.complex64, device=parameters_real.device)
         fftcoeff_local[:, :parameters_size] = parameters_local
 
         # Compute the inverse FFT to get the local envelope for each batch item
-        env_local = torch.fft.irfft(fftcoeff_local).real
+        env_local = torch.fft.irfft(fftcoeff_local, norm = "ortho").real
 
         # Extract the local noise for each batch item
         noise_local = seed[i, :]
@@ -129,7 +129,7 @@ def SubEnv_stems(parameters_real, parameters_imag, frame_size, N_filter_bank, ta
         fftcoeff_local[:parameters_size] = parameters_local
         
         # Compute the inverse FFT to get the local envelope
-        env_local = torch.fft.irfft(fftcoeff_local)
+        env_local = torch.fft.irfft(fftcoeff_local, norm = "ortho")
         
         # Append the current env_local to the list
         env_locals_list.append(env_local)
@@ -155,7 +155,7 @@ def SubEnv_stems_batches(parameters_real, parameters_imag, frame_size, N_filter_
         fftcoeff_local[:, :parameters_size] = parameters_local
 
         # Compute the inverse FFT to get the local envelope for each batch item
-        env_local = torch.fft.irfft(fftcoeff_local).real
+        env_local = torch.fft.irfft(fftcoeff_local, norm = "ortho").real
         
         # Store the current env_local for each batch item in the tensor
         env_locals_tensor[:, i, :] = env_local

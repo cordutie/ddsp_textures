@@ -62,21 +62,11 @@ def computer_freq_avg_and_std(signal_filtered, sampling_rate):
     
     return mean_frequency, std_freqs
 
-def energy_bands(signal, erb_bank):
+def compute_energy_bands(signal, erb_bank):
     device = signal.device  # Get the device of the input signal tensor
     erb_subbands_signal = erb_bank.generate_subbands(signal)[1:-1, :]
-    
-    # Extract envelopes
-    env_subbands = torch.abs(hilbert(erb_subbands_signal))
-    N_filter_bank = env_subbands.shape[0]
-    
-    # Compute energy bands
-    energy_bands = []
-    for i in range(N_filter_bank):
-        envelope = env_subbands[i].float().to(device)  # Ensure the envelope is on the same device
-        enve_std = torch.std(envelope)
-        energy_bands.append(enve_std)
-        
+    N_filter_bank = erb_subbands_signal.shape[0]
+    energy_bands  = torch.norm(erb_subbands_signal, dim=1)    
     return energy_bands
 
 def compute_spectrogram(waveform, n_fft=1024, hop_length=512):
@@ -163,7 +153,7 @@ def features_rate(signal_improved, sampling_rate, _):
     return torch.tensor(rate)
 
 def features_energy_bands(signal, _, erb_bank):
-    return torch.tensor(energy_bands(signal, erb_bank)) # amazing programming skills
+    return compute_energy_bands(signal, erb_bank) # amazing programming skills
 
 def features_envelopes_stems(signal_tensor, _, erb_bank):
     return computer_envelopes_stems(signal_tensor, _, erb_bank) # incredible programming skills

@@ -156,13 +156,15 @@ def statistics_loss(original_signal, reconstructed_signal, N_filter_bank, M_filt
     if not isinstance(alpha, torch.Tensor):
         print("alpha is not a tensor, transforming to tensor")
         alpha = torch.tensor(alpha, dtype=loss_tensor.dtype, device=loss_tensor.device)
+    
+    alpha = alpha.to(loss_tensor.device)
 
     #dot product between lists loss and alpha (ensure equal dtype)
     final_loss = torch.dot(loss_tensor, alpha)
     
     return  final_loss
 
-def batch_statistics_loss(original_signals, reconstructed_signals, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler, alpha=torch.tensor([0.0070, 0.0035, 0.8993, 0.0049, 0.0431, 0.0265, 0.0067, 0.0089])):
+def batch_statistics_loss(original_signals, reconstructed_signals, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler, alpha=torch.tensor([1000, 1, 0.01, 0.0001, 20, 20, 20, 20])):
     batch_size = original_signals.size(0)
     total_loss = 0.0
 
