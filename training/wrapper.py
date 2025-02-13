@@ -94,7 +94,8 @@ def trainer_SubEnv(json_path):
 
     # Device configuration
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+    print(f"Device: {device}\n")
+    
     # Dataset maker
     dataset        = DDSP_Dataset(audio_path, frame_size, hop_size, sampling_rate, N_filter_bank, features_annotators)
     actual_dataset = dataset.compute_dataset()
@@ -106,7 +107,7 @@ def trainer_SubEnv(json_path):
     model = architecture(input_dimensions, hidden_size_enc, hidden_size_dec, deepness_enc, deepness_dec, param_per_env, frame_size, N_filter_bank, device, sampling_rate, stems).to(device)
     
     # Initialize the optimizer
-    optimizer = optim.Adam(model.parameters(), lr=5*1e-3)
+    optimizer = optim.Adam(model.parameters(), lr=1e-2)
 
     # Frame sizes for downsampling
     new_frame_size, new_sampling_rate   = frame_size // 4, sampling_rate // 4
@@ -135,6 +136,10 @@ def trainer_SubEnv(json_path):
     print("number_of_features", number_of_features)
     num_of_regularizers = len(regularizers)
     print("num_of_regularizers", num_of_regularizers)
+
+    # Early stopping parameters
+    patience = 100  # Number of epochs to wait for improvement before stopping
+    epochs_no_improve = 0
 
     for epoch in range(epochs):
         model.train()
@@ -215,47 +220,60 @@ def trainer_SubEnv(json_path):
         # Save the model checkpoint at the end of each epoch
         save_checkpoint(model, optimizer, epoch + 1, loss_history, main_loss_history, regularizer_history, directory)
 
-        # Save the best model
+        # Save the best model and implement early stopping
         if epoch_loss < best_loss:
             best_loss = epoch_loss
             save_checkpoint(model, optimizer, epoch + 1, loss_history, main_loss_history, regularizer_history, directory, is_best=True)
+            epochs_no_improve = 0  # Reset counter if loss improves
+        else:
+            epochs_no_improve += 1  # Increment counter if no improvement
 
-        # Plot the training losses
-        plt.figure(figsize=(15, 5))  # Adjust the size to fit three plots side by side
+        if len(loss_history)!=1:
+            # Plot the training losses
+            plt.figure(figsize=(15, 5))  # Adjust the size to fit three plots side by side
 
-        # Plot Total Loss
-        plt.subplot(1, 3, 1)  # 1 row, 3 columns, 1st subplot
-        plt.plot(loss_history, label='Total Loss', color='blue')
-        plt.xlabel('Epoch')
-        plt.ylabel('Loss')
-        plt.title('Total Loss')
-        plt.legend()
+            # Plot Total Loss
+            plt.subplot(1, 3, 1)  # 1 row, 3 columns, 1st subplot
+            plt.plot(loss_history[1:], label='Total Loss', color='blue')
+            plt.xlabel('Epoch')
+            plt.ylabel('Loss')
+            plt.title('Total Loss')
+            plt.legend()
 
-        # Plot Main Loss
-        plt.subplot(1, 3, 2)  # 1 row, 3 columns, 2nd subplot
-        plt.plot(main_loss_history, label='Main Loss', color='orange')
-        plt.xlabel('Epoch')
-        plt.ylabel('Loss')
-        plt.title('Main Loss')
-        plt.legend()
+            # Plot Main Loss
+            plt.subplot(1, 3, 2)  # 1 row, 3 columns, 2nd subplot
+            plt.plot(main_loss_history[1:], label='Main Loss', color='orange')
+            plt.xlabel('Epoch')
+            plt.ylabel('Loss')
+            plt.title('Main Loss')
+            plt.legend()
 
-        # Plot Regularizer Term
-        plt.subplot(1, 3, 3)  # 1 row, 3 columns, 3rd subplot
-        plt.plot(regularizer_history, label='Regularizer Term', color='green')
-        plt.xlabel('Epoch')
-        plt.ylabel('Loss')
-        plt.title('Regularizer Term')
-        plt.legend()
+            # Plot Regularizer Term
+            plt.subplot(1, 3, 3)  # 1 row, 3 columns, 3rd subplot
+            plt.plot(regularizer_history[1:], label='Regularizer Term', color='green')
+            plt.xlabel('Epoch')
+            plt.ylabel('Loss')
+            plt.title('Regularizer Term')
+            plt.legend()
 
-        # Adjust layout to prevent overlap
-        plt.tight_layout()
+            # Adjust layout to prevent overlap
+            plt.tight_layout()
 
-        # Save and show the plot
-        plt.savefig(os.path.join(directory, 'loss_plot.png'))
-        plt.show()
+            # Save and show the plot
+            plt.savefig(os.path.join(directory, 'loss_plot.png'))
+            plt.show()
+
+        print(f"Epochs without improvement: {epochs_no_improve}/{patience}")
+
+        # Check early stopping condition
+        if epochs_no_improve >= patience:
+            print(f"Early stopping triggered after {epoch + 1} epochs.")
+            # Rename the model directory to mark training completion
+            complete_directory = directory + "_complete"
+            os.rename(directory, complete_directory)
+            break  # Stop training if no improvement after patience epochs
     
     print("Training complete.")
-
     # Rename the model directory to mark training completion
     complete_directory = directory + "_complete"
     os.rename(directory, complete_directory)

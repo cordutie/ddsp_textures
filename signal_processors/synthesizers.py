@@ -4,7 +4,6 @@ import ddsp_textures.auxiliar.filterbanks
 from   ddsp_textures.auxiliar.seeds import *
 
 # SubEnv ----------------------------------------------------------------------------------------------
-
 def SubEnv_param_extractor(signal, fs, N_filter_bank, param_per_env):
     # send error if param_per_env is not even
     if param_per_env % 2 != 0:
@@ -18,17 +17,13 @@ def SubEnv_param_extractor(signal, fs, N_filter_bank, param_per_env):
     
     erb_subbands = subbands[1:-1, :].clone().to(dtype=torch.float32).detach()
     erb_envs = torch.abs(hilbert(erb_subbands))
-    
-    # print(f"The signal has a size of {size} samples.")
-    # print(f"Each envelope of the {N_filter_bank} filters will be approximated by {int(percentage_use * size * 0.5)} complex parameters.")
-    # print(f"This gives a total of {int(percentage_use * size * 0.5) * N_filter_bank} parameters in total, and it corresponds to {2 * int(percentage_use * size * 0.5) * N_filter_bank / size} of the entire signal size.")
-    
+
     real_param = []
     imag_param = []
     
     for i in range(N_filter_bank):
         erb_env_local = erb_envs[i]
-        fft_coeffs = torch.fft.rfft(erb_env_local, norm = "ortho")[:param_per_env//2] ###########################
+        fft_coeffs = torch.fft.rfft(erb_env_local)[:param_per_env//2] ###########################
         real_param.append(fft_coeffs.real)
         imag_param.append(fft_coeffs.imag)
     
@@ -38,12 +33,12 @@ def SubEnv_param_extractor(signal, fs, N_filter_bank, param_per_env):
     return real_param, imag_param
 
 # Actual synth ----------------------------------------------------------------------------------------------
-
 def SubEnv(parameters_real, parameters_imag, seed, target_loudness=1):
     size          = seed.shape[1]
     N_filter_bank = seed.shape[0]
     
     N = parameters_real.size(0)
+    print("NUMBER OF PARAMETERS: ", 2*N)
     parameters_size = N // N_filter_bank
     signal_final = torch.zeros(size, dtype=torch.float32).to(device=parameters_real.device)
     
@@ -56,7 +51,8 @@ def SubEnv(parameters_real, parameters_imag, seed, target_loudness=1):
         fftcoeff_local[:parameters_size] = parameters_local ###########################################
         
         # Compute the inverse FFT to get the local envelope
-        env_local = torch.fft.irfft(fftcoeff_local, norm = "ortho")
+        # env_local = torch.fft.irfft(fftcoeff_local, norm = "ortho")
+        env_local = torch.fft.irfft(fftcoeff_local)
         
         # Extract the local noise
         noise_local = seed[i, :]
@@ -67,8 +63,8 @@ def SubEnv(parameters_real, parameters_imag, seed, target_loudness=1):
         # Accumulate the result
         signal_final += texture_sound_local
     
-    loudness = torch.std(signal_final)
-    signal_final = signal_final / loudness
+    # loudness = torch.std(signal_final)
+    # signal_final = signal_final / loudness
 
     signal_final = target_loudness * signal_final
 
@@ -96,6 +92,7 @@ def SubEnv_batches(parameters_real, parameters_imag, seed):
 
         # Compute the inverse FFT to get the local envelope for each batch item
         env_local = torch.fft.irfft(fftcoeff_local, norm = "ortho").real
+        # env_local = torch.fft.irfft(fftcoeff_local)
 
         # Extract the local noise for each batch item
         noise_local = seed[i, :]
@@ -108,7 +105,7 @@ def SubEnv_batches(parameters_real, parameters_imag, seed):
     
     return signal_final
 
-# Actual Synth Stems -------------------------------------------------------------------------------
+# Synth Stems -------------------------------------------------------------------------------
 
 def SubEnv_stems(parameters_real, parameters_imag, frame_size, N_filter_bank, target_loudness=1):
     size          = frame_size

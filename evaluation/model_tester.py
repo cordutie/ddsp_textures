@@ -16,7 +16,7 @@ import pickle
 import os
 import matplotlib.pyplot as plt
 
-def model_loader(model_folder_path, print_parameters=True):
+def model_loader(model_folder_path, best=True, print_parameters=True):
     configurations_path = os.path.join(model_folder_path, "configurations.json")
     
     #read configurations
@@ -49,9 +49,15 @@ def model_loader(model_folder_path, print_parameters=True):
     model = architecture(input_dimensions, hidden_size_enc, hidden_size_dec, deepness_enc, deepness_dec, param_per_env, frame_size, N_filter_bank, device, sampling_rate, stems).to(device)
     
     # Loading model
-    model_path = os.path.join(model_folder_path, 'best_model.pth')
-    model.load_state_dict(torch.load(model_path, map_location=torch.device(device)))
-    
+    if best:
+        model_path = os.path.join(model_folder_path, 'best_model.pth')
+        model.load_state_dict(torch.load(model_path, map_location=torch.device(device)))
+    else:
+        model_path = os.path.join(model_folder_path, 'checkpoint.pth')
+        checkpoint = torch.load(model_path, map_location=device)
+        model.load_state_dict(checkpoint['model_state_dict'])
+        # model.load_state_dict(torch.load(model_path, map_location=torch.device(device)))
+
     # Loading loss dictionary
     loss_dict_path = os.path.join(model_folder_path, 'loss_dict.pkl')
     with open(loss_dict_path, 'rb') as file:
@@ -93,7 +99,7 @@ def audio_preprocess(audio_path, frame_size, sampling_rate, features_annotators,
         content.append(segment_annotated)
     return content
 
-def model_synthesizer(content, model, parameters_dict, random_shift=True, R=5, ):
+def model_synthesizer(content, model, parameters_dict, random_shift=True, R=1):
     # Unpack parameters
     audio_path                      = parameters_dict['audio_path']
     frame_size                      = parameters_dict['frame_size']
@@ -154,11 +160,11 @@ def model_synthesizer(content, model, parameters_dict, random_shift=True, R=5, )
         audio_final[i * hop_size: i * hop_size + frame_size] += synthesized_segment
         audio_og[i * hop_size: i * hop_size + frame_size]    += segment_loc * window
 
-    # Normalize the audio_final using window overlap sum
-    window_sum = torch.zeros_like(audio_final).to(device)
-    for i in range(N_segments):
-        window_sum[i * hop_size: i * hop_size + frame_size] += window
-    audio_final /= torch.clamp(window_sum, min=1e-6)  # Avoid division by zero
+    # # Normalize the audio_final using window overlap sum
+    # window_sum = torch.zeros_like(audio_final).to(device)
+    # for i in range(N_segments):
+    #     window_sum[i * hop_size: i * hop_size + frame_size] += window
+    # audio_final /= torch.clamp(window_sum, min=1e-6)  # Avoid division by zero
     
     audio_final = audio_final.detach().cpu().numpy()
     audio_og    = audio_og.detach().cpu().numpy()

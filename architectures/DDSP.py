@@ -57,6 +57,7 @@ class DDSP_SubEnv(nn.Module):
         a = self.a_decoder_1(latent_vector)
         a = self.a_decoder_2(a)
         a = self.param_per_env*torch.sigmoid(a) # normalization
+        # a = torch.sigmoid(a) # normalization
         p = self.p_decoder_1(latent_vector)
         p = self.p_decoder_2(p)
         p = 2 * torch.pi * torch.sigmoid(p)
