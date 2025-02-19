@@ -16,7 +16,9 @@ class DDSP_SubEnv(nn.Module):
         self.N_filter_bank = N_filter_bank
         self.frame_size = frame_size
         self.param_per_env = param_per_env
-        
+        self.real_normalizing_factor = np.sqrt(frame_size)
+        self.imag_normalizing_factor = np.sqrt(np.sqrt(frame_size))
+
         self.seed = seed_maker(frame_size, sampling_rate, N_filter_bank).to(device)
 
         self.encoders = nn.ModuleList()
@@ -29,9 +31,9 @@ class DDSP_SubEnv(nn.Module):
         self.z_encoder = gru(len(input_sizes) * enc_hidden_size, enc_hidden_size)
     
         self.a_decoder_1 = mlp((len(input_sizes)+1) * enc_hidden_size, dec_hidden_size, dec_deepness)
-        self.a_decoder_2 = nn.Linear(dec_hidden_size, N_filter_bank * self.param_per_env)
+        self.a_decoder_2 = nn.Linear(dec_hidden_size, N_filter_bank * self.param_per_env // 2)
         self.p_decoder_1 = mlp((len(input_sizes)+1) * enc_hidden_size, dec_hidden_size, dec_deepness)
-        self.p_decoder_2 = nn.Linear(dec_hidden_size, N_filter_bank * self.param_per_env)
+        self.p_decoder_2 = nn.Linear(dec_hidden_size, N_filter_bank * self.param_per_env // 2)
 
     def seed_retrieve(self):
         return self.seed
@@ -53,16 +55,25 @@ class DDSP_SubEnv(nn.Module):
         # print("Actual latent vector shape", actual_latent_vector.shape)
         return actual_latent_vector
 
+    # def decoder(self, latent_vector):
+    #     a = self.a_decoder_1(latent_vector)
+    #     a = self.a_decoder_2(a)
+    #     a = self.normalizing_factor*torch.sigmoid(a) # normalization
+    #     # a = torch.sigmoid(a) # normalization
+    #     p = self.p_decoder_1(latent_vector)
+    #     p = self.p_decoder_2(p)
+    #     p = 2 * torch.pi * torch.sigmoid(p)
+    #     real_param = a * torch.cos(p)
+    #     imag_param = a * torch.sin(p)
+    #     return real_param, imag_param
+    
     def decoder(self, latent_vector):
-        a = self.a_decoder_1(latent_vector)
-        a = self.a_decoder_2(a)
-        a = self.param_per_env*torch.sigmoid(a) # normalization
-        # a = torch.sigmoid(a) # normalization
-        p = self.p_decoder_1(latent_vector)
-        p = self.p_decoder_2(p)
-        p = 2 * torch.pi * torch.sigmoid(p)
-        real_param = a * torch.cos(p)
-        imag_param = a * torch.sin(p)
+        real_param = self.a_decoder_1(latent_vector)
+        real_param = self.a_decoder_2(real_param)
+        real_param = self.real_normalizing_factor * torch.sigmoid(real_param)
+        imag_param = self.p_decoder_1(latent_vector)
+        imag_param = self.p_decoder_2(imag_param)
+        imag_param = self.imag_normalizing_factor * torch.sigmoid(imag_param)
         return real_param, imag_param
 
     def forward(self, features):

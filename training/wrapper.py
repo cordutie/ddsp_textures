@@ -16,7 +16,7 @@ import os
 import matplotlib.pyplot as plt
 import signal
 
-def save_checkpoint(model, optimizer, epoch, loss_history, main_loss_history, regularizer_history, directory, is_best=False):
+def save_checkpoint(model, optimizer, epoch, loss_history, main_loss_history, regularizer_history, directory, name="checkpoint.pth"):
     checkpoint = {
         'epoch': epoch,
         'model_state_dict': model.state_dict(),
@@ -25,11 +25,8 @@ def save_checkpoint(model, optimizer, epoch, loss_history, main_loss_history, re
         'main_loss_history': main_loss_history,
         'regularizer_history': regularizer_history
     }
-    checkpoint_path = os.path.join(directory, 'checkpoint.pth')
+    checkpoint_path = os.path.join(directory, name)
     torch.save(checkpoint, checkpoint_path)
-    if is_best:
-        best_model_path = os.path.join(directory, 'best_model.pth')
-        torch.save(model.state_dict(), best_model_path)
 
 def train(json_path):
     # Get the parameters from the json file
@@ -107,7 +104,7 @@ def trainer_SubEnv(json_path):
     model = architecture(input_dimensions, hidden_size_enc, hidden_size_dec, deepness_enc, deepness_dec, param_per_env, frame_size, N_filter_bank, device, sampling_rate, stems).to(device)
     
     # Initialize the optimizer
-    optimizer = optim.Adam(model.parameters(), lr=1e-2)
+    optimizer = optim.Adam(model.parameters(), lr=0.5*1e-3)
 
     # Frame sizes for downsampling
     new_frame_size, new_sampling_rate   = frame_size // 4, sampling_rate // 4
@@ -138,7 +135,7 @@ def trainer_SubEnv(json_path):
     print("num_of_regularizers", num_of_regularizers)
 
     # Early stopping parameters
-    patience = 100  # Number of epochs to wait for improvement before stopping
+    patience = 250  # Number of epochs to wait for improvement before stopping
     epochs_no_improve = 0
 
     for epoch in range(epochs):
@@ -220,10 +217,14 @@ def trainer_SubEnv(json_path):
         # Save the model checkpoint at the end of each epoch
         save_checkpoint(model, optimizer, epoch + 1, loss_history, main_loss_history, regularizer_history, directory)
 
+        # if epoch % 250 == 0 save it as a checkpoint and call it checkpoint_{epoch}.pth
+        if epoch % 250 == 0 & epoch != 0:
+            save_checkpoint(model, optimizer, epoch + 1, loss_history, main_loss_history, regularizer_history, directory, name=f"checkpoint_{epoch}.pth")
+
         # Save the best model and implement early stopping
         if epoch_loss < best_loss:
             best_loss = epoch_loss
-            save_checkpoint(model, optimizer, epoch + 1, loss_history, main_loss_history, regularizer_history, directory, is_best=True)
+            save_checkpoint(model, optimizer, epoch + 1, loss_history, main_loss_history, regularizer_history, directory, name="best_model.pth")
             epochs_no_improve = 0  # Reset counter if loss improves
         else:
             epochs_no_improve += 1  # Increment counter if no improvement
@@ -261,7 +262,7 @@ def trainer_SubEnv(json_path):
 
             # Save and show the plot
             plt.savefig(os.path.join(directory, 'loss_plot.png'))
-            plt.show()
+            plt.close()
 
         print(f"Epochs without improvement: {epochs_no_improve}/{patience}")
 
@@ -271,7 +272,8 @@ def trainer_SubEnv(json_path):
             # Rename the model directory to mark training completion
             complete_directory = directory + "_complete"
             os.rename(directory, complete_directory)
-            break  # Stop training if no improvement after patience epochs
+            import sys
+            sys.exit("Early stopping triggered.")  # Stop training if no improvement after patience epochs
     
     print("Training complete.")
     # Rename the model directory to mark training completion

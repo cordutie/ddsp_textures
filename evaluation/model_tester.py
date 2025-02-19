@@ -16,9 +16,7 @@ import pickle
 import os
 import matplotlib.pyplot as plt
 
-def model_loader(model_folder_path, best=True, print_parameters=True):
-    configurations_path = os.path.join(model_folder_path, "configurations.json")
-    
+def model_loader(model_path, configurations_path, loss_dict_path, print_parameters=True):    
     #read configurations
     parameters_dict = model_json_to_parameters(configurations_path)
     
@@ -49,21 +47,31 @@ def model_loader(model_folder_path, best=True, print_parameters=True):
     model = architecture(input_dimensions, hidden_size_enc, hidden_size_dec, deepness_enc, deepness_dec, param_per_env, frame_size, N_filter_bank, device, sampling_rate, stems).to(device)
     
     # Loading model
-    if best:
-        model_path = os.path.join(model_folder_path, 'best_model.pth')
-        model.load_state_dict(torch.load(model_path, map_location=torch.device(device)))
-    else:
-        model_path = os.path.join(model_folder_path, 'checkpoint.pth')
-        checkpoint = torch.load(model_path, map_location=device)
-        model.load_state_dict(checkpoint['model_state_dict'])
-        # model.load_state_dict(torch.load(model_path, map_location=torch.device(device)))
+    checkpoint = torch.load(model_path, map_location=device)
+    model.load_state_dict(checkpoint['model_state_dict'])
 
     # Loading loss dictionary
-    loss_dict_path = os.path.join(model_folder_path, 'loss_dict.pkl')
     with open(loss_dict_path, 'rb') as file:
         loss_dict = pickle.load(file)
     
     return model, parameters_dict, loss_dict
+
+def plot_loss_history(loss_dict):
+    loss_history     = np.log(np.array(loss_dict['loss_total'])+1)
+    main_loss_histor = np.log(np.array(loss_dict['loss_main'])+1)
+    regularizer_history = np.log(np.array(loss_dict['loss_regularizer'])+1)
+    if regularizer_history[0]==0:
+        regularizer_history = None
+    plt.figure(figsize=(10, 5))
+    plt.plot(loss_history, label='Total Loss')
+    plt.plot(main_loss_histor, label='Main Loss')
+    if regularizer_history is not None:
+        plt.plot(regularizer_history, label='Regularizer Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Loss History')
+    plt.legend()
+    plt.show()
 
 def audio_preprocess(audio_path, frame_size, sampling_rate, features_annotators, erb_bank):
     hop_size = frame_size // 2
@@ -99,7 +107,7 @@ def audio_preprocess(audio_path, frame_size, sampling_rate, features_annotators,
         content.append(segment_annotated)
     return content
 
-def model_synthesizer(content, model, parameters_dict, random_shift=True, R=1):
+def model_synthesizer(content, model, parameters_dict, loudness_normalization, random_shift=True, R=1):
     # Unpack parameters
     audio_path                      = parameters_dict['audio_path']
     frame_size                      = parameters_dict['frame_size']
@@ -137,7 +145,9 @@ def model_synthesizer(content, model, parameters_dict, random_shift=True, R=1):
     audio_final = torch.zeros(frame_size + (N_segments-1)*hop_size).to(device)
     window      = torch.hann_window(frame_size).to(device)
 
-    audio_og    = torch.zeros(frame_size + (N_segments-1)*hop_size).to(device)
+    # audio_og    = torch.zeros(frame_size + (N_segments-1)*hop_size).to(device)
+
+    erb_bank    = fb.EqualRectangularBandwidth(frame_size, sampling_rate, N_filter_bank, 20, sampling_rate // 2)
 
     for i in range(N_segments):
         local_content = content[i]
@@ -149,6 +159,10 @@ def model_synthesizer(content, model, parameters_dict, random_shift=True, R=1):
         # Select a random seed from the pre-generated seeds
         selected_seed = seeds[np.random.randint(0, R)]
         
+        if loudness_normalization == "specific":
+            # compute energy bands to use them as target loudness
+            target_loudness_loc = features_energy_bands(segment_loc, 0, erb_bank)
+
         synthesized_segment = model.synthesizer(features_loc, target_loudness_loc, selected_seed)
         
         if random_shift:
@@ -158,7 +172,7 @@ def model_synthesizer(content, model, parameters_dict, random_shift=True, R=1):
         # Apply window
         synthesized_segment = synthesized_segment * window
         audio_final[i * hop_size: i * hop_size + frame_size] += synthesized_segment
-        audio_og[i * hop_size: i * hop_size + frame_size]    += segment_loc * window
+        # audio_og[i * hop_size: i * hop_size + frame_size]    += segment_loc * window
 
     # # Normalize the audio_final using window overlap sum
     # window_sum = torch.zeros_like(audio_final).to(device)
@@ -167,9 +181,11 @@ def model_synthesizer(content, model, parameters_dict, random_shift=True, R=1):
     # audio_final /= torch.clamp(window_sum, min=1e-6)  # Avoid division by zero
     
     audio_final = audio_final.detach().cpu().numpy()
-    audio_og    = audio_og.detach().cpu().numpy()
+    # audio_og    = audio_og.detach().cpu().numpy()
     
-    return audio_final, audio_og
+    return audio_final
+    # return audio_final, audio_og
+
 
 
 # def model_tester(frame_type, model_type, loss_type, audio_path, model_name, best):

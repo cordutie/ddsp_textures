@@ -23,7 +23,7 @@ def SubEnv_param_extractor(signal, fs, N_filter_bank, param_per_env):
     
     for i in range(N_filter_bank):
         erb_env_local = erb_envs[i]
-        fft_coeffs = torch.fft.rfft(erb_env_local)[:param_per_env//2] ###########################
+        fft_coeffs = torch.fft.rfft(erb_env_local, norm = "ortho")[:param_per_env//2] ###########################
         real_param.append(fft_coeffs.real)
         imag_param.append(fft_coeffs.imag)
     
@@ -38,10 +38,19 @@ def SubEnv(parameters_real, parameters_imag, seed, target_loudness=1):
     N_filter_bank = seed.shape[0]
     
     N = parameters_real.size(0)
-    print("NUMBER OF PARAMETERS: ", 2*N)
+    # print("NUMBER OF PARAMETERS: ", 2*N)
     parameters_size = N // N_filter_bank
     signal_final = torch.zeros(size, dtype=torch.float32).to(device=parameters_real.device)
     
+    # Set the type of normalization to be used
+    # if target loudness is either not a torch tensor or a tensor with a single value
+    if not torch.is_tensor(target_loudness) or target_loudness.numel() == 1:
+        normalization = "generic_loudness"
+    else:
+        normalization = "specific_loudness"
+
+    # print("Normalization type: ", normalization)
+
     for i in range(N_filter_bank):
         # Construct the local parameters as a complex array
         parameters_local = parameters_real[i * parameters_size : (i + 1) * parameters_size] + 1j * parameters_imag[i * parameters_size : (i + 1) * parameters_size]
@@ -51,8 +60,8 @@ def SubEnv(parameters_real, parameters_imag, seed, target_loudness=1):
         fftcoeff_local[:parameters_size] = parameters_local ###########################################
         
         # Compute the inverse FFT to get the local envelope
-        # env_local = torch.fft.irfft(fftcoeff_local, norm = "ortho")
-        env_local = torch.fft.irfft(fftcoeff_local)
+        # env_local = torch.fft.irfft(fftcoeff_local, )
+        env_local = torch.fft.irfft(fftcoeff_local, norm = "ortho")
         
         # Extract the local noise
         noise_local = seed[i, :]
@@ -60,14 +69,23 @@ def SubEnv(parameters_real, parameters_imag, seed, target_loudness=1):
         # Generate the texture sound by multiplying the envelope and noise
         texture_sound_local = env_local * noise_local
         
+        if normalization == "specific_loudness":
+            # Normalize the texture sound to match the target loudness
+            loudness = torch.sqrt(torch.mean(texture_sound_local ** 2))
+            texture_sound_local = texture_sound_local / loudness
+            texture_sound_local = target_loudness[i] * texture_sound_local
+        else:
+            texture_sound_local = texture_sound_local # do nothing
+
         # Accumulate the result
         signal_final += texture_sound_local
     
-    # loudness = torch.std(signal_final)
-    # signal_final = signal_final / loudness
-
-    signal_final = target_loudness * signal_final
-
+    if normalization == "generic_loudness":
+        # Normalize the signal to match the target loudness
+        loudness = torch.sqrt(torch.mean(signal_final ** 2))
+        signal_final = signal_final / loudness
+        signal_final = target_loudness * signal_final
+    
     return signal_final
 
 def SubEnv_batches(parameters_real, parameters_imag, seed):
@@ -91,7 +109,7 @@ def SubEnv_batches(parameters_real, parameters_imag, seed):
         fftcoeff_local[:, :parameters_size] = parameters_local
 
         # Compute the inverse FFT to get the local envelope for each batch item
-        env_local = torch.fft.irfft(fftcoeff_local, norm = "ortho").real
+        env_local = torch.fft.irfft(fftcoeff_local, norm = "ortho")
         # env_local = torch.fft.irfft(fftcoeff_local)
 
         # Extract the local noise for each batch item
@@ -105,7 +123,7 @@ def SubEnv_batches(parameters_real, parameters_imag, seed):
     
     return signal_final
 
-# Synth Stems -------------------------------------------------------------------------------
+# # Synth Stems -------------------------------------------------------------------------------
 
 def SubEnv_stems(parameters_real, parameters_imag, frame_size, N_filter_bank, target_loudness=1):
     size          = frame_size
