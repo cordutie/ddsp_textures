@@ -1,0 +1,21 @@
+{
+    "audio_path":        "sounds/fire_sounds",
+    "frame_size":        32768,
+    "hop_size":          65536,
+    "sampling_rate":     44100,
+    "features_list":     "energy_bands,freqavg",
+    "hidden_size_enc":   256,
+    "hidden_size_dec":   256,
+    "deepness_enc":      1,
+    "deepness_dec":      3,
+    "param_per_env":     512,
+    "N_filter_bank":     16,
+    "M_filter_bank":     6,
+    "architecture":      "DDSP_SubEnv",
+    "stems":             0,
+    "loss_function":     "statistics",
+    "regularizers_list": "",
+    "batch_size":        32,
+    "epochs":            3000,
+    "models_directory":  "trained_models/"
+}

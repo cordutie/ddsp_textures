@@ -10,9 +10,13 @@ import ddsp_textures.training.wrapper
 
 if __name__ == "__main__":
     # Check if there is only one argument and that is a string
-    if len(sys.argv) != 2 or not isinstance(sys.argv[1], str):
+    if len(sys.argv) != 3 or not isinstance(sys.argv[1], str):
         raise NameError("Invalid arguments")
     else:
-        parameters_json_path = sys.argv[1]
+        method = sys.argv[1]
+        path = sys.argv[2] #json path for training and checkpoint parent folder path for retraining
     print("Let's go!")
-    ddsp_textures.training.wrapper.train(parameters_json_path)
+    if method == "train":
+        ddsp_textures.training.wrapper.trainer_SubEnv(path)
+    elif method == "retrain":
+        ddsp_textures.training.wrapper.trainer_from_checkpoint_SubEnv(path)

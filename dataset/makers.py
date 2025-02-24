@@ -8,8 +8,8 @@ import torchaudio
 from ddsp_textures.auxiliar.features    import *
 from ddsp_textures.auxiliar.filterbanks import *
 import os
-
-def read_wavs_from_folder(folder_path, sampling_rate):
+    
+def read_wavs_from_folder(folder_path, sampling_rate, torch_type=True):
     audio_list = []
     
     # Iterate through all files in the folder
@@ -19,31 +19,42 @@ def read_wavs_from_folder(folder_path, sampling_rate):
             # Load the audio file using librosa
             audio, _ = librosa.load(file_path, sr=sampling_rate, mono=True)  # sr=None to preserve original sampling rate
             # audio to torch
-            audio = torch.tensor(audio)
+            if torch_type:
+                audio = torch.tensor(audio)
             audio_list.append(audio)      # Store the audio, sample rate, and filename
             
     return audio_list
 
 # features_annotators_list = list of features annotators
 class DDSP_Dataset(Dataset):
-    def __init__(self, audio_path, frame_size, hop_size, sampling_rate, N_filter_bank, features_annotators_list):
+    def __init__(self, audio_path, frame_size, hop_size, sampling_rate, N_filter_bank, features_annotators_list, data_augmentation=False):
         self.features_annotators_list = features_annotators_list
         self.audio_path               = audio_path
         self.sampling_rate            = sampling_rate
-        self.audios_list              = read_wavs_from_folder(audio_path, sampling_rate)
+        self.audios_list              = read_wavs_from_folder(audio_path, sampling_rate, torch_type=False)
         print("Audio loaded from ", audio_path)
         self.segments_list = []
         for audio in self.audios_list:
             size = len(audio)
             number_of_segments = (size - frame_size) // hop_size
             for i in range(number_of_segments):
-                segment = audio[i * hop_size : i * hop_size + frame_size]
-                self.segments_list.append(segment)
+                if data_augmentation == True:
+                    segment = audio[i * hop_size : i * hop_size + frame_size]
+                    for j in range(6):
+                        pitch_shift = 2*j - 6 # semitones
+                        segment_shifted = librosa.effects.pitch_shift(y=segment, sr=self.sampling_rate, n_steps=pitch_shift)
+                        segment_shifted = torch.tensor(segment_shifted)
+                        self.segments_list.append(segment_shifted)
+                else:
+                    segment = audio[i * hop_size : i * hop_size + frame_size]
+                    segment = torch.tensor(segment)
+                    self.segments_list.append(segment)
         self.erb_bank_just_in_case_lol = EqualRectangularBandwidth(frame_size, sampling_rate, N_filter_bank, 20, sampling_rate//2)
+        print("Segments extracted!")
+        print("Number of segments: ", len(self.segments_list))
 
     def compute_dataset(self):
         actual_dataset = []
-        print("Computing dataset\n...")
         for segment in self.segments_list:
             # dataset element
             segment_annotated = []

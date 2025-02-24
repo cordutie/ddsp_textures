@@ -131,7 +131,7 @@ def features_freqavg(signal_improved, sampling_rate, _):
     if normalization:
         max_freq = torch.tensor(sampling_rate / 2)
         mean_frequency = torch.log2(freq_avg) / torch.log2(max_freq)
-    return torch.tensor(mean_frequency)
+    return mean_frequency
 
 def features_freqavg_freqstd(signal_improved, sampling_rate, _):
     normalization=True # amazing programming skills
@@ -150,7 +150,7 @@ def features_rate(signal_improved, sampling_rate, _):
         max_rate_per_second = 5 # 5 onsets per second
         max_rate = max_rate_per_second * time_length_signal # max_rate_per_second onsets in the whole signal
         rate = rate / max_rate # normalization
-    return torch.tensor(rate)
+    return rate
 
 def features_energy_bands(signal, _, erb_bank):
     return compute_energy_bands(signal, erb_bank) # amazing programming skills

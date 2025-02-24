@@ -30,8 +30,14 @@ To train a model, follow these steps:
 2. **Run Training**: Execute the training process using the following command:
 
 ```bash
-python main.py "configuration.json"
+python main.py train configuration.json
 ```
+2. **Continue Training from Checkpoint**: Execute the training process using the following command:
+
+```bash
+python main.py retrain model_folder
+```
+
 
 For detailed examples of the training process, refer to the `training/wrapper_tester.ipynb` notebook. To see a sample configuration file, check out `auxiliar/config_template_pvae.json`.
 

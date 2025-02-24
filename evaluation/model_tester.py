@@ -6,7 +6,7 @@ from ddsp_textures.loss.functions import *
 from ddsp_textures.signal_processors.synthesizers import *
 from ddsp_textures.training.wrapper import *
 from ddsp_textures.training.wrapper import *
-
+from ddsp_textures.auxiliar.configuration import *
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
@@ -16,7 +16,7 @@ import pickle
 import os
 import matplotlib.pyplot as plt
 
-def model_loader(model_path, configurations_path, loss_dict_path, print_parameters=True):    
+def model_loader(model_path, configurations_path, print_parameters=True):    
     #read configurations
     parameters_dict = model_json_to_parameters(configurations_path)
     
@@ -50,11 +50,7 @@ def model_loader(model_path, configurations_path, loss_dict_path, print_paramete
     checkpoint = torch.load(model_path, map_location=device)
     model.load_state_dict(checkpoint['model_state_dict'])
 
-    # Loading loss dictionary
-    with open(loss_dict_path, 'rb') as file:
-        loss_dict = pickle.load(file)
-    
-    return model, parameters_dict, loss_dict
+    return model, checkpoint
 
 def plot_loss_history(loss_dict):
     loss_history     = np.log(np.array(loss_dict['loss_total'])+1)
@@ -64,11 +60,11 @@ def plot_loss_history(loss_dict):
         regularizer_history = None
     plt.figure(figsize=(10, 5))
     plt.plot(loss_history, label='Total Loss')
-    plt.plot(main_loss_histor, label='Main Loss')
     if regularizer_history is not None:
+        plt.plot(main_loss_histor, label='Main Loss')
         plt.plot(regularizer_history, label='Regularizer Loss')
     plt.xlabel('Epoch')
-    plt.ylabel('Loss')
+    plt.ylabel('Log Loss')
     plt.title('Loss History')
     plt.legend()
     plt.show()
