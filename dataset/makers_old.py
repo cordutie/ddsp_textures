@@ -40,8 +40,8 @@ class DDSP_Dataset(Dataset):
             for i in range(number_of_segments):
                 if data_augmentation == True:
                     segment = audio[i * hop_size : i * hop_size + frame_size]
-                    for j in range(9):
-                        pitch_shift = 3*j - 12
+                    for j in range(6):
+                        pitch_shift = 2*j - 6 # semitones
                         segment_shifted = librosa.effects.pitch_shift(y=segment, sr=self.sampling_rate, n_steps=pitch_shift)
                         segment_shifted = torch.tensor(segment_shifted)
                         self.segments_list.append(segment_shifted)
@@ -63,8 +63,8 @@ class DDSP_Dataset(Dataset):
             segment = signal_normalizer(segment)
             # adding the segment to the element
             segment_annotated.append(segment)
-            # segment_stems = features_envelopes_stems(segment, 0, self.erb_bank_just_in_case_lol)
-            # segment_annotated.append(segment_stems)
+            segment_stems = features_envelopes_stems(segment, 0, self.erb_bank_just_in_case_lol)
+            segment_annotated.append(segment_stems)
             # features computation
             for feature_annotator in self.features_annotators_list:
                 feature_loc = feature_annotator(segment, self.sampling_rate, self.erb_bank_just_in_case_lol)
@@ -74,5 +74,5 @@ class DDSP_Dataset(Dataset):
         print("Dataset computed!")
         return actual_dataset
     
-    # the output of this function is a list made of lists. Each sub list has this shape [segment, feature1, feature2, ...]
+    # the output of this function is a list made of lists. Each sub list has this shape [segment, stems, feature1, feature2, ...]
     # note that each feature is a list of tensors

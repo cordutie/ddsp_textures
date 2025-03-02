@@ -1,7 +1,7 @@
 {
     "audio_path":        "sounds/fire_sounds",
     "frame_size":        32768,
-    "hop_size":          65536,
+    "hop_size":          100000,
     "sampling_rate":     44100,
     "features_list":     "energy_bands,freqavg",
     "hidden_size_enc":   256,
@@ -15,7 +15,7 @@
     "stems":             0,
     "loss_function":     "statistics",
     "regularizers_list": "",
-    "batch_size":        16,
-    "epochs":            3000,
+    "batch_size":        32,
+    "epochs":            1000,
     "models_directory":  "trained_models/"
 }

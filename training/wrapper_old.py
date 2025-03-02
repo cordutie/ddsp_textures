@@ -159,10 +159,10 @@ def trainer_SubEnv(json_path):
 
         for batch in tqdm(dataloader, desc=f"Epoch {epoch + 1}/{epochs}"):
             # Unpack batch data
-            og_signal            = batch[0].to(device, non_blocking=True)
-            # segments_stems_batch = batch[1].to(device, non_blocking=True)
+            segments_batch       = batch[0].to(device, non_blocking=True)
+            segments_stems_batch = batch[1].to(device, non_blocking=True)
             features_batch       = []
-            for i in range(1, number_of_features + 1):
+            for i in range(2, number_of_features + 2):
                 feature = batch[i].to(device, non_blocking=True)
                 if feature.ndimension() == 1:  # If feature is 1D (i.e., shape: (batch_size,))
                     feature = feature.unsqueeze(-1)  # Add an extra dimension, making it shape (batch_size, 1)
@@ -174,11 +174,11 @@ def trainer_SubEnv(json_path):
             # Forward pass (Note that if stems=True, the model will return the stems)
             reconstructed_signal = model(features_batch).to(device)
 
-            # # Decide what to use to compare
-            # if stems==True:
-            #     og_signal = segments_stems_batch
-            # else:
-            #     og_signal = segments_batch
+            # Decide what to use to compare
+            if stems==True:
+                og_signal = segments_stems_batch
+            else:
+                og_signal = segments_batch
 
             # Compute main loss
             loss_main = loss_function(og_signal, reconstructed_signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler) 
@@ -395,8 +395,8 @@ def trainer_from_checkpoint_SubEnv(model_folder):
 
         for batch in tqdm(dataloader, desc=f"Epoch {epoch + epoch_start + 1}/{epochs}"):
             # Unpack batch data
-            og_signal              = batch[0].to(device, non_blocking=True)
-            # segments_stems_batch = batch[1].to(device, non_blocking=True)
+            segments_batch = batch[0].to(device, non_blocking=True)
+            segments_stems_batch = batch[1].to(device, non_blocking=True)
             features_batch = []
             for i in range(2, number_of_features + 2):
                 feature = batch[i].to(device, non_blocking=True)
@@ -410,11 +410,11 @@ def trainer_from_checkpoint_SubEnv(model_folder):
             # Forward pass (Note that if stems=True, the model will return the stems)
             reconstructed_signal = model(features_batch).to(device)
 
-            # # Decide what to use to compare
-            # if stems==True:
-            #     og_signal = segments_stems_batch
-            # else:
-            #     og_signal = segments_batch
+            # Decide what to use to compare
+            if stems==True:
+                og_signal = segments_stems_batch
+            else:
+                og_signal = segments_batch
 
             # Compute main loss
             loss_main = loss_function(og_signal, reconstructed_signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler) 
