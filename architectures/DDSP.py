@@ -9,18 +9,16 @@ import torchaudio
 
 # example encoder_sizes=[3,5,1]
 class DDSP_SubEnv(nn.Module):
-    def __init__(self, input_sizes, enc_hidden_size, dec_hidden_size, enc_deepness, dec_deepness, param_per_env, frame_size, N_filter_bank, device, sampling_rate = 44100, stems=False, poltocar=True):
+    def __init__(self, input_sizes, enc_hidden_size, dec_hidden_size, enc_deepness, dec_deepness, param_per_env, frame_size, N_filter_bank, device, seed):
         super().__init__()
 
-        self.stems = stems   
-        self.poltocar = poltocar     
         self.N_filter_bank = N_filter_bank
         self.frame_size = frame_size
         self.param_per_env = param_per_env
         self.real_normalizing_factor = np.sqrt(frame_size)
         self.imag_normalizing_factor = np.sqrt(np.sqrt(frame_size))
 
-        self.seed = seed_maker(frame_size, sampling_rate, N_filter_bank).to(device)
+        self.seed = seed.to(device)
 
         self.encoders = nn.ModuleList()
         
@@ -58,7 +56,7 @@ class DDSP_SubEnv(nn.Module):
         # print("Actual latent vector shape", actual_latent_vector.shape)
         return actual_latent_vector
 
-    def decoder_poltocar(self, latent_vector):
+    def decoder(self, latent_vector):
         a = self.a_decoder_1(latent_vector)
         a = self.a_decoder_2(a)
         a = torch.sigmoid(a)
@@ -69,34 +67,36 @@ class DDSP_SubEnv(nn.Module):
         imag_param = a * torch.sin(p)
         return real_param, imag_param
     
-    def decoder(self, latent_vector):
-        real_param = self.a_decoder_1(latent_vector)
-        real_param = self.a_decoder_2(real_param)
-        real_param = self.real_normalizing_factor * torch.sigmoid(real_param)
-        imag_param = self.p_decoder_1(latent_vector)
-        imag_param = self.p_decoder_2(imag_param)
-        imag_param = self.imag_normalizing_factor * torch.sigmoid(imag_param)
-        return real_param, imag_param
+    # def decoder(self, latent_vector):
+    #     real_param = self.a_decoder_1(latent_vector)
+    #     real_param = self.a_decoder_2(real_param)
+    #     real_param = self.real_normalizing_factor * torch.sigmoid(real_param)
+    #     imag_param = self.p_decoder_1(latent_vector)
+    #     imag_param = self.p_decoder_2(imag_param)
+    #     imag_param = self.imag_normalizing_factor * torch.sigmoid(imag_param)
+    #     return real_param, imag_param
 
     def forward(self, features):
         # Encoding
         latent_vector          = self.encoder(features)
 
         # Decoding
-        if self.poltocar:
-            real_param, imag_param = self.decoder_poltocar(latent_vector)
-        else:
-            real_param, imag_param = self.decoder(latent_vector)
+        # if self.poltocar:
+        #     real_param, imag_param = self.decoder_poltocar(latent_vector)
+        # else:
+        real_param, imag_param = self.decoder(latent_vector)
+        
         # Synthesizing
-        if self.stems:
-            output = SubEnv_stems_batches(real_param, imag_param, self.frame_size, self.N_filter_bank)
-        else:
-            output = SubEnv_batches(real_param, imag_param, self.seed)
+        # if self.stems:
+        #     output = SubEnv_stems_batches(real_param, imag_param, self.frame_size, self.N_filter_bank)
+        # else:
+        output                 = SubEnv_batches(real_param, imag_param, self.seed)
+
         return output
 
     def synthesizer(self, features, target_loudness, seed):
         latent_vector          = self.encoder(features)
-        real_param, imag_param = self.decoder_poltocar(latent_vector)
+        real_param, imag_param = self.decoder(latent_vector)
 
         signal = SubEnv(real_param, imag_param, seed, target_loudness)
         return signal

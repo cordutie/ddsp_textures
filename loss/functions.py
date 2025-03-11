@@ -59,7 +59,7 @@ def correlation_coefficient(tensor1, tensor2):
 # new_size = size // 4 and new_sample_rate = sample_rate // 4
 # log_bank = fb.Logarithmic(new_size, new_sample_rate, M_filter_bank, 10, new_sample_rate // 4)
 # downsampler = torchaudio.transforms.Resample(sample_rate, new_sample_rate).to(device)  # Move downsampler to device
-def statistics(signals, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler):
+def statistics_mcds(signals, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler):
     device = signals.device
     if signals.dim() == 1:  # Single signal case
         signals = signals.unsqueeze(0)  # Add batch dimension (1, Size)
@@ -114,24 +114,78 @@ def statistics(signals, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsa
     #     return [stats_11, stats_12, stats_13, stats_14, stats_2, stats_3, stats_4, stats_5]
     return [stats_11, stats_12, stats_13, stats_14, stats_2, stats_3, stats_4, stats_5]
 
+def statistics_mom(signals, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler):
+    device = signals.device
+    if signals.dim() == 1:  # Single signal case
+        signals = signals.unsqueeze(0)  # Add batch dimension (1, Size)
+        was_single = True
+    else:
+        was_single = False
+    batch_size = signals.shape[0]
+
+    erb_subbands = erb_bank.generate_subbands(signals)[:, 1:-1, :]
+
+    N_filter_bank = erb_subbands.shape[1]
+
+    env_subbands = torch.abs(ddsp_textures.auxiliar.seeds.hilbert(erb_subbands))
+    env_subbands_downsampled = downsampler(env_subbands.float())
+    length_downsampled       = env_subbands_downsampled.shape[-1]
+
+    subenvelopes = torch.zeros((batch_size, N_filter_bank, M_filter_bank, length_downsampled), device=device)
+    for i in range(N_filter_bank):
+        banda     = env_subbands_downsampled[:, i, :]
+        subbandas = log_bank.generate_subbands(banda)[:, 1:-1, :]
+        subenvelopes[:, i, :, :] = subbandas
+
+    mu = env_subbands.mean(dim=-1)
+    sigma = env_subbands.std(dim=-1)
+
+    stats_11 = mu
+    stats_12 = (sigma ** 2) / (mu ** 2)
+    normalized_env_subbands = (env_subbands - mu.unsqueeze(-1))
+    stats_13 = (normalized_env_subbands ** 3).mean(dim=-1) / (sigma ** 3)
+    stats_14 = (normalized_env_subbands ** 4).mean(dim=-1) / (sigma ** 4)
+    stats_15 = (normalized_env_subbands ** 5).mean(dim=-1) / (sigma ** 5)
+    stats_16 = (normalized_env_subbands ** 6).mean(dim=-1) / (sigma ** 6)
+    stats_17 = (normalized_env_subbands ** 7).mean(dim=-1) / (sigma ** 7)
+    stats_18 = (normalized_env_subbands ** 8).mean(dim=-1) / (sigma ** 8)
+
+    corr_pairs = torch.triu_indices(N_filter_bank, N_filter_bank, 1)
+    stats_2 = correlation_coefficient(env_subbands[:, corr_pairs[0]], env_subbands[:, corr_pairs[1]])
+
+    subenv_sigma = subenvelopes.std(dim=-1)
+    # stats_3 = (subenv_sigma / (env_subbands_downsampled.std(dim=-1, keepdim=True))).reshape(-1)
+    stats_3 = (subenv_sigma / (env_subbands_downsampled.std(dim=-1, keepdim=True))).view(batch_size, -1)
+
+    return [stats_11, stats_12, stats_13, stats_14, stats_15, stats_16, stats_17, stats_18, stats_2, stats_3]
+
 # alpha=torch.tensor([0.3, 0.15, 0.1, 0.05, 0.1, 0.1, 0.1, 0.1])
 # alpha = torch.tensor([0.0070, 0.0035, 0.8993, 0.0049, 0.0431, 0.0265, 0.0067, 0.0089])
-def batch_statistics_loss(original_signals, reconstructed_signals, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler, alpha=torch.tensor([0.3, 0.15, 0.1, 0.05, 0.1, 0.1, 0.1, 0.1])):
+def statistics_mcds_loss(original_signals, reconstructed_signals, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler, alpha=torch.tensor([0.3, 0.15, 0.1, 0.05, 0.1, 0.1, 0.1, 0.1])):
     if original_signals.dim() == 1:  # Single signal case
         original_signals = original_signals.unsqueeze(0)  # Add batch dimension (1, Size)
         reconstructed_signals = reconstructed_signals.unsqueeze(0)
 
-    original_stats      = statistics(original_signals, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler)
-    reconstructed_stats = statistics(reconstructed_signals, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler)
+    original_stats      = statistics_mcds(original_signals, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler)
+    reconstructed_stats = statistics_mcds(reconstructed_signals, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler)
 
     losses = [torch.sqrt((o - r).pow(2).sum(dim=-1)) / o.shape[-1] for o, r in zip(original_stats, reconstructed_stats)]
     losses = torch.stack([l.mean() for l in losses])
 
     return (losses * alpha.to(losses.device)).sum()
 
-def statistics_loss(original_signals, reconstructed_signals, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler, alpha=torch.tensor([0.3, 0.15, 0.1, 0.05, 0.1, 0.1, 0.1, 0.1])):
-    # AMAZING PROGRAMMING SKILLS
-    return batch_statistics_loss(original_signals, reconstructed_signals, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler, alpha)
+def statistics_mom_loss(original_signals, reconstructed_signals, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler, alpha=torch.tensor([0.3, 0.15, 0.1, 0.05, 0.1, 0.1, 0.1, 0.1])):
+    if original_signals.dim() == 1:  # Single signal case
+        original_signals = original_signals.unsqueeze(0)  # Add batch dimension (1, Size)
+        reconstructed_signals = reconstructed_signals.unsqueeze(0)
+
+    original_stats      = statistics_mom(original_signals, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler)
+    reconstructed_stats = statistics_mom(reconstructed_signals, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler)
+
+    losses = [torch.sqrt((o - r).pow(2).sum(dim=-1)) / o.shape[-1] for o, r in zip(original_stats, reconstructed_stats)]
+    losses = torch.stack([l.mean() for l in losses])
+
+    return (losses * alpha.to(losses.device)).sum()
 
 # OLD VERSION -----------------------------------------------------------------------------------------------------
 

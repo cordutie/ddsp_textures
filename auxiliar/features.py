@@ -39,7 +39,8 @@ def computer_freq_avg(signal_filtered, sampling_rate):
     # mean_frequency     = weighted_sum_freqs / total_magnitude
 
     size = signal_filtered.shape[0]
-    return torchaudio.functional.spectral_centroid(signal_filtered, sampling_rate, 0, torch.hamming_window(size).to(device="cuda"), size, size, size)[0]
+    device = signal_filtered.device
+    return torchaudio.functional.spectral_centroid(signal_filtered, sampling_rate, 0, torch.hamming_window(size).to(device), size, size, size)[0]
 
 def computer_freq_avg_and_std(signal_filtered, sampling_rate):
     device = signal_filtered.device

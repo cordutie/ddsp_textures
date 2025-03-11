@@ -16,6 +16,7 @@ import pickle
 import os
 import matplotlib.pyplot as plt
 
+
 def model_loader(model_path, configurations_path, print_parameters=True):    
     #read configurations
     parameters_dict = model_json_to_parameters(configurations_path)
@@ -38,19 +39,29 @@ def model_loader(model_path, configurations_path, print_parameters=True):
     M_filter_bank = parameters_dict['M_filter_bank']    
     architecture  = parameters_dict['architecture']
     input_dimensions = parameters_dict['input_dimensions']
-    stems = parameters_dict['stems']
+    # stems = parameters_dict['stems']
 
     # Device configuration
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+    # Loading seed
+    parent_folder = os.path.dirname(model_path)
+    seed_path = os.path.join(parent_folder, "seed.pkl")
+    if os.path.exists(seed_path):
+        with open(seed_path, 'rb') as file:
+            seed = pickle.load(file)
+
     # Model initialization
-    model = architecture(input_dimensions, hidden_size_enc, hidden_size_dec, deepness_enc, deepness_dec, param_per_env, frame_size, N_filter_bank, device, sampling_rate, stems).to(device)
+    model = architecture(input_dimensions, hidden_size_enc, hidden_size_dec, deepness_enc, deepness_dec, param_per_env, frame_size, N_filter_bank, device, seed).to(device)
     
     # Loading model
     checkpoint = torch.load(model_path, map_location=device)
     model.load_state_dict(checkpoint['model_state_dict'])
 
-    return model, checkpoint
+    # Parent folder of model_path
+    parent_folder = os.path.dirname(model_path)
+
+    return model, seed, checkpoint
 
 def plot_loss_history(loss_dict):
     loss_history     = np.log(np.array(loss_dict['loss_total'])+1)
@@ -89,8 +100,8 @@ def audio_preprocess(audio_path, frame_size, sampling_rate, features_annotators,
 
         # adding the segment to the element
         segment_annotated.append(segment)
-        segment_stems = features_envelopes_stems(segment, 0, erb_bank).to(device)
-        segment_annotated.append(segment_stems)
+        # segment_stems = features_envelopes_stems(segment, 0, erb_bank).to(device) # ESTO TA RAROOOOOOOOOOOO
+        # segment_annotated.append(segment_stems)
         # features computation
         for feature_annotator in features_annotators:
             feature_loc = feature_annotator(segment, sampling_rate, erb_bank).to(device)
@@ -103,9 +114,9 @@ def audio_preprocess(audio_path, frame_size, sampling_rate, features_annotators,
         content.append(segment_annotated)
     return content
 
-# content[i] = actual torch segment, segment_stems, features, target_loudness
+# content[i] = actual torch segment, features, target_loudness
 
-def model_synthesizer(content, model, parameters_dict, loudness_normalization, random_shift=True, R=1):
+def model_synthesizer(content, model, parameters_dict, loudness_normalization, seed, random_shift=True):
     # Unpack parameters
     audio_path                      = parameters_dict['audio_path']
     frame_size                      = parameters_dict['frame_size']
@@ -121,7 +132,7 @@ def model_synthesizer(content, model, parameters_dict, loudness_normalization, r
     N_filter_bank                   = parameters_dict['N_filter_bank']
     M_filter_bank                   = parameters_dict['M_filter_bank']
     architecture                    = parameters_dict['architecture']
-    stems                           = parameters_dict['stems']
+    # stems                           = parameters_dict['stems']
     loss_function                   = parameters_dict['loss_function']
     regularizers                    = parameters_dict['regularizers']
     batch_size                      = parameters_dict['batch_size']
@@ -129,20 +140,6 @@ def model_synthesizer(content, model, parameters_dict, loudness_normalization, r
     models_directory                = parameters_dict['models_directory']  
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    # Create R seeds
-    seeds = [
-        ddsp_textures.auxiliar.seeds.seed_maker(frame_size, sampling_rate, N_filter_bank).to(device)
-        for _ in range(R)
-    ]
-
-    # Load the seed
-    seed_path = os.path.join("../trained_models/model_111", "seed_t.pkl")
-    if os.path.exists(seed_path):
-        with open(seed_path, 'rb') as file:
-            seed = pickle.load(file)
-
-    seeds = [seed]
 
     hop_size = frame_size // 2
     
@@ -159,18 +156,14 @@ def model_synthesizer(content, model, parameters_dict, loudness_normalization, r
     for i in range(N_segments):
         local_content = content[i]
         segment_loc   = local_content[0]
-        stems_loc     = local_content[1]
-        features_loc  = local_content[2:-1]
+        features_loc  = local_content[1:-1]
         target_loudness_loc = local_content[-1]
-        
-        # Select a random seed from the pre-generated seeds
-        selected_seed = seeds[np.random.randint(0, R)]
         
         if loudness_normalization == "specific":
             # compute energy bands to use them as target loudness
             target_loudness_loc = features_energy_bands(segment_loc, 0, erb_bank)
 
-        synthesized_segment = model.synthesizer(features_loc, target_loudness_loc, selected_seed)
+        synthesized_segment = model.synthesizer(features_loc, target_loudness_loc, seed)
         
         if random_shift:
             # Shift the synthesized_segment in a random amount of steps

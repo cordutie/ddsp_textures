@@ -20,7 +20,6 @@ from ddsp_textures.architectures.DDSP import *
 #     "N_filter_bank": 16,
 #     "M_filter_bank": 16,
 #     "architecture": "DDSP_TextEnv",
-#     "stems": 1,
 #     "loss_function": "statistics",
 #     "regularization": 1,
 #     "batch_size": 16,
@@ -69,18 +68,18 @@ def model_json_to_parameters(json_file_path):
     
     # Loss functions options ---------------------------------------------------------------------------
     loss_function_map = {
-        'statistics':       batch_statistics_loss,
-        'statistics_stems': batch_statistics_loss_stems,
+        'statistics':       statistics_mcds_loss,
+        'moments':          statistics_mom_loss,
         'multiscale':       multiscale_spectrogram_loss
     }
     
-    def loss_picker(loss_input, stems):
-        if stems and loss_input == 'multiscale':
-            raise ValueError("Multiscale loss is not compatible with stems.")
-        elif stems:
-            return loss_function_map.get(loss_input + '_stems')
-        else:
-            return loss_function_map.get(loss_input)
+    # def loss_picker(loss_input, stems):
+    #     if stems and loss_input == 'multiscale':
+    #         raise ValueError("Multiscale loss is not compatible with stems.")
+    #     elif stems:
+    #         return loss_function_map.get(loss_input + '_stems')
+    #     else:
+    #         return loss_function_map.get(loss_input)
     
     # actual parameters initialization -----------------------------------------------------------------
     actual_parameters = {}
@@ -92,8 +91,8 @@ def model_json_to_parameters(json_file_path):
     else:
         regularizers_strings = parameters_json['regularizers_list'].split(',')
 
-    print(features_strings)
-    print(regularizers_strings)
+    # print(features_strings)
+    # print(regularizers_strings)
 
     if set(regularizers_strings).issubset(set(features_strings))==False:
         raise ValueError("Regularizers must be a subset of features.")
@@ -127,9 +126,9 @@ def model_json_to_parameters(json_file_path):
     actual_parameters['N_filter_bank']            = int(parameters_json['N_filter_bank'])
     actual_parameters['M_filter_bank']            = int(parameters_json['M_filter_bank'])
     actual_parameters['architecture']             = architecture_map[parameters_json['architecture']]
-    stems                                         = bool(int(parameters_json['stems'])) 
-    actual_parameters['stems']                    = stems
-    actual_parameters['loss_function']            = loss_picker(parameters_json['loss_function'], stems)
+    # stems                                         = bool(int(parameters_json['stems'])) 
+    # actual_parameters['stems']                    = stems
+    actual_parameters['loss_function']            = loss_function_map[parameters_json['loss_function']]
     actual_parameters['batch_size']               = int(parameters_json['batch_size'])
     actual_parameters['epochs']                   = int(parameters_json['epochs'])
     actual_parameters['models_directory']         = parameters_json['models_directory']
