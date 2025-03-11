@@ -9,10 +9,11 @@ import torchaudio
 
 # example encoder_sizes=[3,5,1]
 class DDSP_SubEnv(nn.Module):
-    def __init__(self, input_sizes, enc_hidden_size, dec_hidden_size, enc_deepness, dec_deepness, param_per_env, frame_size, N_filter_bank, device, sampling_rate = 44100, stems=True):
+    def __init__(self, input_sizes, enc_hidden_size, dec_hidden_size, enc_deepness, dec_deepness, param_per_env, frame_size, N_filter_bank, device, sampling_rate = 44100, stems=False, poltocar=True):
         super().__init__()
 
-        self.stems = stems        
+        self.stems = stems   
+        self.poltocar = poltocar     
         self.N_filter_bank = N_filter_bank
         self.frame_size = frame_size
         self.param_per_env = param_per_env
@@ -44,6 +45,8 @@ class DDSP_SubEnv(nn.Module):
             # print("Encoder ", i, " with input size ", features[i].shape)
             latent_vectors_list.append(self.encoders[i](features[i]))
         
+        latent_vectors_list.reverse()
+
         # print("latent_vector list shape", torch.cat(latent_vectors_list, dim=-1).shape)
         # print("and after unsqueezing", torch.cat(latent_vectors_list, dim=-1).unsqueeze(0).shape)
 
@@ -55,17 +58,16 @@ class DDSP_SubEnv(nn.Module):
         # print("Actual latent vector shape", actual_latent_vector.shape)
         return actual_latent_vector
 
-    # def decoder(self, latent_vector):
-    #     a = self.a_decoder_1(latent_vector)
-    #     a = self.a_decoder_2(a)
-    #     a = self.normalizing_factor*torch.sigmoid(a) # normalization
-    #     # a = torch.sigmoid(a) # normalization
-    #     p = self.p_decoder_1(latent_vector)
-    #     p = self.p_decoder_2(p)
-    #     p = 2 * torch.pi * torch.sigmoid(p)
-    #     real_param = a * torch.cos(p)
-    #     imag_param = a * torch.sin(p)
-    #     return real_param, imag_param
+    def decoder_poltocar(self, latent_vector):
+        a = self.a_decoder_1(latent_vector)
+        a = self.a_decoder_2(a)
+        a = torch.sigmoid(a)
+        p = self.p_decoder_1(latent_vector)
+        p = self.p_decoder_2(p)
+        p = 2*torch.pi*torch.sigmoid(p)
+        real_param = a * torch.cos(p)
+        imag_param = a * torch.sin(p)
+        return real_param, imag_param
     
     def decoder(self, latent_vector):
         real_param = self.a_decoder_1(latent_vector)
@@ -77,8 +79,15 @@ class DDSP_SubEnv(nn.Module):
         return real_param, imag_param
 
     def forward(self, features):
+        # Encoding
         latent_vector          = self.encoder(features)
-        real_param, imag_param = self.decoder(latent_vector)
+
+        # Decoding
+        if self.poltocar:
+            real_param, imag_param = self.decoder_poltocar(latent_vector)
+        else:
+            real_param, imag_param = self.decoder(latent_vector)
+        # Synthesizing
         if self.stems:
             output = SubEnv_stems_batches(real_param, imag_param, self.frame_size, self.N_filter_bank)
         else:
@@ -87,7 +96,60 @@ class DDSP_SubEnv(nn.Module):
 
     def synthesizer(self, features, target_loudness, seed):
         latent_vector          = self.encoder(features)
-        real_param, imag_param = self.decoder(latent_vector)
+        real_param, imag_param = self.decoder_poltocar(latent_vector)
 
         signal = SubEnv(real_param, imag_param, seed, target_loudness)
         return signal
+
+#     def synthesizer(self, features, target_loudness, seed):
+#         latent_vector = self.encoder(features)
+#         # print("Latent vector", latent_vector)
+#         # print("Latent vector shape", latent_vector.shape)
+
+#         real_param, imag_param = self.decoder_poltocar(latent_vector)
+#         # print("Real param", real_param)
+#         # print("Real param shape", real_param.shape)
+#         # print("Imag param", imag_param)
+#         # print("Imag param shape", imag_param.shape)
+
+#         signal = textsynth_env(real_param, imag_param, seed, self.N_filter_bank, self.frame_size, target_loudness)
+#         # print("Signal", signal)
+#         # print("Signal shape", signal.shape)
+#         return signal
+    
+# def textsynth_env(parameters_real, parameters_imag, seed, N_filter_bank, size, target_loudness=1):
+#     N = parameters_real.size(0)
+#     parameters_size = N // N_filter_bank
+#     signal_final = torch.zeros(size, dtype=torch.float32).to(parameters_real.device)
+
+#     seed.to(parameters_real.device)
+    
+#     for i in range(N_filter_bank):
+#         # Construct the local parameters as a complex array
+#         parameters_local = parameters_real[i * parameters_size : (i + 1) * parameters_size] + 1j * parameters_imag[i * parameters_size : (i + 1) * parameters_size]
+#         # print("parameters_local shape: ", parameters_local.shape)
+
+#         # Initialize FFT coefficients array
+#         fftcoeff_local = torch.zeros(int(size/2)+1, dtype=torch.complex64)
+#         fftcoeff_local[:parameters_size] = parameters_local ###########################################3
+        
+#         # Compute the inverse FFT to get the local envelope
+#         env_local = torch.fft.irfft(fftcoeff_local).to(parameters_real.device)
+#         # print("env_local shape: ", env_local.shape)
+
+#         # Extract the local noise
+#         noise_local = seed[i].to(parameters_real.device)
+#         print("noise_local shape: ", noise_local.shape)
+        
+#         # Generate the texture sound by multiplying the envelope and noise
+#         texture_sound_local = env_local * noise_local
+        
+#         # Accumulate the result
+#         signal_final += texture_sound_local
+    
+#     loudness = torch.sqrt(torch.mean(signal_final ** 2))
+#     signal_final = signal_final / loudness
+
+#     signal_final = target_loudness * signal_final
+
+#     return signal_final

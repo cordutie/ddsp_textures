@@ -103,6 +103,8 @@ def audio_preprocess(audio_path, frame_size, sampling_rate, features_annotators,
         content.append(segment_annotated)
     return content
 
+# content[i] = actual torch segment, segment_stems, features, target_loudness
+
 def model_synthesizer(content, model, parameters_dict, loudness_normalization, random_shift=True, R=1):
     # Unpack parameters
     audio_path                      = parameters_dict['audio_path']
@@ -134,10 +136,19 @@ def model_synthesizer(content, model, parameters_dict, loudness_normalization, r
         for _ in range(R)
     ]
 
+    # Load the seed
+    seed_path = os.path.join("../trained_models/model_111", "seed_t.pkl")
+    if os.path.exists(seed_path):
+        with open(seed_path, 'rb') as file:
+            seed = pickle.load(file)
+
+    seeds = [seed]
+
     hop_size = frame_size // 2
     
     N_segments = len(content)
-    
+    # N_segments = 1 # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
     audio_final = torch.zeros(frame_size + (N_segments-1)*hop_size).to(device)
     window      = torch.hann_window(frame_size).to(device)
 

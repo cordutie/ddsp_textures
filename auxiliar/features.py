@@ -22,22 +22,24 @@ def signal_normalizer(signal):
     
 # All purpose features computation ----------------------------------------------
 def computer_freq_avg(signal_filtered, sampling_rate):
-    device = signal_filtered.device
-    window = torch.hann_window(signal_filtered.shape[-1]).to(device)
-    # windowing
-    signal_filtered = signal_filtered * window
-    # Compute the rfft of the signal
-    rfft = torch.fft.rfft(signal_filtered)
-    # Compute the magnitude of the rfft
-    magnitude_spectrum = torch.abs(rfft)
-    # Compute the frequency of each bin of the rfft
-    n = signal_filtered.shape[-1]
-    freqs = torch.fft.rfftfreq(n, d=1/sampling_rate).to(device)
-    # Compute the average frequency using the magnitude spectrum as weights
-    weighted_sum_freqs = torch.inner(freqs, magnitude_spectrum)
-    total_magnitude    = torch.sum(magnitude_spectrum)
-    mean_frequency     = weighted_sum_freqs / total_magnitude
-    return mean_frequency
+    # device = signal_filtered.device
+    # window = torch.hann_window(signal_filtered.shape[-1]).to(device)
+    # # windowing
+    # signal_filtered = signal_filtered * window
+    # # Compute the rfft of the signal
+    # rfft = torch.fft.rfft(signal_filtered)
+    # # Compute the magnitude of the rfft
+    # magnitude_spectrum = torch.abs(rfft)
+    # # Compute the frequency of each bin of the rfft
+    # n = signal_filtered.shape[-1]
+    # freqs = torch.fft.rfftfreq(n, d=1/sampling_rate).to(device)
+    # # Compute the average frequency using the magnitude spectrum as weights
+    # weighted_sum_freqs = torch.inner(freqs, magnitude_spectrum)
+    # total_magnitude    = torch.sum(magnitude_spectrum)
+    # mean_frequency     = weighted_sum_freqs / total_magnitude
+
+    size = signal_filtered.shape[0]
+    return torchaudio.functional.spectral_centroid(signal_filtered, sampling_rate, 0, torch.hamming_window(size).to(device="cuda"), size, size, size)[0]
 
 def computer_freq_avg_and_std(signal_filtered, sampling_rate):
     device = signal_filtered.device
@@ -126,12 +128,12 @@ def computer_envelopes_stems(signal_tensor, sampling_rate, erb_bank):
 
 # Features annotators --------------------------------------------------------
 def features_freqavg(signal_improved, sampling_rate, _):
-    normalization=True # amazing programming skills
+    normalization=False # amazing programming skills
     freq_avg = computer_freq_avg(signal_improved, sampling_rate)
     if normalization:
         max_freq = torch.tensor(sampling_rate / 2)
         mean_frequency = torch.log2(freq_avg) / torch.log2(max_freq)
-    return mean_frequency
+    return freq_avg # CAREFULLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL
 
 def features_freqavg_freqstd(signal_improved, sampling_rate, _):
     normalization=True # amazing programming skills

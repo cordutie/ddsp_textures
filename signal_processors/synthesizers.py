@@ -64,7 +64,7 @@ def SubEnv(parameters_real, parameters_imag, seed, target_loudness=1):
         env_local = torch.fft.irfft(fftcoeff_local, norm = "ortho")
         
         # Extract the local noise
-        noise_local = seed[i, :]
+        noise_local = seed[i].to(parameters_real.device)
         
         # Generate the texture sound by multiplying the envelope and noise
         texture_sound_local = env_local * noise_local

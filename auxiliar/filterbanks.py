@@ -20,30 +20,64 @@ class FilterBank:
             high_lim = max_freq
         return high_lim, freqs, nfreqs
 
+    # def generate_subbands(self, signal):
+    #     device = signal.device  # Get the device of the input signal tensor
+    #     self.filters = self.filters.to(device)  # Move filters to the same device
+        
+    #     if signal.shape[0] == 1:  # turn into column vector
+    #         signal = signal.T.to(device)
+    #     else:
+    #         signal = signal.to(device)
+        
+    #     N = self.filters.shape[1] - 2
+    #     signal_length = signal.shape[0]
+    #     filt_length = self.filters.shape[0]
+        
+    #     fft_sample = torch.fft.fft(signal, dim=0).to(device)
+        
+    #     if signal_length % 2 == 0:
+    #         fft_filts = torch.cat([self.filters, torch.flipud(self.filters[1:filt_length - 1, :])]).to(device)
+    #     else:
+    #         fft_filts = torch.cat([self.filters, torch.flipud(self.filters[1:filt_length, :])]).to(device)
+        
+    #     tile = fft_sample.unsqueeze(1) * torch.ones(1, N + 2, device=device)
+    #     fft_subbands = fft_filts * tile
+    #     # self.subbands = torch.fft.ifft(fft_subbands, dim=0).real.to(device)
+    #     return torch.fft.ifft(fft_subbands, dim=0).real.to(device).transpose(0, 1)
+
     def generate_subbands(self, signal):
-        device = signal.device  # Get the device of the input signal tensor
+        device = signal.device
         self.filters = self.filters.to(device)  # Move filters to the same device
         
-        if signal.shape[0] == 1:  # turn into column vector
-            signal = signal.T.to(device)
+        if signal.dim() == 1:  # Single signal case
+            signal = signal.unsqueeze(0)  # Add batch dimension (1, Size)
+            was_single = True
         else:
-            signal = signal.to(device)
+            was_single = False
         
+        batch_size, signal_length = signal.shape
         N = self.filters.shape[1] - 2
-        signal_length = signal.shape[0]
         filt_length = self.filters.shape[0]
-        
-        fft_sample = torch.fft.fft(signal, dim=0).to(device)
-        
+
+        fft_sample = torch.fft.fft(signal, dim=-1).to(device)
+
         if signal_length % 2 == 0:
             fft_filts = torch.cat([self.filters, torch.flipud(self.filters[1:filt_length - 1, :])]).to(device)
         else:
             fft_filts = torch.cat([self.filters, torch.flipud(self.filters[1:filt_length, :])]).to(device)
-        
-        tile = fft_sample.unsqueeze(1) * torch.ones(1, N + 2, device=device)
-        fft_subbands = fft_filts * tile
-        # self.subbands = torch.fft.ifft(fft_subbands, dim=0).real.to(device)
-        return torch.fft.ifft(fft_subbands, dim=0).real.to(device).transpose(0, 1)
+
+        # Expand filters to match batch size
+        fft_filts = fft_filts.unsqueeze(0).expand(batch_size, -1, -1)  # (batch_size, freq_bins, N+2)
+        fft_sample = fft_sample.unsqueeze(2).expand(-1, -1, N + 2)  # (batch_size, Size, N+2)
+
+        fft_subbands = fft_filts * fft_sample
+        subbands = torch.fft.ifft(fft_subbands, dim=-2).real.to(device)
+        subbands = subbands.transpose(1, 2)  # (batch_size, N+2, Size)
+
+        if was_single:
+            return subbands.squeeze(0)  # Remove batch dimension
+        return subbands
+
 
 class EqualRectangularBandwidth(FilterBank):
     def __init__(self, leny, fs, N, low_lim, high_lim):
