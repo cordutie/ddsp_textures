@@ -69,7 +69,8 @@ def model_json_to_parameters(json_file_path):
     # Loss functions options ---------------------------------------------------------------------------
     loss_function_map = {
         'statistics':       statistics_mcds_loss,
-        'moments':          statistics_mom_loss,
+        'statistics_old':   statistics_mcds_loss_old,
+        # 'moments':          statistics_mom_loss,
         'multiscale':       multiscale_spectrogram_loss
     }
     
@@ -132,7 +133,16 @@ def model_json_to_parameters(json_file_path):
     actual_parameters['batch_size']               = int(parameters_json['batch_size'])
     actual_parameters['epochs']                   = int(parameters_json['epochs'])
     actual_parameters['models_directory']         = parameters_json['models_directory']
-    
+    actual_parameters['data_augmentation']        = bool(int(parameters_json['data_augmentation']))
+    # check if parameters_json['alpha'] exists:
+    if 'alpha' in parameters_json:
+        alpha_string                                  = parameters_json['alpha']
+        alpha_float_list                              = [float(x) for x in alpha_string.split(',')]
+        actual_parameters['alpha']                    = torch.tensor(alpha_float_list)
+        beta_string                                   = parameters_json['beta']
+        beta_float_list                               = [float(x) for x in beta_string.split(',')]
+        actual_parameters['beta']                     = torch.tensor(beta_float_list)
+        
     return actual_parameters
 
 def get_next_model_folder(base_path="trained_models"):

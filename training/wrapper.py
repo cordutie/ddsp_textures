@@ -81,6 +81,9 @@ def trainer_SubEnv(json_path):
     batch_size                      = actual_parameters['batch_size']
     epochs                          = actual_parameters['epochs']
     models_directory                = actual_parameters['models_directory']  
+    alpha                           = actual_parameters['alpha']
+    beta                            = actual_parameters['beta']
+    data_augmentation               = actual_parameters['data_augmentation'] 
     
     # Get a name for the model like model_37 or somehing like that
     model_name = get_next_model_folder(models_directory)
@@ -102,13 +105,24 @@ def trainer_SubEnv(json_path):
     print(f"Device: {device}\n")
     
     # Dataset maker
-    dataset        = DDSP_Dataset(audio_path, frame_size, hop_size, sampling_rate, N_filter_bank, features_annotators, data_augmentation=True)
-    actual_dataset = dataset.compute_dataset()
-
-    # save the dataset
-    dataset_path = os.path.join(directory, "dataset.pkl")
-    with open(dataset_path, 'wb') as file:
-        pickle.dump(actual_dataset, file)
+    if audio_path[-4:] == ".pkl":
+        actual_dataset = pickle.load(open(audio_path, 'rb'))
+        # save the dataset
+        dataset_path = os.path.join(directory, "dataset.pkl")
+        with open(dataset_path, 'wb') as file:
+            pickle.dump(actual_dataset, file)
+    else:
+        precompute_dataset(
+        audio_path  = audio_path,
+        output_path = os.path.join(directory, "dataset"),
+        frame_size  = frame_size,
+        hop_size    = hop_size,
+        sampling_rate = sampling_rate,
+        N_filter_bank = N_filter_bank,
+        features_annotators = features_annotators,
+        data_augmentation=data_augmentation
+        )
+        actual_dataset = DDSP_Dataset(os.path.join(directory, "dataset"))        
     
     # Dataloader
     dataloader = DataLoader(actual_dataset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
@@ -125,7 +139,8 @@ def trainer_SubEnv(json_path):
     model = architecture(input_dimensions, hidden_size_enc, hidden_size_dec, deepness_enc, deepness_dec, param_per_env, frame_size, N_filter_bank, device, seed).to(device)
     
     # Initialize the optimizer
-    optimizer = optim.Adam(model.parameters(), lr=0.5*1e-3)
+    lr = 0.5 * 1/(10 ** (6 - (deepness_enc + deepness_dec)/2))
+    optimizer = optim.Adam(model.parameters(), lr=lr)
 
     # Frame sizes for downsampling
     new_frame_size, new_sampling_rate   = frame_size // 4, sampling_rate // 4
@@ -143,7 +158,7 @@ def trainer_SubEnv(json_path):
     loss_history = []
     main_loss_history = []
     regularizer_history = []
-
+    
     # Training loop
     print("Training starting!")
 
@@ -153,7 +168,7 @@ def trainer_SubEnv(json_path):
     print("num_of_regularizers", num_of_regularizers)
 
     # Early stopping parameters
-    patience = 250  # Number of epochs to wait for improvement before stopping
+    patience = 100  # Number of epochs to wait for improvement before stopping
     epochs_no_improve = 0
 
     for epoch in range(epochs):
@@ -186,7 +201,7 @@ def trainer_SubEnv(json_path):
             #     og_signal = segments_batch
 
             # Compute main loss
-            loss_main = loss_function(og_signal, reconstructed_signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler) 
+            loss_main = loss_function(og_signal, reconstructed_signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler, alpha, beta) 
             
             loss_regularizer = torch.tensor(0.0).to(device)
 

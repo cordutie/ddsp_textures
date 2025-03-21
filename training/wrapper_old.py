@@ -30,8 +30,8 @@ def save_checkpoint(model, optimizer, epoch, loss_history, main_loss_history, re
     else:
         checkpoint = {
             'epoch': epoch,
-            'model_state_dict': model.state_dict(),
-            'optimizer_state_dict': optimizer.state_dict()
+            'model_state_dict': model.state_dict()
+            #, 'optimizer_state_dict': optimizer.state_dict()
         }
 
     checkpoint_path = os.path.join(directory, name)
@@ -75,12 +75,14 @@ def trainer_SubEnv(json_path):
     N_filter_bank                   = actual_parameters['N_filter_bank']
     M_filter_bank                   = actual_parameters['M_filter_bank']
     architecture                    = actual_parameters['architecture']
-    stems                           = actual_parameters['stems']
+    # stems                           = actual_parameters['stems']
     loss_function                   = actual_parameters['loss_function']
     regularizers                    = actual_parameters['regularizers']
     batch_size                      = actual_parameters['batch_size']
     epochs                          = actual_parameters['epochs']
     models_directory                = actual_parameters['models_directory']  
+    alpha                           = actual_parameters['alpha']
+    beta                            = actual_parameters['beta'] 
     
     # Get a name for the model like model_37 or somehing like that
     model_name = get_next_model_folder(models_directory)
@@ -102,8 +104,11 @@ def trainer_SubEnv(json_path):
     print(f"Device: {device}\n")
     
     # Dataset maker
-    dataset        = DDSP_Dataset(audio_path, frame_size, hop_size, sampling_rate, N_filter_bank, features_annotators, data_augmentation=True)
-    actual_dataset = dataset.compute_dataset()
+    if audio_path[-4:] == ".pkl":
+        actual_dataset = pickle.load(open(audio_path, 'rb'))
+    else:
+        dataset        = DDSP_Dataset(audio_path, frame_size, hop_size, sampling_rate, N_filter_bank, features_annotators, data_augmentation=True)
+        actual_dataset = dataset.compute_dataset()
 
     # save the dataset
     dataset_path = os.path.join(directory, "dataset.pkl")
@@ -113,11 +118,20 @@ def trainer_SubEnv(json_path):
     # Dataloader
     dataloader = DataLoader(actual_dataset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
 
+    # Make seed
+    seed = seed_maker(frame_size, sampling_rate, N_filter_bank).to(device)
+
+    # Pickle save seed
+    seed_path = os.path.join(directory, "seed.pkl")
+    with open(seed_path, 'wb') as file:
+        pickle.dump(seed, file)
+
     # Model initialization
-    model = architecture(input_dimensions, hidden_size_enc, hidden_size_dec, deepness_enc, deepness_dec, param_per_env, frame_size, N_filter_bank, device, sampling_rate, stems).to(device)
+    model = architecture(input_dimensions, hidden_size_enc, hidden_size_dec, deepness_enc, deepness_dec, param_per_env, frame_size, N_filter_bank, device, seed).to(device)
     
     # Initialize the optimizer
-    optimizer = optim.Adam(model.parameters(), lr=0.5*1e-3)
+    lr = 0.5 * 1/(10 ** (6 - (deepness_enc + deepness_dec)/2))
+    optimizer = optim.Adam(model.parameters(), lr=lr)
 
     # Frame sizes for downsampling
     new_frame_size, new_sampling_rate   = frame_size // 4, sampling_rate // 4
@@ -129,16 +143,13 @@ def trainer_SubEnv(json_path):
     import torchaudio
     downsampler = torchaudio.transforms.Resample(sampling_rate, new_sampling_rate).to(device)
 
-    # Seed for the synthesizer (necessary for some regularizers)
-    seed = model.seed_retrieve()
-
     # Variables to track the best model and loss history
     best_loss = float('inf')
     loss_dict = {}
     loss_history = []
     main_loss_history = []
     regularizer_history = []
-
+    
     # Training loop
     print("Training starting!")
 
@@ -159,10 +170,10 @@ def trainer_SubEnv(json_path):
 
         for batch in tqdm(dataloader, desc=f"Epoch {epoch + 1}/{epochs}"):
             # Unpack batch data
-            segments_batch       = batch[0].to(device, non_blocking=True)
-            segments_stems_batch = batch[1].to(device, non_blocking=True)
+            og_signal            = batch[0].to(device, non_blocking=True)
+            # segments_stems_batch = batch[1].to(device, non_blocking=True)
             features_batch       = []
-            for i in range(2, number_of_features + 2):
+            for i in range(1, number_of_features + 1):
                 feature = batch[i].to(device, non_blocking=True)
                 if feature.ndimension() == 1:  # If feature is 1D (i.e., shape: (batch_size,))
                     feature = feature.unsqueeze(-1)  # Add an extra dimension, making it shape (batch_size, 1)
@@ -174,20 +185,20 @@ def trainer_SubEnv(json_path):
             # Forward pass (Note that if stems=True, the model will return the stems)
             reconstructed_signal = model(features_batch).to(device)
 
-            # Decide what to use to compare
-            if stems==True:
-                og_signal = segments_stems_batch
-            else:
-                og_signal = segments_batch
+            # # Decide what to use to compare
+            # if stems==True:
+            #     og_signal = segments_stems_batch
+            # else:
+            #     og_signal = segments_batch
 
             # Compute main loss
-            loss_main = loss_function(og_signal, reconstructed_signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler) 
+            loss_main = loss_function(og_signal, reconstructed_signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler, alpha, beta) 
             
             loss_regularizer = torch.tensor(0.0).to(device)
 
-            # if there are regularizers and the model uses stems lets remake the signal to compute their features
-            if stems==True and num_of_regularizers>0:
-                reconstructed_signal= SubEnv_stems_to_signals_batches(reconstructed_signal, seed)
+            # # if there are regularizers and the model uses stems lets remake the signal to compute their features
+            # if stems==True and num_of_regularizers>0:
+            #     reconstructed_signal= SubEnv_stems_to_signals_batches(reconstructed_signal, seed)
             
             for i in range(num_of_regularizers):
                 # Make features from reconstructed signal
@@ -326,7 +337,7 @@ def trainer_from_checkpoint_SubEnv(model_folder):
     N_filter_bank                   = actual_parameters['N_filter_bank']
     M_filter_bank                   = actual_parameters['M_filter_bank']
     architecture                    = actual_parameters['architecture']
-    stems                           = actual_parameters['stems']
+    # stems                           = actual_parameters['stems']
     loss_function                   = actual_parameters['loss_function']
     regularizers                    = actual_parameters['regularizers']
     batch_size                      = actual_parameters['batch_size']
@@ -344,7 +355,7 @@ def trainer_from_checkpoint_SubEnv(model_folder):
     dataloader = DataLoader(actual_dataset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
 
     # Model loading
-    model, checkpoint = model_loader(checkpoint_path, json_path, print_parameters=False)
+    model, seed, checkpoint = model_loader(checkpoint_path, json_path, print_parameters=False)
 
     # Initialize the optimizer
     optimizer = optim.Adam(model.parameters(), lr=0.5*1e-3)
@@ -359,9 +370,6 @@ def trainer_from_checkpoint_SubEnv(model_folder):
 
     import torchaudio
     downsampler = torchaudio.transforms.Resample(sampling_rate, new_sampling_rate).to(device)
-
-    # Seed for the synthesizer (necessary for some regularizers)
-    seed = model.seed_retrieve()
 
     # Variables to track the best model and loss history
     best_loss = float('inf')
@@ -395,8 +403,8 @@ def trainer_from_checkpoint_SubEnv(model_folder):
 
         for batch in tqdm(dataloader, desc=f"Epoch {epoch + epoch_start + 1}/{epochs}"):
             # Unpack batch data
-            segments_batch = batch[0].to(device, non_blocking=True)
-            segments_stems_batch = batch[1].to(device, non_blocking=True)
+            og_signal              = batch[0].to(device, non_blocking=True)
+            # segments_stems_batch = batch[1].to(device, non_blocking=True)
             features_batch = []
             for i in range(2, number_of_features + 2):
                 feature = batch[i].to(device, non_blocking=True)
@@ -410,20 +418,20 @@ def trainer_from_checkpoint_SubEnv(model_folder):
             # Forward pass (Note that if stems=True, the model will return the stems)
             reconstructed_signal = model(features_batch).to(device)
 
-            # Decide what to use to compare
-            if stems==True:
-                og_signal = segments_stems_batch
-            else:
-                og_signal = segments_batch
+            # # Decide what to use to compare
+            # if stems==True:
+            #     og_signal = segments_stems_batch
+            # else:
+            #     og_signal = segments_batch
 
             # Compute main loss
             loss_main = loss_function(og_signal, reconstructed_signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, downsampler) 
             
             loss_regularizer = torch.tensor(0.0).to(device)
 
-            # if there are regularizers and the model uses stems lets remake the signal to compute their features
-            if stems==True and num_of_regularizers>0:
-                reconstructed_signal= SubEnv_stems_to_signals_batches(reconstructed_signal, seed)
+            # # if there are regularizers and the model uses stems lets remake the signal to compute their features
+            # if stems==True and num_of_regularizers>0:
+            #     reconstructed_signal= SubEnv_stems_to_signals_batches(reconstructed_signal, seed)
             
             for i in range(num_of_regularizers):
                 # Make features from reconstructed signal

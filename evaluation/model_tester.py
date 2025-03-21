@@ -64,9 +64,9 @@ def model_loader(model_path, configurations_path, print_parameters=True):
     return model, seed, checkpoint
 
 def plot_loss_history(loss_dict):
-    loss_history     = np.log(np.array(loss_dict['loss_total'])+1)
-    main_loss_histor = np.log(np.array(loss_dict['loss_main'])+1)
-    regularizer_history = np.log(np.array(loss_dict['loss_regularizer'])+1)
+    loss_history     = np.array(loss_dict['loss_total'])
+    main_loss_histor = np.array(loss_dict['loss_main'])
+    regularizer_history = np.array(loss_dict['loss_regularizer'])
     if regularizer_history[0]==0:
         regularizer_history = None
     plt.figure(figsize=(10, 5))

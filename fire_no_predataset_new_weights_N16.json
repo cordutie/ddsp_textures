@@ -1,0 +1,23 @@
+{
+    "audio_path":        "sounds/fire_sounds_long",
+    "frame_size":        32768,
+    "hop_size":          32768,
+    "sampling_rate":     44100,
+    "features_list":     "energy_bands,freqavg",
+    "hidden_size_enc":   256,
+    "hidden_size_dec":   256,
+    "deepness_enc":      3,
+    "deepness_dec":      3,
+    "param_per_env":     256,
+    "N_filter_bank":     16,
+    "M_filter_bank":     6,
+    "architecture":      "DDSP_SubEnv",
+    "loss_function":     "statistics",
+    "regularizers_list": "",
+    "batch_size":        32,
+    "epochs":            1000,
+    "models_directory":  "trained_models/",
+    "data_augmentation":  1,
+    "alpha":             "10, 1, 0.1, 0.01",
+    "beta":              "1, 20, 20, 20, 20"
+}

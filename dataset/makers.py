@@ -8,7 +8,9 @@ import torchaudio
 from ddsp_textures.auxiliar.features    import *
 from ddsp_textures.auxiliar.filterbanks import *
 import os
-    
+import pickle
+from tqdm import tqdm
+
 def read_wavs_from_folder(folder_path, sampling_rate, torch_type=True):
     audio_list = []
     
@@ -25,54 +27,91 @@ def read_wavs_from_folder(folder_path, sampling_rate, torch_type=True):
             
     return audio_list
 
-# features_annotators_list = list of features annotators
-class DDSP_Dataset(Dataset):
-    def __init__(self, audio_path, frame_size, hop_size, sampling_rate, N_filter_bank, features_annotators_list, data_augmentation=False):
-        self.features_annotators_list = features_annotators_list
-        self.audio_path               = audio_path
-        self.sampling_rate            = sampling_rate
-        self.audios_list              = read_wavs_from_folder(audio_path, sampling_rate, torch_type=False)
-        print("Audio loaded from ", audio_path)
-        self.segments_list = []
-        for audio in self.audios_list:
-            size = len(audio)
-            number_of_segments = (size - frame_size) // hop_size
-            for i in range(number_of_segments):
-                if data_augmentation == True:
-                    segment = audio[i * hop_size : i * hop_size + frame_size]
-                    for j in range(9):
-                        pitch_shift = 3*j - 12
-                        segment_shifted = librosa.effects.pitch_shift(y=segment, sr=self.sampling_rate, n_steps=pitch_shift)
-                        segment_shifted = torch.tensor(segment_shifted)
-                        self.segments_list.append(segment_shifted)
-                else:
-                    segment = audio[i * hop_size : i * hop_size + frame_size]
-                    segment = torch.tensor(segment)
-                    self.segments_list.append(segment)
-        self.erb_bank_just_in_case_lol = EqualRectangularBandwidth(frame_size, sampling_rate, N_filter_bank, 20, sampling_rate//2)
-        print("Segments extracted!")
-        print("Number of segments: ", len(self.segments_list))
+def precompute_dataset(audio_path, output_path, frame_size, hop_size, sampling_rate, N_filter_bank, features_annotators, data_augmentation=False):
+    os.makedirs(output_path, exist_ok=True)  # Create output directory if not exists
+    index = []  # Stores metadata (paths to saved segments)
+    erb_bank_just_in_case_lol = EqualRectangularBandwidth(frame_size, sampling_rate, N_filter_bank, 20, sampling_rate//2)
 
-    def compute_dataset(self):
-        actual_dataset = []
-        for segment in self.segments_list:
-            # dataset element
-            segment_annotated = []
-            # prepocessing
-            # segment = audio_improver(segment, self.sampling_rate, 4) # look at thiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiis
-            segment = signal_normalizer(segment)
-            # adding the segment to the element
-            segment_annotated.append(segment)
-            # segment_stems = features_envelopes_stems(segment, 0, self.erb_bank_just_in_case_lol)
-            # segment_annotated.append(segment_stems)
-            # features computation
-            for feature_annotator in self.features_annotators_list:
-                feature_loc = feature_annotator(segment, self.sampling_rate, self.erb_bank_just_in_case_lol)
-                # adding features to the element
-                segment_annotated.append(feature_loc)
-            actual_dataset.append(segment_annotated)
-        print("Dataset computed!")
-        return actual_dataset
-    
-    # the output of this function is a list made of lists. Each sub list has this shape [segment, feature1, feature2, ...]
-    # note that each feature is a list of tensors
+    audio_files = [f for f in os.listdir(audio_path) if f.endswith('.wav')]
+
+    for file in audio_files:
+        file_path = os.path.join(audio_path, file)
+        audio, _ = librosa.load(file_path, sr=sampling_rate, mono=True)
+        
+        size = len(audio)
+        number_of_segments = (size - frame_size) // hop_size
+
+        for i in range(number_of_segments):
+            segment = audio[i * hop_size : i * hop_size + frame_size]
+
+            if data_augmentation:
+                for j in range(9):
+                    pitch_shift = 3*j - 12
+                    segment_pitched = librosa.effects.pitch_shift(y=segment, sr=sampling_rate, n_steps=pitch_shift)
+                    segment_pitched = torch.tensor(segment_pitched, dtype=torch.float32)
+                    segment_pitched = signal_normalizer(segment_pitched)
+
+                    # Compute features
+                    features = [feature_annotator(segment_pitched, sampling_rate, erb_bank_just_in_case_lol) for feature_annotator in features_annotators]
+
+                    # Save to disk as a list: [segment, feature1, feature2, ...]
+                    segment_data = [segment_pitched] + features  
+
+                    segment_filename = f"{file}_{i}_shift{j}.pt"  
+                    segment_path = os.path.join(output_path, segment_filename)
+                    torch.save(segment_data, segment_path)
+                    index.append(segment_path)  
+            else:
+                segment = torch.tensor(segment, dtype=torch.float32)
+                segment = signal_normalizer(segment)  # Ensure normalization for non-augmented case
+
+                # Compute features
+                features = [feature_annotator(segment, sampling_rate, erb_bank_just_in_case_lol) for feature_annotator in features_annotators]
+
+                # Save to disk as a list: [segment, feature1, feature2, ...]
+                segment_data = [segment] + features  
+
+                segment_filename = f"{file}_{i}.pt"
+                segment_path = os.path.join(output_path, segment_filename)
+                torch.save(segment_data, segment_path)
+                index.append(segment_path)  
+
+    # Save the index file
+    with open(os.path.join(output_path, "dataset_index.pkl"), "wb") as f:
+        pickle.dump(index, f)
+
+    print(f"Dataset precomputed! {len(index)} segments saved.")
+
+
+class DDSP_Dataset(Dataset):
+    def __init__(self, dataset_path):
+        self.dataset_path = dataset_path
+
+        # Load the index file
+        index_file = os.path.join(dataset_path, "dataset_index.pkl")
+        if not os.path.exists(index_file):
+            raise FileNotFoundError(f"Dataset index file not found: {index_file}")
+
+        with open(index_file, "rb") as f:
+            self.index = pickle.load(f)
+
+        print(f"Dataset loaded! {len(self.index)} segments available.")
+
+    def __len__(self):
+        return len(self.index)
+
+    def __getitem__(self, idx):
+        segment_path = self.index[idx]
+        
+        # Load the segment and features
+        data = torch.load(segment_path, weights_only=True)  
+        
+        # # Debugging prints
+        # print(f"Loaded data from {segment_path}:")
+        # print(f"Type: {type(data)}")  # Should be a list or tuple
+        # print(f"Length: {len(data)}")  # Should match expected number of features
+        # print(f"Segment shape: {data[0].shape}")  # Check if it's a single segment
+        # for i, feature in enumerate(data[1:]):
+        #     print(f"Feature {i+1} shape: {feature.shape}")
+
+        return data
