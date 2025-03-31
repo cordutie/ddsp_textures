@@ -1,5 +1,13 @@
 # Ignore datasets (they are too heavy!)
-dataset.pkl
+.pkl
+
+# Ignore audio files
+*.wav
+*.mp3
+*.flac
+*.ogg
+*.m4a
+*.aac
 
 # Ignore unnecessary cache
 __pycache__/
