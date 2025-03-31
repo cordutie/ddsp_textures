@@ -36,13 +36,18 @@ def precompute_dataset(audio_path, output_path, frame_size, hop_size, sampling_r
 
     for file in audio_files:
         file_path = os.path.join(audio_path, file)
-        audio, _ = librosa.load(file_path, sr=sampling_rate, mono=True)
-        
+        audio, _ = librosa.load(file_path, sr=sampling_rate, mono=False)
+            
+        # If stereo, select only the left channel
+        if audio.ndim > 1:  # Stereo case (shape: [2, n_samples])
+            audio = audio[0]  # Select left channel (index 0)
+            
         size = len(audio)
         number_of_segments = (size - frame_size) // hop_size
 
         for i in range(number_of_segments):
             segment = audio[i * hop_size : i * hop_size + frame_size]
+            segment = audio_improver(segment, sampling_rate, 4, numpy=True)  # Improve audio quality
 
             if data_augmentation:
                 for j in range(9):
@@ -50,6 +55,7 @@ def precompute_dataset(audio_path, output_path, frame_size, hop_size, sampling_r
                     segment_pitched = librosa.effects.pitch_shift(y=segment, sr=sampling_rate, n_steps=pitch_shift)
                     segment_pitched = torch.tensor(segment_pitched, dtype=torch.float32)
                     segment_pitched = signal_normalizer(segment_pitched)
+                    # segment_pitched = audio_improver(segment_pitched, sampling_rate, 4) # Pay attention to thiiiiiiiiiiiiiiiiis
 
                     # Compute features
                     features = [feature_annotator(segment_pitched, sampling_rate, erb_bank_just_in_case_lol) for feature_annotator in features_annotators]

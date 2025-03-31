@@ -84,6 +84,8 @@ def trainer_SubEnv(json_path):
     alpha                           = actual_parameters['alpha']
     beta                            = actual_parameters['beta']
     data_augmentation               = actual_parameters['data_augmentation'] 
+    filter_low_lim                = actual_parameters['filter_low_lim']
+    filter_high_lim               = actual_parameters['filter_high_lim']
     
     # Get a name for the model like model_37 or somehing like that
     model_name = get_next_model_folder(models_directory)
@@ -128,7 +130,7 @@ def trainer_SubEnv(json_path):
     dataloader = DataLoader(actual_dataset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
 
     # Make seed
-    seed = seed_maker(frame_size, sampling_rate, N_filter_bank).to(device)
+    seed = seed_maker(frame_size, sampling_rate, N_filter_bank, filter_low_lim, filter_high_lim).to(device)
 
     # Pickle save seed
     seed_path = os.path.join(directory, "seed.pkl")
@@ -146,7 +148,7 @@ def trainer_SubEnv(json_path):
     new_frame_size, new_sampling_rate   = frame_size // 4, sampling_rate // 4
 
     # Filter bank initialization for loss functions
-    erb_bank    = fb.EqualRectangularBandwidth(frame_size,     sampling_rate, N_filter_bank, 20,     sampling_rate // 2)
+    erb_bank    = fb.EqualRectangularBandwidth(frame_size,     sampling_rate, N_filter_bank, filter_low_lim,     filter_high_lim)
     log_bank    = fb.Logarithmic(          new_frame_size, new_sampling_rate, M_filter_bank, 10, new_sampling_rate // 4)
 
     import torchaudio
@@ -374,7 +376,7 @@ def trainer_from_checkpoint_SubEnv(model_folder):
     new_frame_size, new_sampling_rate   = frame_size // 4, sampling_rate // 4
 
     # Filter bank initialization for loss functions
-    erb_bank    = fb.EqualRectangularBandwidth(frame_size,     sampling_rate, N_filter_bank, 20,     sampling_rate // 2)
+    erb_bank    = fb.EqualRectangularBandwidth(frame_size,     sampling_rate, N_filter_bank, filter_low_limit,     filter_high_limit)
     log_bank    = fb.Logarithmic(          new_frame_size, new_sampling_rate, M_filter_bank, 10, new_sampling_rate // 4)
 
     import torchaudio

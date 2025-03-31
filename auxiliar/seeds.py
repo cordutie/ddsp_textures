@@ -60,9 +60,7 @@ def env_normalizer(signal):
     normalization = signal * envelope_inverted
     return normalization
 
-def seed_maker(size, fs, N_filter_bank):
-    low_lim = 20  # Low limit of filter
-    high_lim = fs / 2  # Centre freq. of highest filter
+def seed_maker(size, fs, N_filter_bank, low_lim=20, high_lim=22050):
     
     # Initialize filter bank
     erb_bank = fb.EqualRectangularBandwidth(size, fs, N_filter_bank, low_lim, high_lim)

@@ -7,13 +7,17 @@ import torchaudio
 from   ddsp_textures.auxiliar.seeds import *
 
 # All purpose functions ---------------------------------------------------------
-def audio_improver(signal_tensor, sampling_rate, level):
+def audio_improver(signal_tensor, sampling_rate, level, numpy=False):
+    if numpy:
+        signal_tensor = torch.tensor(signal_tensor)
     signal_filtered  = torchaudio.functional.bandpass_biquad(signal_tensor, sample_rate = sampling_rate, central_freq = 10000, Q = 0.1)
     freq_mean        = computer_freq_avg(signal_filtered, sampling_rate)
     # filtered audio is centered around the spectral centroid
     segment_centered = torchaudio.functional.bandpass_biquad(signal_filtered, sample_rate = sampling_rate, central_freq = freq_mean, Q = 1)
     # improved audio is the sum of the centered audio and the original audio
     segment_improved = level*segment_centered + signal_tensor
+    if numpy:
+        segment_improved = segment_improved.detach().numpy()
     return segment_improved
 
 def signal_normalizer(signal):

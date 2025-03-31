@@ -39,6 +39,7 @@ def model_loader(model_path, configurations_path, print_parameters=True):
     M_filter_bank = parameters_dict['M_filter_bank']    
     architecture  = parameters_dict['architecture']
     input_dimensions = parameters_dict['input_dimensions']
+    print(input_dimensions)
     # stems = parameters_dict['stems']
 
     # Device configuration
@@ -147,7 +148,7 @@ def model_synthesizer(content, model, parameters_dict, loudness_normalization, s
     # N_segments = 1 # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
     audio_final = torch.zeros(frame_size + (N_segments-1)*hop_size).to(device)
-    window      = torch.hann_window(frame_size).to(device)
+    window      = torch.hamming_window(frame_size).to(device)
 
     # audio_og    = torch.zeros(frame_size + (N_segments-1)*hop_size).to(device)
 

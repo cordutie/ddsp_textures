@@ -118,7 +118,8 @@ def model_json_to_parameters(json_file_path):
     actual_parameters['audio_path']               = parameters_json['audio_path']
     actual_parameters['frame_size']               = int(parameters_json['frame_size'])
     actual_parameters['hop_size']                 = int(parameters_json['hop_size'])
-    actual_parameters['sampling_rate']            = int(parameters_json['sampling_rate'])
+    sr = int(parameters_json['sampling_rate'])
+    actual_parameters['sampling_rate']            = sr
     actual_parameters['hidden_size_enc']          = int(parameters_json['hidden_size_enc'])
     actual_parameters['hidden_size_dec']          = int(parameters_json['hidden_size_dec'])
     actual_parameters['deepness_enc']             = int(parameters_json['deepness_enc'])
@@ -133,7 +134,10 @@ def model_json_to_parameters(json_file_path):
     actual_parameters['batch_size']               = int(parameters_json['batch_size'])
     actual_parameters['epochs']                   = int(parameters_json['epochs'])
     actual_parameters['models_directory']         = parameters_json['models_directory']
-    actual_parameters['data_augmentation']        = bool(int(parameters_json['data_augmentation']))
+    if 'data_augmentation' in parameters_json:
+        actual_parameters['data_augmentation']        = bool(int(parameters_json['data_augmentation']))
+    else:
+        actual_parameters['data_augmentation']        = False
     # check if parameters_json['alpha'] exists:
     if 'alpha' in parameters_json:
         alpha_string                                  = parameters_json['alpha']
@@ -142,7 +146,16 @@ def model_json_to_parameters(json_file_path):
         beta_string                                   = parameters_json['beta']
         beta_float_list                               = [float(x) for x in beta_string.split(',')]
         actual_parameters['beta']                     = torch.tensor(beta_float_list)
-        
+    else:
+        actual_parameters['alpha']                    = torch.tensor([10, 1, 0.1, 0.01])
+        actual_parameters['beta']                     = torch.tensor([1, 20, 20, 20, 20])
+    
+    if 'filter_low_lim' in parameters_json:
+        actual_parameters['filter_low_lim']           = float(parameters_json['filter_low_lim'])
+        actual_parameters['filter_high_lim']          = float(parameters_json['filter_high_lim'])
+    else:
+        actual_parameters['filter_low_lim']           = 20
+        actual_parameters['filter_high_lim']          = sr // 2
     return actual_parameters
 
 def get_next_model_folder(base_path="trained_models"):
