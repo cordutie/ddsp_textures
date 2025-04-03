@@ -17,6 +17,6 @@ if __name__ == "__main__":
         path = sys.argv[2] #json path for training and checkpoint parent folder path for retraining
     print("Let's go!")
     if method == "train":
-        ddsp_textures.training.wrapper.trainer_SubEnv(path)
+        ddsp_textures.training.wrapper.trainer_TexEnv(path)
     elif method == "retrain":
-        ddsp_textures.training.wrapper.trainer_from_checkpoint_SubEnv(path)
+        ddsp_textures.training.wrapper.trainer_from_checkpoint_TexEnv(path)

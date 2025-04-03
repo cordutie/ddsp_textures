@@ -42,16 +42,16 @@ def train(json_path):
     with open(json_path, 'r') as file:
         parameters = json.load(file)
     architecture = parameters['architecture']
-    if architecture == 'DDSP_SubEnv':
-        print("DDSP_SubEnv trainer")
-        trainer_SubEnv(json_path)
+    if architecture == 'DDSP_TexEnv':
+        print("DDSP_TexEnv trainer")
+        trainer_TexEnv(json_path)
     elif architecture == 'DDSP_PVAE':
         print("DDSP_PVAE trainer")
         # trainer_PVAE(json_path)
     else:
         raise ValueError(f"Architecture {architecture} not recognized.")
 
-def trainer_SubEnv(json_path):
+def trainer_TexEnv(json_path):
     # Get the parameters from the json file
     actual_parameters = model_json_to_parameters(json_path)
     
@@ -209,7 +209,7 @@ def trainer_SubEnv(json_path):
 
             # # if there are regularizers and the model uses stems lets remake the signal to compute their features
             # if stems==True and num_of_regularizers>0:
-            #     reconstructed_signal= SubEnv_stems_to_signals_batches(reconstructed_signal, seed)
+            #     reconstructed_signal= TexEnv_stems_to_signals_batches(reconstructed_signal, seed)
             
             for i in range(num_of_regularizers):
                 # Make features from reconstructed signal
@@ -308,7 +308,7 @@ def trainer_SubEnv(json_path):
     
     print("Training complete.")
 
-def trainer_from_checkpoint_SubEnv(model_folder):
+def trainer_from_checkpoint_TexEnv(model_folder):
     # check if inside the folder there is a checkpoint.pth, a configurations.json and a dataset pickle
     checkpoint_path = os.path.join(model_folder, "checkpoint.pth")
     json_path = os.path.join(model_folder, "configurations.json")
@@ -442,7 +442,7 @@ def trainer_from_checkpoint_SubEnv(model_folder):
 
             # # if there are regularizers and the model uses stems lets remake the signal to compute their features
             # if stems==True and num_of_regularizers>0:
-            #     reconstructed_signal= SubEnv_stems_to_signals_batches(reconstructed_signal, seed)
+            #     reconstructed_signal= TexEnv_stems_to_signals_batches(reconstructed_signal, seed)
             
             for i in range(num_of_regularizers):
                 # Make features from reconstructed signal

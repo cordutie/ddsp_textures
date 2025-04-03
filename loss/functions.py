@@ -86,12 +86,12 @@ def statistics_mcds(signals, N_filter_bank, M_filter_bank, erb_bank, log_bank, d
 
     length_downsampled       = env_subbands_downsampled.shape[-1]
 
-    subenvelopes = torch.zeros((batch_size, N_filter_bank, M_filter_bank, length_downsampled), device=device)
+    TexEnvelopes = torch.zeros((batch_size, N_filter_bank, M_filter_bank, length_downsampled), device=device)
     for i in range(N_filter_bank):
         banda     = env_subbands_downsampled[:, i, :]
         subbandas = log_bank.generate_subbands(banda)[:, 1:-1, :]
-        subenvelopes[:, i, :, :] = subbandas
-    # print("subenvelopes.requires_grad:", subenvelopes.requires_grad)
+        TexEnvelopes[:, i, :, :] = subbandas
+    # print("TexEnvelopes.requires_grad:", TexEnvelopes.requires_grad)
 
     mu = env_subbands.mean(dim=-1)
     sigma = env_subbands.std(dim=-1)
@@ -121,20 +121,20 @@ def statistics_mcds(signals, N_filter_bank, M_filter_bank, erb_bank, log_bank, d
     stats_2 = correlation_coefficient(env_subbands[:, corr_pairs[0]], env_subbands[:, corr_pairs[1]])
     # print("stats_2.requires_grad:", stats_2.requires_grad)
 
-    subenv_sigma = subenvelopes.std(dim=-1)
-    # stats_3 = (subenv_sigma / (env_subbands_downsampled.std(dim=-1, keepdim=True))).reshape(-1)
-    stats_3 = (subenv_sigma / (env_subbands_downsampled.std(dim=-1, keepdim=True))).view(batch_size, -1)
+    TexEnv_sigma = TexEnvelopes.std(dim=-1)
+    # stats_3 = (TexEnv_sigma / (env_subbands_downsampled.std(dim=-1, keepdim=True))).reshape(-1)
+    stats_3 = (TexEnv_sigma / (env_subbands_downsampled.std(dim=-1, keepdim=True))).view(batch_size, -1)
     # print("stats_3.requires_grad:", stats_3.requires_grad)
 
-    cross_corr_across_subbands = correlation_coefficient(subenvelopes[:, None, :, :, :], subenvelopes[:, :, None, :, :])
+    cross_corr_across_subbands = correlation_coefficient(TexEnvelopes[:, None, :, :, :], TexEnvelopes[:, :, None, :, :])
     # stats_4 = cross_corr_across_subbands[:, torch.triu_indices(N_filter_bank, N_filter_bank, 1)[0], torch.triu_indices(N_filter_bank, N_filter_bank, 1)[1]].reshape(-1)
     stats_4 = cross_corr_across_subbands[:, torch.triu_indices(N_filter_bank, N_filter_bank, 1)[0], torch.triu_indices(N_filter_bank, N_filter_bank, 1)[1]].view(batch_size, -1)
     # print("stats_4.requires_grad:", stats_4.requires_grad)
 
-    cross_corr_subenvs = correlation_coefficient(subenvelopes[:, :, None, :, :], subenvelopes[:, :, :, None, :])
-    # print("corre_shape",cross_corr_subenvs.shape)
-    # stats_5 = cross_corr_subenvs[:, :, torch.triu_indices(M_filter_bank, M_filter_bank, 1)[0], torch.triu_indices(M_filter_bank, M_filter_bank, 1)[1]].reshape(-1)
-    stats_5 = cross_corr_subenvs[:, :, torch.triu_indices(M_filter_bank, M_filter_bank, 1)[0], torch.triu_indices(M_filter_bank, M_filter_bank, 1)[1]]
+    cross_corr_TexEnvs = correlation_coefficient(TexEnvelopes[:, :, None, :, :], TexEnvelopes[:, :, :, None, :])
+    # print("corre_shape",cross_corr_TexEnvs.shape)
+    # stats_5 = cross_corr_TexEnvs[:, :, torch.triu_indices(M_filter_bank, M_filter_bank, 1)[0], torch.triu_indices(M_filter_bank, M_filter_bank, 1)[1]].reshape(-1)
+    stats_5 = cross_corr_TexEnvs[:, :, torch.triu_indices(M_filter_bank, M_filter_bank, 1)[0], torch.triu_indices(M_filter_bank, M_filter_bank, 1)[1]]
     stats_5 = stats_5.permute(0, 2, 1).contiguous().view(batch_size, -1)
     # print("stats_5.requires_grad:", stats_5.requires_grad)
 
@@ -181,11 +181,11 @@ def statistics_mcds_loss(original_signals, reconstructed_signals, N_filter_bank,
 #     env_subbands_downsampled = downsampler(env_subbands.float())
 #     length_downsampled       = env_subbands_downsampled.shape[-1]
 
-#     subenvelopes = torch.zeros((batch_size, N_filter_bank, M_filter_bank, length_downsampled), device=device)
+#     TexEnvelopes = torch.zeros((batch_size, N_filter_bank, M_filter_bank, length_downsampled), device=device)
 #     for i in range(N_filter_bank):
 #         banda     = env_subbands_downsampled[:, i, :]
 #         subbandas = log_bank.generate_subbands(banda)[:, 1:-1, :]
-#         subenvelopes[:, i, :, :] = subbandas
+#         TexEnvelopes[:, i, :, :] = subbandas
 
 #     mu = env_subbands.mean(dim=-1)
 #     sigma = env_subbands.std(dim=-1)
@@ -203,9 +203,9 @@ def statistics_mcds_loss(original_signals, reconstructed_signals, N_filter_bank,
 #     corr_pairs = torch.triu_indices(N_filter_bank, N_filter_bank, 1)
 #     stats_2 = correlation_coefficient(env_subbands[:, corr_pairs[0]], env_subbands[:, corr_pairs[1]])
 
-#     subenv_sigma = subenvelopes.std(dim=-1)
-#     # stats_3 = (subenv_sigma / (env_subbands_downsampled.std(dim=-1, keepdim=True))).reshape(-1)
-#     stats_3 = (subenv_sigma / (env_subbands_downsampled.std(dim=-1, keepdim=True))).view(batch_size, -1)
+#     TexEnv_sigma = TexEnvelopes.std(dim=-1)
+#     # stats_3 = (TexEnv_sigma / (env_subbands_downsampled.std(dim=-1, keepdim=True))).reshape(-1)
+#     stats_3 = (TexEnv_sigma / (env_subbands_downsampled.std(dim=-1, keepdim=True))).view(batch_size, -1)
 
 #     return [stats_11, stats_12, stats_13, stats_14, stats_15, stats_16, stats_17, stats_18, stats_2, stats_3]
 
@@ -270,7 +270,7 @@ def statistics_mcds_old(signal, N_filter_bank, M_filter_bank, erb_bank, log_bank
         envelope = env_subbands[i,:].float().to(device)  # Ensure the envelope is on the same device
         envelopes_downsampled.append(downsampler(envelope).to(torch.float64))
 
-    subenvelopes = []
+    TexEnvelopes = []
     new_size = envelopes_downsampled[0].shape[0]
 
     for i in range(N_filter_bank):
@@ -283,7 +283,7 @@ def statistics_mcds_old(signal, N_filter_bank, M_filter_bank, erb_bank, log_bank
         #log_bank.generate_subbands(signal)
     
         # Extract subbands
-        subenvelopes.append(log_bank.generate_subbands(signal)[1:-1, :].to(device))
+        TexEnvelopes.append(log_bank.generate_subbands(signal)[1:-1, :].to(device))
     
     # Extract statistics up to order 4 and correlations
     statistics_1 = torch.zeros(N_filter_bank, 4, device=device)
@@ -306,14 +306,14 @@ def statistics_mcds_old(signal, N_filter_bank, M_filter_bank, erb_bank, log_bank
     for i in range(N_filter_bank):
         sigma_i = torch.std(envelopes_downsampled[i])
         for j in range(6):
-            statistics_3[6 * i + j] = torch.std(subenvelopes[i][j]) / sigma_i
+            statistics_3[6 * i + j] = torch.std(TexEnvelopes[i][j]) / sigma_i
 
     statistics_4 = torch.zeros(15, N_filter_bank, device=device)
     for i in range(N_filter_bank):
         counter = 0
         for j in range(6):
             for k in range(j + 1, 6):
-                statistics_4[counter, i] = correlation_coefficient_old(subenvelopes[i][j], subenvelopes[i][k])
+                statistics_4[counter, i] = correlation_coefficient_old(TexEnvelopes[i][j], TexEnvelopes[i][k])
                 counter += 1
 
     statistics_5 = torch.zeros(6, N_filter_bank * (N_filter_bank - 1) // 2, device=device)
@@ -321,7 +321,7 @@ def statistics_mcds_old(signal, N_filter_bank, M_filter_bank, erb_bank, log_bank
         counter = 0
         for j in range(N_filter_bank):
             for k in range(j + 1, N_filter_bank):
-                statistics_5[i, counter] = correlation_coefficient_old(subenvelopes[j][i], subenvelopes[k][i])
+                statistics_5[i, counter] = correlation_coefficient_old(TexEnvelopes[j][i], TexEnvelopes[k][i])
                 counter += 1
 
     return [statistics_1, statistics_2, statistics_3, statistics_5, statistics_4]

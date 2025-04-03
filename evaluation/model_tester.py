@@ -96,7 +96,7 @@ def audio_preprocess(audio_path, frame_size, sampling_rate, features_annotators,
         segment_annotated = []
         segment         = audio_tensor[i * hop_size: i * hop_size + frame_size]
         # segment = audio_improver(segment, sampling_rate, 4)
-        target_loudness = torch.std(segment).to(device)
+        # target_loudness = torch.std(segment).to(device)
         segment = signal_normalizer(segment).to(device)
 
         # adding the segment to the element
@@ -111,13 +111,13 @@ def audio_preprocess(audio_path, frame_size, sampling_rate, features_annotators,
                 feature_loc = torch.tensor([feature_loc]).to(device)  
             # adding features to the element
             segment_annotated.append(feature_loc)
-        segment_annotated.append(target_loudness)
+        # segment_annotated.append(target_loudness)
         content.append(segment_annotated)
     return content
 
 # content[i] = actual torch segment, features, target_loudness
 
-def model_synthesizer(content, model, parameters_dict, loudness_normalization, seed, random_shift=True):
+def model_synthesizer(content, model, parameters_dict, type_loudness, seed, random_shift=True):
     # Unpack parameters
     audio_path                      = parameters_dict['audio_path']
     frame_size                      = parameters_dict['frame_size']
@@ -157,15 +157,15 @@ def model_synthesizer(content, model, parameters_dict, loudness_normalization, s
     for i in range(N_segments):
         local_content = content[i]
         segment_loc   = local_content[0]
-        features_loc  = local_content[1:-1]
-        target_loudness_loc = local_content[-1]
-        
-        if loudness_normalization == "specific":
-            # compute energy bands to use them as target loudness
+        features_loc  = local_content[1:]
+        # target_loudness_loc = local_content[-1]
+        if type_loudness == "generic_loudness" or type_loudness == "generic":
+            target_loudness_loc = torch.norm(segment_loc)
+        else:
             target_loudness_loc = features_energy_bands(segment_loc, 0, erb_bank)
+        # synthesis time!
+        synthesized_segment = model.synthesizer(features_loc, type_loudness, target_loudness_loc, seed)     
 
-        synthesized_segment = model.synthesizer(features_loc, target_loudness_loc, seed)
-        
         if random_shift:
             # Shift the synthesized_segment in a random amount of steps
             synthesized_segment = synthesized_segment.roll(shifts=np.random.randint(0, frame_size))

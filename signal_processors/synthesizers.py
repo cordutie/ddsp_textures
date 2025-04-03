@@ -3,8 +3,8 @@ import numpy as np
 import ddsp_textures.auxiliar.filterbanks
 from   ddsp_textures.auxiliar.seeds import *
 
-# SubEnv ----------------------------------------------------------------------------------------------
-def SubEnv_param_extractor(signal, fs, N_filter_bank, param_per_env):
+# TexEnv ----------------------------------------------------------------------------------------------
+def TexEnv_param_extractor(signal, fs, N_filter_bank, param_per_env):
     # send error if param_per_env is not even
     if param_per_env % 2 != 0:
         raise ValueError("param_per_env must be an even number (cause these are complex numbers).")
@@ -33,7 +33,7 @@ def SubEnv_param_extractor(signal, fs, N_filter_bank, param_per_env):
     return real_param, imag_param
 
 # Actual synth ----------------------------------------------------------------------------------------------
-def SubEnv(parameters_real, parameters_imag, seed, target_loudness=1):
+def TexEnv(parameters_real, parameters_imag, seed, normalization = "generic_loudness", target_loudness=1):
     size          = seed.shape[1]
     N_filter_bank = seed.shape[0]
     
@@ -48,8 +48,6 @@ def SubEnv(parameters_real, parameters_imag, seed, target_loudness=1):
         normalization = "generic_loudness"
     else:
         normalization = "specific_loudness"
-
-    # print("Normalization type: ", normalization)
 
     for i in range(N_filter_bank):
         # Construct the local parameters as a complex array
@@ -88,7 +86,77 @@ def SubEnv(parameters_real, parameters_imag, seed, target_loudness=1):
     
     return signal_final
 
-def SubEnv_batches(parameters_real, parameters_imag, seed):
+    # size          = seed.shape[1]
+    # N_filter_bank = seed.shape[0]
+    
+    # N = parameters_real.size(0)
+    # # print("NUMBER OF PARAMETERS: ", 2*N)
+    # parameters_size = N // N_filter_bank
+
+    # subbands_signals  = []
+    # for i in range(N_filter_bank):
+    #     # Construct the local parameters as a complex array
+    #     parameters_local = parameters_real[i * parameters_size : (i + 1) * parameters_size] + 1j * parameters_imag[i * parameters_size : (i + 1) * parameters_size]
+        
+    #     # Initialize FFT coefficients array
+    #     fftcoeff_local = torch.zeros(int(size/2)+1, dtype=torch.complex64).to(parameters_real.device)
+    #     fftcoeff_local[:parameters_size] = parameters_local ###########################################
+        
+    #     # Compute the inverse FFT to get the local envelope
+    #     # env_local = torch.fft.irfft(fftcoeff_local, )
+    #     env_local = torch.fft.irfft(fftcoeff_local, norm = "ortho")
+        
+    #     # Extract the local noise
+    #     noise_local = seed[i].to(parameters_real.device)
+        
+    #     # Generate the texture sound by multiplying the envelope and noise
+    #     texture_sound_local = env_local * noise_local
+    #     texture_sound_local = texture_sound_local - torch.mean(texture_sound_local)  # Remove DC component
+
+    #     # if loudness_type == "specific_loudness":
+    #     #     # Normalize the texture sound to match the target loudness
+    #     #     loudness = torch.sqrt(torch.mean(texture_sound_local ** 2))
+    #     #     texture_sound_local = texture_sound_local / loudness
+    #     #     texture_sound_local = target_loudness[i] * texture_sound_local
+    #     # else:
+    #     #     texture_sound_local = texture_sound_local # do nothing
+
+    #     # Append the local envelope to the list
+    #     subbands_signals.append(texture_sound_local)
+
+    # # Initialize the final signal
+    # signal_final = torch.zeros(size, dtype=torch.float32).to(device=parameters_real.device)
+
+    # print("shape",target_loudness.shape)
+
+    # # Apply loudness types and reconstruct the signal
+    # if loudness_type == "generic_loudness":
+    #     # Acumulate the result
+    #     for i in range(N_filter_bank):
+    #         signal_final += subbands_signals[i]
+    #     # Normalize the signal and match the target loudness
+    #     signal_final = signal_final * (1/torch.std(signal_final)) * target_loudness
+    # elif loudness_type == "specific_loudness":
+    #     # Normalize the subbands, match their target loudness and accumulate
+    #     for i in range(N_filter_bank):
+    #         signal_final += subbands_signals[i] * (1/torch.std(subbands_signals[i])) * target_loudness[i]
+    # elif loudness_type == "semi_specific_loudness":
+    #     # Energy subbands into probability distribution
+    #     energy_subbands_og = torch.zeros(N_filter_bank, dtype=torch.float32).to(device=parameters_real.device)
+    #     for i in range(N_filter_bank):
+    #         energy_subbands_og[i] = torch.std(subbands_signals[i])
+    #     energy_subbands_og = energy_subbands_og / torch.sum(energy_subbands_og)    
+    #     # Target loudness into probability distribution
+    #     energy_subbands_target = target_loudness / torch.sum(target_loudness)
+    #     # Interpolate between the two distributions
+    #     energy_subbands = (energy_subbands_og + energy_subbands_target) / 2
+    #     # Normalize the subbands, match their target loudness and accumulate
+    #     for i in range(N_filter_bank):
+    #         signal_final += subbands_signals[i] * (1/torch.std(subbands_signals[i])) * energy_subbands[i]
+    
+    # return signal_final
+
+def TexEnv_batches(parameters_real, parameters_imag, seed):
     size          = seed.shape[1]
     N_filter_bank = seed.shape[0]
     
@@ -125,7 +193,7 @@ def SubEnv_batches(parameters_real, parameters_imag, seed):
 
 # # Synth Stems -------------------------------------------------------------------------------
 
-# def SubEnv_stems(parameters_real, parameters_imag, frame_size, N_filter_bank, target_loudness=1):
+# def TexEnv_stems(parameters_real, parameters_imag, frame_size, N_filter_bank, target_loudness=1):
 #     size          = frame_size
 #     N_filter_bank = N_filter_bank
     
@@ -152,7 +220,7 @@ def SubEnv_batches(parameters_real, parameters_imag, seed):
 #     # Return the list of env_locals
 #     return env_locals_list
 
-# def SubEnv_stems_batches(parameters_real, parameters_imag, frame_size, N_filter_bank):
+# def TexEnv_stems_batches(parameters_real, parameters_imag, frame_size, N_filter_bank):
 #     size = frame_size
 #     batch_size = parameters_real.size(0)
 #     parameters_size = parameters_real.size(1) // N_filter_bank
@@ -180,7 +248,7 @@ def SubEnv_batches(parameters_real, parameters_imag, seed):
 
 # # Stems to signal -------------------------------------------------------------------------------
 
-# def SubEnv_stems_to_signal(env_locals, seed, target_loudness=1):
+# def TexEnv_stems_to_signal(env_locals, seed, target_loudness=1):
 #     size          = seed.shape[1]
 #     N_filter_bank = seed.shape[0]
 
@@ -205,7 +273,7 @@ def SubEnv_batches(parameters_real, parameters_imag, seed):
 
 #     return signal_final
 
-# def SubEnv_stems_to_signals_batches(env_locals_batch, seed, target_loudness=1):
+# def TexEnv_stems_to_signals_batches(env_locals_batch, seed, target_loudness=1):
 #     size          = seed.shape[1]
 #     N_filter_bank = seed.shape[0]
 #     batch_size = len(env_locals_batch)  # The number of items in the batch

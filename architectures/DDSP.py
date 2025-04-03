@@ -8,7 +8,7 @@ import librosa
 import torchaudio
 
 # example encoder_sizes=[3,5,1]
-class DDSP_SubEnv(nn.Module):
+class DDSP_TexEnv(nn.Module):
     def __init__(self, input_sizes, enc_hidden_size, dec_hidden_size, enc_deepness, dec_deepness, param_per_env, frame_size, N_filter_bank, device, seed):
         super().__init__()
 
@@ -88,17 +88,16 @@ class DDSP_SubEnv(nn.Module):
         
         # Synthesizing
         # if self.stems:
-        #     output = SubEnv_stems_batches(real_param, imag_param, self.frame_size, self.N_filter_bank)
+        #     output = TexEnv_stems_batches(real_param, imag_param, self.frame_size, self.N_filter_bank)
         # else:
-        output                 = SubEnv_batches(real_param, imag_param, self.seed)
+        output                 = TexEnv_batches(real_param, imag_param, self.seed)
 
         return output
 
-    def synthesizer(self, features, target_loudness, seed):
+    def synthesizer(self, features, type_loudness, target_loudness, seed):
         latent_vector          = self.encoder(features)
         real_param, imag_param = self.decoder(latent_vector)
-
-        signal = SubEnv(real_param, imag_param, seed, target_loudness)
+        signal = TexEnv(real_param, imag_param, seed, type_loudness, target_loudness)
         return signal
 
 #     def synthesizer(self, features, target_loudness, seed):

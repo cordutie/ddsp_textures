@@ -77,7 +77,7 @@ def statistics(signal, N_filter_bank, sample_rate, erb_bank, log_bank):
         envelope = env_subbands[i,:].float().to(device)  # Ensure the envelope is on the same device
         envelopes_downsampled.append(downsampler(envelope).to(torch.float64))
 
-    subenvelopes = []
+    TexEnvelopes = []
     new_size = envelopes_downsampled[0].shape[0]
 
     for i in range(N_filter_bank):
@@ -90,7 +90,7 @@ def statistics(signal, N_filter_bank, sample_rate, erb_bank, log_bank):
         #log_bank.generate_subbands(signal)
     
         # Extract subbands
-        subenvelopes.append(log_bank.generate_subbands(signal)[1:-1, :].to(device))
+        TexEnvelopes.append(log_bank.generate_subbands(signal)[1:-1, :].to(device))
     
     # Extract statistics up to order 4 and correlations
     statistics_1 = torch.zeros(N_filter_bank, 4, device=device)
@@ -113,14 +113,14 @@ def statistics(signal, N_filter_bank, sample_rate, erb_bank, log_bank):
     for i in range(N_filter_bank):
         sigma_i = torch.std(envelopes_downsampled[i])
         for j in range(6):
-            statistics_3[6 * i + j] = torch.std(subenvelopes[i][j]) / sigma_i
+            statistics_3[6 * i + j] = torch.std(TexEnvelopes[i][j]) / sigma_i
 
     statistics_4 = torch.zeros(15, N_filter_bank, device=device)
     for i in range(N_filter_bank):
         counter = 0
         for j in range(6):
             for k in range(j + 1, 6):
-                statistics_4[counter, i] = correlation_coefficient(subenvelopes[i][j], subenvelopes[i][k])
+                statistics_4[counter, i] = correlation_coefficient(TexEnvelopes[i][j], TexEnvelopes[i][k])
                 counter += 1
 
     statistics_5 = torch.zeros(6, N_filter_bank * (N_filter_bank - 1) // 2, device=device)
@@ -128,7 +128,7 @@ def statistics(signal, N_filter_bank, sample_rate, erb_bank, log_bank):
         counter = 0
         for j in range(N_filter_bank):
             for k in range(j + 1, N_filter_bank):
-                statistics_5[i, counter] = correlation_coefficient(subenvelopes[j][i], subenvelopes[k][i])
+                statistics_5[i, counter] = correlation_coefficient(TexEnvelopes[j][i], TexEnvelopes[k][i])
                 counter += 1
 
     return [statistics_1, statistics_2, statistics_3, statistics_4, statistics_5]
@@ -197,7 +197,7 @@ def statistics_mcds_2(signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, 
         envelope = env_subbands[i,:].float().to(device)  # Ensure the envelope is on the same device
         envelopes_downsampled.append(downsampler(envelope).to(torch.float64))
 
-    subenvelopes = []
+    TexEnvelopes = []
     new_size = envelopes_downsampled[0].shape[0]
 
     for i in range(N_filter_bank):
@@ -210,7 +210,7 @@ def statistics_mcds_2(signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, 
         #log_bank.generate_subbands(signal)
     
         # Extract subbands
-        subenvelopes.append(log_bank.generate_subbands(signal)[1:-1, :].to(device))
+        TexEnvelopes.append(log_bank.generate_subbands(signal)[1:-1, :].to(device))
     
     # Extract statistics up to order 4 and correlations
     statistics_11 = torch.zeros(N_filter_bank, device=device)
@@ -241,7 +241,7 @@ def statistics_mcds_2(signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, 
     for i in range(N_filter_bank):
         sigma_i = torch.std(envelopes_downsampled[i])
         for j in range(6):
-            statistics_3[6 * i + j] = torch.std(subenvelopes[i][j]) / sigma_i
+            statistics_3[6 * i + j] = torch.std(TexEnvelopes[i][j]) / sigma_i
     # print("statistics_3 req_grad: ", statistics_3.requires_grad)
 
     statistics_5 = torch.zeros(15, N_filter_bank, device=device)
@@ -249,7 +249,7 @@ def statistics_mcds_2(signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, 
         counter = 0
         for j in range(6):
             for k in range(j + 1, 6):
-                statistics_5[counter, i] = correlation_coefficient(subenvelopes[i][j], subenvelopes[i][k])
+                statistics_5[counter, i] = correlation_coefficient(TexEnvelopes[i][j], TexEnvelopes[i][k])
                 counter += 1
     # print("statistics_5 req_grad: ", statistics_5.requires_grad)
 
@@ -258,7 +258,7 @@ def statistics_mcds_2(signal, N_filter_bank, M_filter_bank, erb_bank, log_bank, 
         counter = 0
         for j in range(N_filter_bank):
             for k in range(j + 1, N_filter_bank):
-                statistics_4[i, counter] = correlation_coefficient(subenvelopes[j][i], subenvelopes[k][i])
+                statistics_4[i, counter] = correlation_coefficient(TexEnvelopes[j][i], TexEnvelopes[k][i])
                 counter += 1
     # print("statistics_4 req_grad: ", statistics_4.requires_grad)
 
