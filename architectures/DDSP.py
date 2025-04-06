@@ -24,7 +24,7 @@ class DDSP_TexEnv(nn.Module):
         
         # Loop through the input list and create an MLP for each in_size in input_sizes
         for in_size in input_sizes:
-            print("Creating encoder with input size", in_size)
+            # print("Creating encoder with input size", in_size)
             self.encoders.append(mlp(in_size, enc_hidden_size, enc_deepness))
         # Create z encoder
         self.z_encoder = gru(len(input_sizes) * enc_hidden_size, enc_hidden_size)

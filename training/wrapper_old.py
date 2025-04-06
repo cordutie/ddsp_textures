@@ -5,7 +5,7 @@ from ddsp_textures.auxiliar.configuration import *
 from ddsp_textures.dataset.makers import *
 from ddsp_textures.loss.functions import *
 from ddsp_textures.signal_processors.synthesizers import *
-from ddsp_textures.evaluation.model_tester import *
+from ddsp_textures.tester.model_tester import *
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
