@@ -3,6 +3,7 @@
 
 # Ignore audio folder
 sounds/
+all_sounds/
 
 # Ignore unnecessary cache
 __pycache__/
@@ -31,3 +32,6 @@ env_ddsp_textures/
 
 # evaluation repo
 fad_repo/
+
+# extra ideas
+lorea.ipynb
