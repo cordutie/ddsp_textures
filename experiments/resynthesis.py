@@ -17,7 +17,7 @@ import pickle
 import os
 import matplotlib.pyplot as plt
 import torch.nn.functional as F
-
+ 
 # Function that reads a model from a given path and returns the model and its dictionary of parameters.
 def load_model(model_folder_path, print_parameters=False):
     model_path  = os.path.join(model_folder_path, 'best_model.pth')
