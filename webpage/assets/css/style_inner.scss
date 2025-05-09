@@ -1,0 +1,29 @@
+---
+---
+
+@import "jekyll-theme-minimal";
+
+/* Make the wrapper centered */
+.wrapper {
+    max-width: 800px;  /* Adjust width as needed */
+    margin: 0 auto;    /* Centers the content */
+    padding: 20px;
+}
+
+/* Ensure section takes full width */
+section {
+    width: 100%;     /* Take full width */
+    float: none;     /* Remove any floating */
+    text-align: left; /* Reset alignment */
+}
+
+/* Remove the left part (header) */
+header {
+    display: none;
+}
+
+/* Ensure no float issues */
+header, section {
+    float: none;
+    display: block;
+}

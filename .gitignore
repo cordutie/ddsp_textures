@@ -35,3 +35,10 @@ fad_repo/
 
 # extra ideas
 lorea.ipynb
+
+# webpage stuff
+_site
+.sass-cache
+Gemfile.lock
+*.gem
+.jekyll-cache
