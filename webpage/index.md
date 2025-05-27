@@ -1,6 +1,6 @@
 ---
-layout: inner_no_margin
-width_variable: 66%
+layout: default
+title: Texture Framework
 ---
 
 <div style="text-align: center">

@@ -1,10 +1,9 @@
 ---
-layout: inner_no_margin
-width_variable: 100%
-margin: 0
+layout: default_no_margin
+title: Timbre Transfer | Texture Framework
 ---
 
-[back](./)
+[Back](./)
 
 <style>
   .texture-grid {

@@ -1,4 +1,145 @@
 ---
 ---
 
-@import "jekyll-theme-minimal";
+@import "fonts";
+@import "rouge-github";
+
+/* Reset & Base Styles */
+body {
+    background-color: #ffffff;
+    padding: 50px;
+    font: 14px/1.5 "PT Sans", sans-serif;
+    color: #000000;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    color: #000000;
+    margin: 10 0 10px;
+  }
+  
+  h1 { font-size: 28px; line-height: 1.1; }
+  h2, h3, h4, h5, h6 { line-height: 1.1; }
+  
+  p, ul, ol, table, pre, dl {
+    margin: 0 0 10px;
+  }
+  
+  a {
+    color: #4ea8ff;
+    text-decoration: none;
+  }
+  a:hover, a:focus {
+    color: #90caff;
+    font-weight: bold;
+  }
+  a small {
+    font-size: 11px;
+    color: #aaa;
+    display: block;
+    margin-top: -0.3em;
+  }
+  a:hover small {
+    color: #ccc;
+  }
+  
+  blockquote {
+    border-left: 2px solid #333;
+    padding-left: 20px;
+    font-style: italic;
+    color: #ccc;
+  }
+  
+  code, pre {
+    font-family: Monaco, Consolas, monospace;
+    color: #000000;
+  }
+  pre {
+    padding: 8px 15px;
+    background: #1c1c1c;
+    border-radius: 5px;
+    border: 1px solid #333;
+    overflow-x: auto;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th, td {
+    text-align: left;
+    padding: 5px 10px;
+    border-bottom: 1px solid #333;
+  }
+  th, dt {
+    color: #fff;
+    font-weight: 700;
+  }
+  
+  img {
+    max-width: 100%;
+  }
+  
+  kbd {
+    background-color: #222;
+    border: 1px solid #444;
+    border-bottom-color: #666;
+    border-radius: 3px;
+    box-shadow: inset 0 -1px 0 #666;
+    color: #fff;
+    display: inline-block;
+    font-size: 11px;
+    line-height: 10px;
+    padding: 3px 5px;
+    vertical-align: middle;
+  }
+  
+  strong {
+    color: #000000;
+    font-weight: 700;
+  }
+  
+  small {
+    font-size: 11px;
+  }
+  
+  hr {
+    border: 0;
+    background: #333;
+    height: 1px;
+    margin: 0 0 20px;
+  }
+
+/* Make the wrapper centered */
+.wrapper {
+    max-width: 800px;  /* Adjust width as needed */
+    margin: 0 auto;    /* Centers the content */
+    padding: 20px;
+}
+
+/* Make the wrapper centered */
+.wrapper-no-margin {
+    // max-width: 800px;  /* Adjust width as needed */
+    // margin: 0 auto;    /* Centers the content */
+    padding: 20px;
+}
+
+/* Ensure section takes full width */
+section {
+    width: 100%;     /* Take full width */
+    float: none;     /* Remove any floating */
+    text-align: left; /* Reset alignment */
+}
+
+/* Remove the left part (header) */
+header {
+    display: none;
+}
+
+/* Ensure no float issues */
+header, section {
+    float: none;
+    display: block;
+}
