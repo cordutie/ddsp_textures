@@ -17,7 +17,7 @@ width: 1100px
 <p>
   <a href="https://cordutie.github.io/"><strong>Esteban Gutiérrez</strong></a><sup>1</sup>, 
   <a href="https://ffont.github.io/"><strong>Frederic Font</strong></a><sup>1</sup>, 
-  <strong>Xavier Serra<sup>1</sup></strong>, and  
+  <strong>Xavier Serra</strong><sup>1</sup>, and  
   <a href="https://lonce.org/"><strong>Lonce Wyse</strong></a><sup>1</sup>
 </p>
 
