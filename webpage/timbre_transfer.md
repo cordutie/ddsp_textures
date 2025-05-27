@@ -1,6 +1,7 @@
 ---
-layout: default_no_margin
+layout: default
 title: Timbre Transfer | Texture Framework
+width: 2200px
 ---
 
 [Back](./)

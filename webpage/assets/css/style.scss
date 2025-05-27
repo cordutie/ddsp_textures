@@ -74,7 +74,7 @@ body {
     border-bottom: 1px solid #333;
   }
   th, dt {
-    color: #fff;
+    color: #000000;
     font-weight: 700;
   }
   
@@ -114,15 +114,7 @@ body {
 
 /* Make the wrapper centered */
 .wrapper {
-    max-width: 800px;  /* Adjust width as needed */
     margin: 0 auto;    /* Centers the content */
-    padding: 20px;
-}
-
-/* Make the wrapper centered */
-.wrapper-no-margin {
-    // max-width: 800px;  /* Adjust width as needed */
-    // margin: 0 auto;    /* Centers the content */
     padding: 20px;
 }
 

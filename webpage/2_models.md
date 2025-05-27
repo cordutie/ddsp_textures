@@ -2,13 +2,15 @@ This work introduces three models that can be used for texture sounds analysis a
 
 <div style="margin-top: 20px;"></div>
 <details>
-<summary><span style="font-weight: normal; font-size: 1.5em; color: black">2.1. <code>TexStat</code> Loss 📖🚧</span></summary>
+<summary><span style="font-weight: normal; font-size: 1.5em; color: black">2.1. <code>TexStat</code> Loss 📖</span></summary>
 <div style="margin-top: 20px;"></div>
 
 <p><code>TexStat</code> is a loss function based on a direct comparison of a revised version of McDermott and Simoncelli's summary of statistics <a href="https://doi.org/10.1016/j.neuron.2011.06.032" target="_blank" style="font-weight: normal;">[McDermott et al., 2020]</a>. This approach allows the TexStat loss function to train texture sound generative models by focusing strictly on the statistical properties of sounds, rather than the sounds themselves. As a result, the synthesized textures naturally differ from the original inputs, while still preserving the essential perceptual qualities that define their type.</p>
 
 <div style="overflow-x: auto; max-width: 80%; margin: 0 auto; padding: 10px; box-sizing: border-box;">
-  
+  <div style="text-align: center; margin: 30px 0;">
+    <img src="./assets/img/stats.svg" alt="TexDSP architecture" style="max-width: 100%; height: auto;">
+  </div>
   <p style="text-align: center; font-size: 0.85em; color: #666;">
   <strong>Figure 2.1.</strong> <code>TexStat</code>'s summary of statistics extraction diagram. 
   </p>  
@@ -22,6 +24,7 @@ This work introduces three models that can be used for texture sounds analysis a
 <div style="margin-top: 20px;"></div>
 
 <p><code>TexEnv</code> is a differentiable signal processor that through the use of the Inverse Discrete Fourier Transform creates a series of cyclic functions that are later imposed as amplitude envelopes of a subband decomposition of white noise. </p>
+
 <div style="overflow-x: auto; max-width: 80%; margin: 0 auto; padding: 10px; box-sizing: border-box;">
   <div style="text-align: center; margin: 30px 0;">
     <img src="./assets/img/texenv.svg" alt="TexDSP architecture" style="max-width: 100%; height: auto;">

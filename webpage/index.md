@@ -1,10 +1,17 @@
 ---
 layout: default
 title: Texture Framework
+width: 1100px
 ---
 
-<div style="text-align: center">
+<div style="position: relative; width: 100%; height: 60px; margin-bottom: 20px;">
+  <img src="assets/img/upf_logo.png" alt="UPF Logo"
+       style="position: absolute; top: 50%; left: 0; max-height: 60px; max-width: 50%; height: auto; width: auto; transform: translateY(-50%);">
+  <img src="assets/img/mtg_logo.png" alt="MTG Logo"
+       style="position: absolute; top: 50%; right: 0; max-height: 60px; max-width: 50%; height: auto; width: auto; transform: translateY(-50%);">
+</div>
 
+<div style="text-align: center">
 <h1>A Statistics-Driven Differentiable Approach for Sound Textures Synthesis and Analysis</h1>
 
 <p>
@@ -15,7 +22,6 @@ title: Texture Framework
 </p>
 
 <p><sup>1</sup> <em>Department of Information and Communications Technologies, Universitat Pompeu Fabra</em></p>
-
 </div>
 
 <p>
@@ -36,7 +42,7 @@ This webpage provides supplementary materials for our paper <em>"A Statistics-Dr
 
 <div style="margin-top: 40px;"></div>
 <div style="display: flex; justify-content: center;">
-  <div style="border-left: 4px solid rgb(255, 255, 255); background: #f0f8ff; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 8px; max-width: 300px; width: 100%;">
+  <div style="border-left: 4px solid rgb(200, 200, 200); background:rgb(230, 230, 230); padding: 1em 1.2em; margin: 1.5em 0; border-radius: 8px; max-width: 300px; width: 100%;">
     <strong>Legend:</strong>
     <ul style="list-style: none; padding: 0.5em 0 0 0; margin: 0;">
       <li>🎧 Sound examples included</li>
@@ -49,4 +55,8 @@ This webpage provides supplementary materials for our paper <em>"A Statistics-Dr
 
 <h2><strong>Acknowledgements</strong></h2>
 
-This work has been supported by the project "IA y Música: Cá-tedra en Inteligencia Artificial y Música (TSI-100929-2023-1)", funded by the "Secretaría de Estado de Digitalización e Inteligencia Artificial and the Unión Europea-Next Generation EU".
+This work has been supported by the project "IA y Música: Cátedra en Inteligencia Artificial y Música (TSI-100929-2023-1)", funded by the "Secretaría de Estado de Digitalización e Inteligencia Artificial and the Unión Europea-Next Generation EU".
+
+<div style="justify-content: center; width: 100%;">
+  <img src="assets/img/chair.png" alt="Funding" style="top: 50%; right: 0; width: 100%;">
+</div>

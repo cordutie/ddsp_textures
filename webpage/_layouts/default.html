@@ -15,7 +15,7 @@
     </script>
   </head>
   <body>
-    <div class="wrapper">
+    <div class="wrapper" style="max-width: {{ page.width | default: '800px' }};">
       <section>
         {{ content }}
       </section>
