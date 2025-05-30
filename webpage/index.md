@@ -24,6 +24,22 @@ width: 1100px
 <p><sup>1</sup> <em>Department of Information and Communications Technologies, Universitat Pompeu Fabra</em></p>
 </div>
 
+<div style="text-align: center; margin-top: 1em;">
+  <a href="#" 
+    style="display: inline-block; background: #3498db; color: white; padding: 0.6em 1em; border-radius: 5px; text-decoration: none;">
+    📄 Paper
+  </a>
+  <a href="#"
+    style="display: inline-block; background: #3498db; color: white; padding: 0.6em 1em; border-radius: 5px; text-decoration: none;">
+    💻 Blog post
+  </a>
+  <a href="#" onclick="event.preventDefault(); navigator.clipboard.writeText('@article{key, title={My Article}}'); alert('Copied to clipboard!');"
+    style="display: inline-block; background: #3498db; color: white; padding: 0.6em 1em; border-radius: 5px; text-decoration: none;">
+    Bibtex
+  </a>
+</div>
+
+<div style="margin-top: 20px;"></div>
 <p>
 This webpage provides supplementary materials for our paper <em>"A Statistics-Driven Differentiable Approach for Sound Textures Synthesis and Analysis"</em>, currently under review for the 25th edition of the Digital Audio Effects (DAFx) Conference.
 </p>

@@ -540,7 +540,7 @@ To demonstrate the capabilities of <code>TexStat</code>, we trained a set of <co
 <div style="margin-top: 20px;"></div>
 
 <p>
-A notable application of DDSP is timbre transfer, where a model trained on one timbre can be influenced by another sound. The original paper showcased this by transferring the timbre of a violin to a voice recording, using pitch and loudness as key factors. Our models can achieve similar results with textural sounds, although the process is more intricate. Unlike musical timbres, where pitch plays a central role, textural sounds lack such defining features, which makes the transfer more complex. Nevertheless, some compelling examples of this phenomenon are highlighted below. For a comprehensive overview, <a href="./timbre_transfer.html">a complete table showing all eight types of textures trained and their transfer results across other textures can be found pressing here</a>.
+A notable application of DDSP is timbre transfer, where a model trained on one timbre can be influenced by another sound. The original paper showcased this by transferring the timbre of a violin to a voice recording, using pitch and loudness as key factors. Our models can achieve similar results with textural sounds, although the process is more intricate. Unlike musical timbres, where pitch plays a central role, textural sounds lack such defining features, which makes the transfer more complex. Nevertheless, some compelling examples of this phenomenon are highlighted below. For more examples, see the link below.
 </p>
 
 <div style="overflow-x: auto; max-width: 80%; margin: 0 auto; padding: 10px; box-sizing: border-box;">
@@ -611,5 +611,11 @@ A notable application of DDSP is timbre transfer, where a model trained on one t
 </div>
 <div style="overflow-x: auto; max-width: 80%; margin: 0 auto; padding: 10px; box-sizing: border-box; text-align: center; font-size: 0.85em; ">
 <strong>Sound Examples 3.3.</strong> Timbre transfer examples using different <code>TexDSP</code> trained models.</div>
+
+<div style="text-align: center; margin-top: 1em;">
+  <a href="./timbre_transfer.html" style="display: inline-block; background: #3498db; color: white; padding: 0.6em 1em; border-radius: 5px; text-decoration: none;">
+    🎧 See more examples here
+  </a>
+</div>
 
 </details>
