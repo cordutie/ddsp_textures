@@ -12,7 +12,7 @@ width: 1100px
 </div>
 
 <div style="text-align: center">
-<h1>A Statistics-Driven Differentiable Approach for Sound Textures Synthesis and Analysis</h1>
+<h1>A Statistics-Driven Differentiable Approach for Sound Texture Synthesis and Analysis</h1>
 
 <p>
   <a href="https://cordutie.github.io/"><strong>Esteban Gutiérrez</strong></a><sup>1</sup>, 
@@ -24,24 +24,32 @@ width: 1100px
 <p><sup>1</sup> <em>Department of Information and Communications Technologies, Universitat Pompeu Fabra</em></p>
 </div>
 
-<div style="text-align: center; margin-top: 1em;">
+<div style="text-align: center; margin-top: 1em; margin-bottom: -0.3em;">
   <a href="#" 
-    style="display: inline-block; background: #3498db; color: white; padding: 0.6em 1em; border-radius: 5px; text-decoration: none;">
+    style="display: inline-block; background: #3498db; color: white; padding: 0.6em 1em; border-radius: 5px; text-decoration: none; margin: 0.3em 0em;">
     📄 Paper
   </a>
-  <a href="#"
-    style="display: inline-block; background: #3498db; color: white; padding: 0.6em 1em; border-radius: 5px; text-decoration: none;">
-    💻 Blog post
+  <a href="https://github.com/cordutie/ddsp_textures" 
+    style="display: inline-block; background: #3498db; color: white; padding: 0.6em 1em; border-radius: 5px; text-decoration: none; margin: 0.3em 0em;">
+    <img src="/assets/img/gh_logo.png" alt="GitHub" width="15" style="filter: invert(1); vertical-align: -0.2em;" /> <Code style="color: white; font-size: 0.85em;">TexDSP</Code> repository
   </a>
-  <a href="#" onclick="event.preventDefault(); navigator.clipboard.writeText('@article{key, title={My Article}}'); alert('Copied to clipboard!');"
-    style="display: inline-block; background: #3498db; color: white; padding: 0.6em 1em; border-radius: 5px; text-decoration: none;">
-    Bibtex
+  <a href="https://github.com/cordutie/texstat" 
+    style="display: inline-block; background: #3498db; color: white; padding: 0.6em 1em; border-radius: 5px; text-decoration: none; margin: 0.3em 0em;">
+    <img src="/assets/img/gh_logo.png" alt="GitHub" width="15" style="filter: invert(1); vertical-align: -0.2em;" /> <Code style="color: white; font-size: 0.85em;">TexStat</Code> repository
+  </a>
+  <!-- <a href="#"
+    style="display: inline-block; background: #3498db; color: white; padding: 0.6em 1em; border-radius: 5px; text-decoration: none; margin: 0.3em 0em;">
+    💻 Blog post
+  </a> -->
+  <a href="#" onclick="event.preventDefault(); navigator.clipboard.writeText('@inproceedings{gutierrez2025statistics, title     = {A Statistics-Driven Differentiable Approach for Sound Texture Synthesis and Analysis}, author    = {Esteban Gutiérrez and Frederic Font and Xavier Serra and Lonce Wyse}, booktitle = {Proceedings of the 28th International Conference on Digital Audio Effects (DAFx25)}, year      = {2025}, address   = {Ancona, Italy}, month     = {September}, note      = {2--5 September 2025} }'); alert('Copied to clipboard!');"
+    style="display: inline-block; background: #3498db; color: white; padding: 0.6em 1em; border-radius: 5px; text-decoration: none; margin: 0.3em 0em;">
+    📚 Bibtex
   </a>
 </div>
 
 <div style="margin-top: 20px;"></div>
 <p>
-This webpage provides supplementary materials for our paper <em>"A Statistics-Driven Differentiable Approach for Sound Textures Synthesis and Analysis"</em>, currently under review for the 25th edition of the Digital Audio Effects (DAFx) Conference.
+This webpage provides supplementary materials for our paper <em>"A Statistics-Driven Differentiable Approach for Sound Texture Synthesis and Analysis"</em> to be presented at the 25th edition of the Digital Audio Effects (DAFx) Conference in Ancona, Italy.
 </p>
 
 <div style="margin-top: 20px;"></div>
