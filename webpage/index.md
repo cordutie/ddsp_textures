@@ -41,7 +41,7 @@ width: 1100px
     style="display: inline-block; background: #3498db; color: white; padding: 0.6em 1em; border-radius: 5px; text-decoration: none; margin: 0.3em 0em;">
     💻 Blog post
   </a> -->
-  <a href="#" onclick="event.preventDefault(); navigator.clipboard.writeText('@inproceedings{gutierrez2025statistics, title     = {A Statistics-Driven Differentiable Approach for Sound Texture Synthesis and Analysis}, author    = {Esteban Gutiérrez and Frederic Font and Xavier Serra and Lonce Wyse}, booktitle = {Proceedings of the 28th International Conference on Digital Audio Effects (DAFx25)}, year      = {2025}, address   = {Ancona, Italy}, month     = {September}, note      = {2--5 September 2025} }'); alert('Copied to clipboard!');"
+  <a href="#" onclick="event.preventDefault(); navigator.clipboard.writeText('@inproceedings{gutierrez2025statistics,\n title     = {A Statistics-Driven Differentiable Approach for Sound Texture Synthesis and Analysis},\n author    = {Esteban Gutiérrez and Frederic Font and Xavier Serra and Lonce Wyse},\n booktitle = {Proceedings of the 28th International Conference on Digital Audio Effects (DAFx25)},\n year      = {2025},\n address   = {Ancona, Italy},\n month     = {September},\n note      = {2--5 September 2025}\n}'); alert('Copied to clipboard!');"
     style="display: inline-block; background: #3498db; color: white; padding: 0.6em 1em; border-radius: 5px; text-decoration: none; margin: 0.3em 0em;">
     📚 Bibtex
   </a>
