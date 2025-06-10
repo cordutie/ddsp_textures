@@ -25,7 +25,7 @@ width: 1100px
 </div>
 
 <div style="text-align: center; margin-top: 1em; margin-bottom: -0.3em;">
-  <a href="#" 
+  <a href="https://doi.org/10.48550/arXiv.2506.04073" 
     style="display: inline-block; background: #3498db; color: white; padding: 0.6em 1em; border-radius: 5px; text-decoration: none; margin: 0.3em 0em;">
     📄 Paper
   </a>
