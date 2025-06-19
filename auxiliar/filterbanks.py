@@ -20,31 +20,6 @@ class FilterBank:
             high_lim = max_freq
         return high_lim, freqs, nfreqs
 
-    # def generate_subbands(self, signal):
-    #     device = signal.device  # Get the device of the input signal tensor
-    #     self.filters = self.filters.to(device)  # Move filters to the same device
-        
-    #     if signal.shape[0] == 1:  # turn into column vector
-    #         signal = signal.T.to(device)
-    #     else:
-    #         signal = signal.to(device)
-        
-    #     N = self.filters.shape[1] - 2
-    #     signal_length = signal.shape[0]
-    #     filt_length = self.filters.shape[0]
-        
-    #     fft_sample = torch.fft.fft(signal, dim=0).to(device)
-        
-    #     if signal_length % 2 == 0:
-    #         fft_filts = torch.cat([self.filters, torch.flipud(self.filters[1:filt_length - 1, :])]).to(device)
-    #     else:
-    #         fft_filts = torch.cat([self.filters, torch.flipud(self.filters[1:filt_length, :])]).to(device)
-        
-    #     tile = fft_sample.unsqueeze(1) * torch.ones(1, N + 2, device=device)
-    #     fft_subbands = fft_filts * tile
-    #     # self.subbands = torch.fft.ifft(fft_subbands, dim=0).real.to(device)
-    #     return torch.fft.ifft(fft_subbands, dim=0).real.to(device).transpose(0, 1)
-
     def generate_subbands(self, signal):
         device = signal.device
         self.filters = self.filters.to(device)  # Move filters to the same device
@@ -78,6 +53,78 @@ class FilterBank:
             return subbands.squeeze(0)  # Remove batch dimension
         return subbands
 
+class CustomFilterBank(FilterBank):
+    def __init__(self, leny, fs, N, low_lim, high_lim, center_freqs, bandwidth):
+        super(CustomFilterBank, self).__init__(leny, fs, N, low_lim, high_lim)
+        self.device  = center_freqs.device
+        self.filters = self.make_filters(center_freqs, self.freqs, bandwidth)
+
+    def make_filters(self, center_freqs, freqs, bw):
+        # clamp bw 0 to 1
+        bw = torch.clamp(torch.tensor(bw), min=0.005, max=1).to(self.device)
+        bw = 1 - bw
+        N = len(center_freqs)
+        eps = 1e-3  # to avoid log2(0)
+        # freqs = torch.clamp(freqs, min=eps)
+
+        # Extend center frequencies to handle filter edges
+        center_freqs = torch.cat([
+            torch.tensor([0.0],      device=center_freqs.device),
+            torch.tensor([freqs[1]], device=center_freqs.device),
+            center_freqs,
+            torch.tensor([freqs[-2]], device=center_freqs.device),
+            torch.tensor([freqs[-1]], device=center_freqs.device)
+        ])
+        freqs = freqs.to(self.device)
+        nfreqs = freqs.shape[0] - 1
+        filters = torch.zeros((N+2, nfreqs + 1), dtype=torch.float32).to(self.device)
+
+        for j in range(1, N+3):
+            center_l = center_freqs[j - 1]
+            center_c = center_freqs[j]
+            center_r = center_freqs[j + 1]
+
+            # Calculate edges based on bandwidth
+            left_edge  = center_l + (center_c - center_l)*bw**(1000/center_c)
+            right_edge = center_r - (center_r - center_c)*bw**(1000/center_c)
+
+            # Find indices
+            left_ind = torch.where(freqs >= left_edge)[0][0].item()
+            center_ind = torch.where(freqs >= center_c)[0][0].item()
+            right_ind = torch.where(freqs <= right_edge)[0][-1].item()
+
+            # Clamp to valid ranges
+            left_ind  = min(left_ind, center_ind - 1)
+            right_ind = max(right_ind, center_ind + 1)
+
+            # Left cosine
+            left_part = freqs[left_ind:center_ind]
+            filters[j-1, left_ind:center_ind] = torch.cos(
+                (torch.log2(left_part+eps) - torch.log2(center_c)) /
+                (eps + torch.log2(center_c) - torch.log2(left_edge)) * (torch.pi / 2)
+            )
+
+            # aert if nan encountered in left part
+            if torch.isnan(filters[j-1, left_ind:center_ind]).any():
+                print(f"NaN encountered in left part for filter {j-1} with center frequency {center_c}")
+
+            # Right cosine
+            right_part = freqs[center_ind:right_ind+1]
+            filters[j-1, center_ind:right_ind+1] = torch.cos(
+                (torch.log2(right_part) - torch.log2(center_c)) /
+                (eps + torch.log2(right_edge) - torch.log2(center_c)) * (torch.pi / 2)
+            )
+
+            if torch.isnan(filters[j-1, center_ind:right_ind+1]).any():
+                print(f"NaN encountered in right part for filter {j-1} with center frequency {center_c}")
+        
+            # Normalize the filter
+            filters[j-1] /= torch.max(torch.abs(filters[j-1]))
+
+            # Kill negative numbers
+            filters[j-1][filters[j-1] < 0] = 0
+
+        return filters.T
 
 class EqualRectangularBandwidth(FilterBank):
     def __init__(self, leny, fs, N, low_lim, high_lim):
