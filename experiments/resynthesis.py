@@ -76,6 +76,7 @@ def resynthesis_from_model(audio_path, model_folder_path, input_audio_improver =
         # Apply window and overlap and add -------------------------------------------------
         synthesized_segment = synthesized_segment * window
         resynthesis[i * hop_size: i * hop_size + frame_size] += synthesized_segment
+        print(f"Processed segment {i+1}/{N_segments}", end='\r')
     # Envelope follower step --------------------------------------------------------------
     # checkk that envelope_follower is between 0 and 1
     if envelope_follower < 0 or envelope_follower > 1:
